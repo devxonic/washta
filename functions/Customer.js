@@ -10,13 +10,13 @@ const signUp = async (req) => {
 }
 
 
-const getCustomer = async (req) => {
+const getSeller = async (req) => {
 
     let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
 
     return Customer;
 }
-const findCustomer = async (req) => {
+const findSeller = async (req) => {
     let player = await CustomerModel.findById(req.user.id);
     console.log("asdasdas", req.user.id, player)
     return player;
@@ -95,65 +95,15 @@ module.exports = {
     signUp,
     updateRefreshToken,
     signUpWithGoogle,
-    getCustomer,
-    findCustomer,
+    getSeller,
+    findSeller,
     getProfile,
     editProfile,
     logout,
     updateNotification,
-getNotification,
-updatePrivacy,
-getPrivacy,
-updateSecurity,
-getSecurity,
+    getNotification,
+    updatePrivacy,
+    getPrivacy,
+    updateSecurity,
+    getSecurity,
 }
-// // module.exports = {
-// //     signUp, getPlayer, logout, editProfile, getProfile, findPlayer, changePassword, createProfile, bookCourt, updateRefreshToken, updateNotification,
-// //     deactivateAccount,
-// //     joinGame,
-// //     getNotification, updatePrivacy, getPrivacy, updateSecurity, getSecurity, updateImage, getBookingCalendar, getAvailableCourts,
-// //     getFieldDetails, getMyBookings, getCourtsByLocation, getCourtFields,
-// //     getFollowRequests,
-// //     getPlayersLeaderboard,
-// //     acceptFollowRequest,
-// //     getFollowers,
-// //     startAGame,
-// //     featuredCourts,
-// //     followPlayer,
-// //     inviteToGame,
-// //     getGames,
-// //     stripeTest,
-// //     getMyChatRooms,
-// //     getChatHistory,
-// //     getAllGames,
-// // }
-
-
-
-
-// // let result = await courtModel.updateOne(
-// //     { "clubs.timings.timeslots._id": req.body.timeId },
-// //     { "$set": { "clubs.$[i].timings.$[j].timeslots.$[k].isBooked": true } },
-// //     {
-// //         arrayFilters: [
-// //             { "i._id": req.body.clubId },
-// //             { "j.day": req.body.day },
-// //             { "k._id": req.body.timeId }
-// //         ]
-// //     }
-// // )
-// // let timeSlotArr = ['65c24baf7f78a214e21dd61a'];
-// // let result = await courtModel.updateOne(
-// //     { "clubs.timings.timeslots._id": req.body.timeId },
-// //     {
-// //         $push: {
-// //             bookedTimings: {
-// //                 Date: new Date(),
-// //                 timeslots: [timeslotsArr]
-// //             }
-// //         }
-// //     },
-// // )
-// // fetch the timeslots from timeslot id and store them in arrays in order to make the booking timings field
-// // let timings = await courtModel.findOne({ "clubs.timings.timeslots._id": req.body.timeId }, { "clubs.$": 1 });
-// // find from booking model if the booking exists for that specific date

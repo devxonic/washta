@@ -44,40 +44,39 @@ const signUp = async (req, res) => {
 
 const logIn = async (req, res) => {
     try {
-        let Customer;
+        let User;
         if (req.body.type === "google") {
-            Customer = await CustomerFunctions.signUpWithGoogle(req)
-            console.log('Customers', Customer)
+            User = await CustomerFunctions.signUpWithGoogle(req)
+            console.log('Customers', User)
         }
         else {
             if (!await validationFunctions.validateEmailUsername(req)) return response.resBadRequest(res, "couldn't find user");
-            Customer = await CustomerFunctions.getCustomer(req);
-            console.log('Customers', Customer)
-            if (! await validationFunctions.verifyPassword(req.body.password, Customer.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+            User = await CustomerFunctions.getSeller(req);
+            console.log('Customers', User)
+            if (! await validationFunctions.verifyPassword(req.body.password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
             // if(!player.isActive) {return response.resAuthenticate(res, "your account has been disabled / deactivated")}
         }
         let refrashToken = jwt.sign({
-            id: Customer.id,
-            email: Customer.email,
-            username: Customer.username
+            id: User.id,
+            email: User.email,
+            username: User.username
         }, process.env.customerToken, { expiresIn: '30 days' })
 
         await CustomerFunctions.updateRefreshToken(req, refrashToken)
 
         let token = jwt.sign({
-            id: Customer.id,
-            email: Customer.email,
-            username: Customer.username
+            id: User.id,
+            email: User.email,
+            username: User.username
         }, process.env.customerToken, { expiresIn: '7d' })
-
 
         return response.resSuccessData(res, {
             user: {
-                id: Customer.id,
-                name: Customer.name,
-                username: Customer.username,
-                email: Customer.email,
-                profileImage: Customer.avatarPath
+                id: User.id,
+                name: User.name,
+                username: User.username,
+                email: User.email,
+                profileImage: User.avatarPath
             }, accessToken: token, refrashToken
         });
     }
@@ -104,5 +103,4 @@ module.exports = {
     signUp,
     logOut,
     logIn,
-
 }
