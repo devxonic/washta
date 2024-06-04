@@ -13,4 +13,9 @@ router.patch('/securitySetting' , middlewares.verifyCustomer,  CustomerControlle
 router.get('/privacySetting' , middlewares.verifyCustomer,  CustomerControllers.getPrivacySetting)
 router.patch('/privacySetting' , middlewares.verifyCustomer,  CustomerControllers.updatePrivacySetting)
 
+router.get('/vehicle' , middlewares.verifyCustomer,  CustomerControllers.getVehicles)
+router.post('/vehicle' , middlewares.verifyCustomer,  CustomerControllers.addVehicles)
+router.patch('/vehicle/:id' , middlewares.verifyCustomer,  CustomerControllers.updateVehicles)
+router.delete('/vehicle/:id' , middlewares.verifyCustomer,  CustomerControllers.DeleteVehicle)
+
 module.exports = router 

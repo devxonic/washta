@@ -112,6 +112,57 @@ const getSecuritySetting = async (req, res) => {
 }
 
 
+// ----------------------------------------------- Vehicles -----------------------------------------------------//
+
+
+
+const getVehicles = async (req, res) => {
+    try {
+        let Vehicles = await CustomerFunctions.getVehicles(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const addVehicles = async (req,res) => {
+    try {
+        let Vehicles = await CustomerFunctions.addVehicles(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updateVehicles = async (req, res) => {
+    try {
+        let Vehicles = await CustomerFunctions.updateVehicles(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const DeleteVehicle = async (req, res) => {
+    try {
+        let Vehicles = await CustomerFunctions.deleteVehicle(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
+
 module.exports = {
     getProfile,
     editProfile,
@@ -121,5 +172,8 @@ module.exports = {
     updatePrivacySetting,
     updateSecuritySetting,
     getSecuritySetting,
-
+    getVehicles,
+    addVehicles,
+    updateVehicles,
+    DeleteVehicle,
 }
