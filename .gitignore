@@ -1,14 +1,6 @@
 node_modules
 .env
-temp.txt
 
 /helpers/firebaseconfig.js
 /helpers/webhooks.js
 /helpers/notifications.js
-#--------- new Work ----------
-
-/controllers/Otp.js
-/models/Otp.js
-/Routes/Otp.js
-/Mails
-/helpers/helper.js
