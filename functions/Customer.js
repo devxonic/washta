@@ -1,5 +1,6 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
+const VehiclesModel = require('../models/Vehicles');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -91,6 +92,36 @@ const logout = async (req) => {
 }
 
 
+const getVehicles = async (req) => {
+    let Vehicles = await VehiclesModel.find({ Owner: req.user.id });
+    return Vehicles;
+}
+
+const addVehicles = async (req) => {
+    let { vehicleManufacturer, vehiclePlateNumber, vehicleName, vehicleType } = req.body
+    let newVehicle = VehiclesModel({
+        Owner: req.user.id,
+        vehicleManufacturer,
+        vehiclePlateNumber,
+        vehicleName,
+        vehicleType
+    })
+    let Vehicle = await newVehicle.save();
+    return Vehicle
+}
+
+const updateVehicles = async (req) => {
+    let { id } = req.params
+    let vehicle = await VehiclesModel.findByIdAndUpdate({ _id: id }, { $set: { ...req.body } })
+    return vehicle
+}
+
+const deleteVehicle = async (req) => {
+    let { id } = req.params
+    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id })
+    return vehicle
+}
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -101,59 +132,13 @@ module.exports = {
     editProfile,
     logout,
     updateNotification,
-getNotification,
-updatePrivacy,
-getPrivacy,
-updateSecurity,
-getSecurity,
+    getNotification,
+    updatePrivacy,
+    getPrivacy,
+    updateSecurity,
+    getSecurity,
+    getVehicles,
+    updateVehicles,
+    addVehicles,
+    deleteVehicle
 }
-// // module.exports = {
-// //     signUp, getPlayer, logout, editProfile, getProfile, findPlayer, changePassword, createProfile, bookCourt, updateRefreshToken, updateNotification,
-// //     deactivateAccount,
-// //     joinGame,
-// //     getNotification, updatePrivacy, getPrivacy, updateSecurity, getSecurity, updateImage, getBookingCalendar, getAvailableCourts,
-// //     getFieldDetails, getMyBookings, getCourtsByLocation, getCourtFields,
-// //     getFollowRequests,
-// //     getPlayersLeaderboard,
-// //     acceptFollowRequest,
-// //     getFollowers,
-// //     startAGame,
-// //     featuredCourts,
-// //     followPlayer,
-// //     inviteToGame,
-// //     getGames,
-// //     stripeTest,
-// //     getMyChatRooms,
-// //     getChatHistory,
-// //     getAllGames,
-// // }
-
-
-
-
-// // let result = await courtModel.updateOne(
-// //     { "clubs.timings.timeslots._id": req.body.timeId },
-// //     { "$set": { "clubs.$[i].timings.$[j].timeslots.$[k].isBooked": true } },
-// //     {
-// //         arrayFilters: [
-// //             { "i._id": req.body.clubId },
-// //             { "j.day": req.body.day },
-// //             { "k._id": req.body.timeId }
-// //         ]
-// //     }
-// // )
-// // let timeSlotArr = ['65c24baf7f78a214e21dd61a'];
-// // let result = await courtModel.updateOne(
-// //     { "clubs.timings.timeslots._id": req.body.timeId },
-// //     {
-// //         $push: {
-// //             bookedTimings: {
-// //                 Date: new Date(),
-// //                 timeslots: [timeslotsArr]
-// //             }
-// //         }
-// //     },
-// // )
-// // fetch the timeslots from timeslot id and store them in arrays in order to make the booking timings field
-// // let timings = await courtModel.findOne({ "clubs.timings.timeslots._id": req.body.timeId }, { "clubs.$": 1 });
-// // find from booking model if the booking exists for that specific date
