@@ -12,7 +12,8 @@ app.use(cors());
 
 // api routing
 app.use('/api/auth', require('./Routes/auth'));
-app.use('/api/customer', require('./Routes/auth'));
+app.use('/api/customer', require('./Routes/Customer'));
+app.use('/api/otp', require('./Routes/Otp'));
 
 
 mongoose
