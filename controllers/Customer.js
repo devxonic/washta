@@ -62,7 +62,7 @@ const getNotificationSetting = async (req, res) => {
 const updatePrivacySetting = async (req, res) => {
     try {
 
-        let privacy = await playerFunctions.updatePrivacy(req)
+        let privacy = await CustomerFunctions.updatePrivacy(req)
         return response.resSuccessData(res, "updated");
 
     } catch (error) {
