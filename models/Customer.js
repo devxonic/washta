@@ -8,7 +8,6 @@ const CustomerSchema = new Schema({
     password: {
         type: String,
         required: true,
-        minlength: [7, 'Password must be at least 7 characters long']
     },
     email: { type: String },
     phone: {
