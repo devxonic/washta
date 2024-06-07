@@ -11,13 +11,13 @@ const signUp = async (req) => {
 }
 
 
-const getCustomer = async (req) => {
+const getSeller = async (req) => {
 
     let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
 
     return Customer;
 }
-const findCustomer = async (req) => {
+const findSeller = async (req) => {
     let player = await CustomerModel.findById(req.user.id);
     console.log("asdasdas", req.user.id, player)
     return player;
@@ -126,8 +126,8 @@ module.exports = {
     signUp,
     updateRefreshToken,
     signUpWithGoogle,
-    getCustomer,
-    findCustomer,
+    getSeller,
+    findSeller,
     getProfile,
     editProfile,
     logout,
