@@ -23,7 +23,19 @@ const getUser = async (req, role) => {
         return Seller;
     }
 }
+const MakeUserVerifed = async (req, role) => {
+
+    if (role == "customer") {
+        let Customer = await CustomerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true });
+        return Customer;
+    }
+    if (role == "seller") {
+        let Customer = await SellerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true });
+        return Customer;
+    }
+}
 module.exports = {
     updateRefreshToken,
-    getUser
+    getUser,
+    MakeUserVerifed
 }

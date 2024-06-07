@@ -8,17 +8,22 @@ const bcrypt = require('bcrypt');
 const CustomerModel = require('../models/Customer');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
+const OtpModel = require('../models/Otp');
+const { generate4DigitCode } = require('../helpers/helper');
+const nodemailer = require('nodemailer');
+const path = require('path')
+const ejs = require('ejs')
+
+
 require('dotenv').config();
 
 const signUp = async (req, res) => {
     try {
         let { role, username, email, name, phone, password, car } = req.body
         console.log('siggning user up');
-
         let resObj = {};
 
         if (role == "customer") {
-
             let customerExists = SignupFunctions.getUser(req , role)
             if (!customerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
@@ -55,6 +60,30 @@ const signUp = async (req, res) => {
             }
         }
 
+        const transporter = nodemailer.createTransport({
+            host: process.env.mailerHost,
+            port: process.env.mailerPort,
+            auth: {
+                user: process.env.mailerEmail,
+                pass: process.env.mailerPassword,
+            },
+        });
+        let OTP = generate4DigitCode()
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let transporterRes = await transporter.sendMail({
+            from: process.env.EmailFrom,
+            to: email,
+            subject: "Forget Password",
+            html: Mail,
+        });
+        if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+        let Otp = await new OtpModel({
+            otp: OTP,
+            email: resObj.email,
+            For: "registration"
+        }).save();
+
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
         let refrashToken = jwt.sign({
@@ -76,6 +105,11 @@ const signUp = async (req, res) => {
                 username: resObj.username,
                 email: resObj.email,
                 phone: resObj.phone,
+            },
+            OTP : {
+                email : resObj.email,
+                For : 'registration',
+                message : "Registration OTP Sended On Your Email"
             },
             accessToken: token, refrashToken
         });
