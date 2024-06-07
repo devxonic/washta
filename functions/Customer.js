@@ -1,5 +1,6 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
+const VehiclesModel = require('../models/Vehicles');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -91,6 +92,36 @@ const logout = async (req) => {
 }
 
 
+const getVehicles = async (req) => {
+    let Vehicles = await VehiclesModel.find({ Owner: req.user.id });
+    return Vehicles;
+}
+
+const addVehicles = async (req) => {
+    let { vehicleManufacturer, vehiclePlateNumber, vehicleName, vehicleType } = req.body
+    let newVehicle = VehiclesModel({
+        Owner: req.user.id,
+        vehicleManufacturer,
+        vehiclePlateNumber,
+        vehicleName,
+        vehicleType
+    })
+    let Vehicle = await newVehicle.save();
+    return Vehicle
+}
+
+const updateVehicles = async (req) => {
+    let { id } = req.params
+    let vehicle = await VehiclesModel.findByIdAndUpdate({ _id: id }, { $set: { ...req.body } })
+    return vehicle
+}
+
+const deleteVehicle = async (req) => {
+    let { id } = req.params
+    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id })
+    return vehicle
+}
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -106,4 +137,8 @@ module.exports = {
     getPrivacy,
     updateSecurity,
     getSecurity,
+    getVehicles,
+    updateVehicles,
+    addVehicles,
+    deleteVehicle
 }
