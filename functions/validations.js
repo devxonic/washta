@@ -1,24 +1,48 @@
 const CustomerModel = require('../models/Customer');
+const SellerModel = require('../models/seller');
 const bcrypt = require('bcrypt');
 
-const validateEmailUsername = async (req) => {
+const validateEmailUsername = async (req, role) => {
     console.log(req.body.username, req.body.email);
-    let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
-    if (existing) return true;
-    return false;
+    if (role == "customer") {
+        let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        if (existing) return true;
+        return false;
+    }
+    if (role == "seller") {
+        let existing = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        if (existing) return true;
+        return false;
+    }
 }
-const validateUserExitsByEmail = async (req) => {
+const validateUserExitsByEmail = async (req, role) => {
     console.log(req.body.email);
-    let existing = await CustomerModel.findOne({ email: req.body.email });
-    if (existing) return true;
-    return false;
+
+    if (role == "customer") {
+        let existing = await CustomerModel.findOne({ email: req.body.email });
+        if (existing) return true;
+        return false;
+    }
+    if (role == "seller") {
+        let existing = await SellerModel.findOne({ email: req.body.email });
+        if (existing) return true;
+        return false;
+    }
 }
 
-const validateEmailUsernameSignUp = async (req) => {
+const validateEmailUsernameSignUp = async (req, role) => {
     console.log(req.body.username, req.body.email);
-    let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
-    if (existing) return true;
-    return false;
+
+    if (role == "customer") {
+        let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        if (existing) return true;
+        return false;
+    }
+    if (role == "seller") {
+        let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        if (existing) return true;
+        return false;
+    }
 }
 
 const verifyPassword = async (password, hash) => {

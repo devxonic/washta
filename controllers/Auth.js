@@ -1,58 +1,84 @@
 
 const CustomerFunctions = require('../functions/Customer');
+const SignupFunctions = require('../functions/auth');
 const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const CustomerModel = require('../models/Customer');
 const VehiclesModel = require('../models/Vehicles');
+const SellerModel = require('../models/seller');
 require('dotenv').config();
 
 const signUp = async (req, res) => {
     try {
         let { role, username, email, name, phone, password, car } = req.body
         console.log('siggning user up');
-        
-        let customerExists = await CustomerModel.findOne({ $or: [{ username: username }, { email: email }] })
-        if (customerExists) return response.resBadRequest(res, "username or email already exists");
-        console.log('18 --- ');
-        let hash = await bcrypt.hash(password, 10);
-        let customerBody = { username, name, email, phone, password : hash }
-        let newCustomer = new CustomerModel(customerBody)
-        let savedCustomer = await newCustomer.save()
-        console.log(savedCustomer)
-        console.log('23 --- ');
-        if (savedCustomer) {
-            let newVehicle = new VehiclesModel({
-                Owner: savedCustomer._id, ...car
-            })
-            let savedVehicle = await newVehicle.save()
-            if (savedVehicle) {
-                let refrashToken = jwt.sign({
-                    id: savedCustomer.id,
-                    email: savedCustomer.email,
-                    username: savedCustomer.username
-                }, process.env.customerToken, { expiresIn: '30 days' })
 
-                await CustomerFunctions.updateRefreshToken(req, refrashToken)
-                let token = jwt.sign({
-                    id: savedCustomer.id,
-                    email: savedCustomer.email,
-                    username: savedCustomer.username
-                }, process.env.customerToken, { expiresIn: '7d' })
+        let resObj = {};
 
-                return response.resSuccessData(res, {
-                    user: {
-                        name: savedCustomer.name,
-                        username: savedCustomer.username,
-                        email: savedCustomer.email
-                    },
-                    car: { ...savedVehicle._doc },
-                    accessToken: token, refrashToken
-                });
+        if (role == "customer") {
+
+            let customerExists = SignupFunctions.getUser(req , role)
+            if (!customerExists) return response.resBadRequest(res, "username or email already exists");
+            let hash = await bcrypt.hash(password, 10);
+            let customerBody = { username, name, email, phone, password: hash }
+            let newCustomer = new CustomerModel(customerBody)
+            let savedCustomer = await newCustomer.save()
+
+            if (!savedCustomer) return response.resBadRequest(res, "There is some error on save Customer");
+            let newVehicle = await new VehiclesModel({ Owner: savedCustomer._id, ...car }).save()
+            if (!newVehicle) return response.resBadRequest(res, "There is some error on save Car");
+            resObj = {
+                id: savedCustomer._id,
+                username: savedCustomer.username,
+                email: savedCustomer.email,
+                phone: savedCustomer.phone,
+                name: savedCustomer.name,
             }
-
         }
+        if (role == "seller") {
+            let SellerExists = SignupFunctions.getUser(req , role)
+            if (!SellerExists) return response.resBadRequest(res, "username or email already exists");
+            let hash = await bcrypt.hash(password, 10);
+            let SellerBody = { username, name, email, phone, password: hash }
+            let newSeller = new SellerModel(SellerBody)
+            let savedSeller = await newSeller.save()
+            if (!savedSeller) return response.resBadRequest(res, "There is some error on save Customer");
+
+            resObj = {
+                id: savedSeller._id,
+                username: savedSeller.username,
+                email: savedSeller.email,
+                phone: savedSeller.phone,
+                name: savedSeller.name,
+            }
+        }
+
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
+        let refrashToken = jwt.sign({
+            id: resObj.id,
+            email: resObj.email,
+            username: resObj.username
+        }, selectEnv, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+        let token = jwt.sign({
+            id: resObj.id,
+            email: resObj.email,
+            username: resObj.username
+        }, selectEnv, { expiresIn: '7d' })
+
+        return response.resSuccessData(res, {
+            user: {
+                id: resObj.id,
+                username: resObj.username,
+                email: resObj.email,
+                phone: resObj.phone,
+            },
+            accessToken: token, refrashToken
+        });
 
     }
     catch (error) {
@@ -66,31 +92,29 @@ const signUp = async (req, res) => {
 
 const logIn = async (req, res) => {
     try {
-        let User;
-        if (req.body.type === "google") {
-            User = await CustomerFunctions.signUpWithGoogle(req)
-            console.log('Customers', User)
-        }
-        else {
-            if (!await validationFunctions.validateEmailUsername(req)) return response.resBadRequest(res, "couldn't find user");
-            Customer = await CustomerFunctions.getCustomer(req);
-            console.log('Customers', Customer)
-            // if (! await validationFunctions.verifyPassword(req.body.password, Customer.password)) return response.resAuthenticate(res, "one or more details are incorrect");
-            // if(!player.isActive) {return response.resAuthenticate(res, "your account has been disabled / deactivated")}
-        }
+        let { role, password } = req.body
+
+        User = await SignupFunctions.getUser(req, role);
+        if (!User) return response.resBadRequest(res, "couldn't find user");
+        if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
+
         let refrashToken = jwt.sign({
             id: User.id,
             email: User.email,
             username: User.username
-        }, process.env.customerToken, { expiresIn: '30 days' })
+        }, selectEnv, { expiresIn: '30 days' })
 
-        await CustomerFunctions.updateRefreshToken(req, refrashToken)
+        await SignupFunctions.updateRefreshToken(req, refrashToken , role)
 
         let token = jwt.sign({
             id: User.id,
             email: User.email,
             username: User.username
-        }, process.env.customerToken, { expiresIn: '7d' })
+        }, selectEnv , { expiresIn: '7d' })
+
 
         return response.resSuccessData(res, {
             user: {
@@ -125,4 +149,5 @@ module.exports = {
     signUp,
     logOut,
     logIn,
+
 }

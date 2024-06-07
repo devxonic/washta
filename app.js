@@ -14,7 +14,7 @@ app.use(cors());
 app.use('/api/auth', require('./Routes/auth'));
 app.use('/api/customer', require('./Routes/Customer'));
 app.use('/api/otp', require('./Routes/Otp'));
-
+app.use('/api/seller', require('./Routes/Seller'));
 
 mongoose
     .connect(process.env.dburi)
