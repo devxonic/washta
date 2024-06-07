@@ -12,7 +12,7 @@ const otpSchema = new mongoose.Schema({
   },
   For : {
     type : String,
-    enum : ["verification" , "forgetPassword"]
+    enum : ["registration" , "forgetPassword"]
   },
   createdAt: {
     type: Date,
