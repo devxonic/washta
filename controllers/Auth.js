@@ -24,7 +24,7 @@ const signUp = async (req, res) => {
         let resObj = {};
 
         if (role == "customer") {
-            let customerExists = SignupFunctions.getUser(req , role)
+            let customerExists = await SignupFunctions.getUser(req , role)
             if (!customerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let customerBody = { username, name, email, phone, password: hash }
@@ -43,7 +43,7 @@ const signUp = async (req, res) => {
             }
         }
         if (role == "seller") {
-            let SellerExists = SignupFunctions.getUser(req , role)
+            let SellerExists = await SignupFunctions.getUser(req , role)
             if (!SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let SellerBody = { username, name, email, phone, password: hash }
