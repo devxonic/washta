@@ -24,8 +24,8 @@ const signUp = async (req, res) => {
         let resObj = {};
 
         if (role == "customer") {
-            let customerExists = await SignupFunctions.getUser(req , role)
-            if (!customerExists) return response.resBadRequest(res, "username or email already exists");
+            let customerExists = await SignupFunctions.getUser(req, role)
+            if (customerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let customerBody = { username, name, email, phone, password: hash }
             let newCustomer = new CustomerModel(customerBody)
@@ -43,8 +43,8 @@ const signUp = async (req, res) => {
             }
         }
         if (role == "seller") {
-            let SellerExists = await SignupFunctions.getUser(req , role)
-            if (!SellerExists) return response.resBadRequest(res, "username or email already exists");
+            let SellerExists = await SignupFunctions.getUser(req, role)
+            if (SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let SellerBody = { username, name, email, phone, password: hash }
             let newSeller = new SellerModel(SellerBody)
@@ -106,10 +106,10 @@ const signUp = async (req, res) => {
                 email: resObj.email,
                 phone: resObj.phone,
             },
-            OTP : {
-                email : resObj.email,
-                For : 'registration',
-                message : "Registration OTP Sended On Your Email"
+            OTP: {
+                email: Otp.email,
+                For: Otp.For,
+                message: "Registration OTP Sended On Your Email"
             },
             accessToken: token, refrashToken
         });
@@ -141,13 +141,13 @@ const logIn = async (req, res) => {
             username: User.username
         }, selectEnv, { expiresIn: '30 days' })
 
-        await SignupFunctions.updateRefreshToken(req, refrashToken , role)
+        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
 
         let token = jwt.sign({
             id: User.id,
             email: User.email,
             username: User.username
-        }, selectEnv , { expiresIn: '7d' })
+        }, selectEnv, { expiresIn: '7d' })
 
 
         return response.resSuccessData(res, {
