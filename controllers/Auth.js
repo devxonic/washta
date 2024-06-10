@@ -84,35 +84,12 @@ const signUp = async (req, res) => {
             For: "registration"
         }).save();
 
-        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
-        if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
-        let refrashToken = jwt.sign({
-            id: resObj.id,
-            email: resObj.email,
-            username: resObj.username
-        }, selectEnv, { expiresIn: '30 days' })
-
-        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
-        let token = jwt.sign({
-            id: resObj.id,
-            email: resObj.email,
-            username: resObj.username
-        }, selectEnv, { expiresIn: '7d' })
-
         return response.resSuccessData(res, {
-            user: {
-                id: resObj.id,
-                username: resObj.username,
-                email: resObj.email,
-                phone: resObj.phone,
-            },
-            OTP: {
-                email: Otp.email,
-                For: Otp.For,
-                message: "Registration OTP Sended On Your Email"
-            },
-            accessToken: token, refrashToken
+            email: Otp.email,
+            For: Otp.For,
+            message: "Registration OTP Sended On Your Email"
         });
+
 
     }
     catch (error) {

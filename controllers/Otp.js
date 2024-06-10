@@ -97,11 +97,34 @@ const userVerifiaction = async (req, res) => {
 
         let OTP = await OtpModel.findOne({ $and: [{ email: email }, { otp: code }, { For: "registration" }] })
         if (!OTP) return response.resBadRequest(res, "Invailed payload");
-
         let User = await SignupFunctions.MakeUserVerifed(req, role)
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
 
-        return response.resSuccess(res, "User Successfully Verified")
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
+        let refrashToken = jwt.sign({
+            id: User._id,
+            email: User.email,
+            username: User.username
+        }, selectEnv, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+        let token = jwt.sign({
+            id: User.id,
+            email: User.email,
+            username: User.username
+        }, selectEnv, { expiresIn: '7d' })
+
+        return response.resSuccessData(res, {
+            user: {
+                id: User.id,
+                username: User.username,
+                email: User.email,
+                phone: User.phone,
+            },
+            accessToken: token, refrashToken
+        });
+
 
     } catch (error) {
         console.error(error);
