@@ -24,4 +24,13 @@ router.post('/Business' , middlewares.verifySeller,  SellerControllers.addBusine
 router.patch('/Business' , middlewares.verifySeller,  SellerControllers.updateBusiness)
 
 
+// ----------------------------------------------- Shop -----------------------------------------------------//
+
+router.get('/shop' , middlewares.verifySeller,  SellerControllers.getAllShop)
+router.get('/shop/:id' , middlewares.verifySeller,  SellerControllers.getShopById)
+router.post('/shop' , middlewares.verifySeller,  SellerControllers.addShop)
+router.patch('/shop' , middlewares.verifySeller,  SellerControllers.updateShop)
+router.delete('/shop/:id' , middlewares.verifySeller,  SellerControllers.deleteShop)
+
+
 module.exports = router 

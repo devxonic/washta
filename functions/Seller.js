@@ -1,4 +1,5 @@
 const SellerModel = require('../models/seller');
+const ShopModel = require('../models/shop');
 const bcrypt = require('bcrypt');
 
 const signUp = async (req) => {
@@ -103,7 +104,7 @@ const logout = async (req) => {
 
 const addBusiness = async (req) => {
     try {
-        let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body }})
+        let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body } })
         return Seller
 
     } catch (error) {
@@ -111,6 +112,54 @@ const addBusiness = async (req) => {
         return response.resInternalError(res, error)
     }
 }
+
+// ----------------------------------------------- shops -----------------------------------------------------//
+
+const getAllShop = async (req) => {
+    try {
+        let Shops = await ShopModel.find({ Owner: req.user.id })
+        return Shops
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getShopById = async (req) => {
+    try {
+        let Shop = await ShopModel.findById(req.params.id)
+        return Shop
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const addShop = async (req) => {
+    try {
+        let Shop = await ShopModel({...req.body}).save();
+        return Shop
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteShop = async (req) => {
+    try {
+        let Shop = await ShopModel.findByIdAndDelete(req.params.id)
+        return Shop
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -131,4 +180,8 @@ module.exports = {
     getSecurity,
     addBusiness,
     getSellerByToken,
+    getAllShop,
+    getShopById,
+    addShop,
+    deleteShop,
 }
