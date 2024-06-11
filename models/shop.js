@@ -9,6 +9,7 @@ const shopSchema = new Schema({
     sliderImage: [{ type: String }],
     isActive: { type: Boolean },
     service: { type: String },
+    estimatedServiceTime : {type : String},
     timing: {
         from: { type: String },
         to: { type: String },
@@ -20,7 +21,7 @@ const shopSchema = new Schema({
             longitude: { type: Number }
         },
     },
-    charges: { type: Number }
+    Cost: { type: Number }
 
 })
 
