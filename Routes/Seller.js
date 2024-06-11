@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const CustomerControllers = require('../controllers/Customer');
+const SellerControllers = require('../controllers/Seller');
 const middlewares = require('../middlewares');
 
 
-router.get('/Profile' , middlewares.verifyCustomer,  CustomerControllers.getProfile)
-router.patch('/Profile' , middlewares.verifyCustomer,  CustomerControllers.editProfile)
-router.get('/notificationSetting' , middlewares.verifyCustomer,  CustomerControllers.getNotificationSetting)
-router.patch('/notificationSetting' , middlewares.verifyCustomer,  CustomerControllers.updateNotificationSetting)
-router.get('/securitySetting' , middlewares.verifyCustomer,  CustomerControllers.getSecuritySetting)
-router.patch('/securitySetting' , middlewares.verifyCustomer,  CustomerControllers.updateSecuritySetting)
-router.get('/privacySetting' , middlewares.verifyCustomer,  CustomerControllers.getPrivacySetting)
-router.patch('/privacySetting' , middlewares.verifyCustomer,  CustomerControllers.updatePrivacySetting)
+router.get('/Profile' , middlewares.verifySeller,  SellerControllers.getProfile)
+router.patch('/Profile' , middlewares.verifySeller,  SellerControllers.editProfile)
+router.get('/notificationSetting' , middlewares.verifySeller,  SellerControllers.getNotificationSetting)
+router.patch('/notificationSetting' , middlewares.verifySeller,  SellerControllers.updateNotificationSetting)
+router.get('/securitySetting' , middlewares.verifySeller,  SellerControllers.getSecuritySetting)
+router.patch('/securitySetting' , middlewares.verifySeller,  SellerControllers.updateSecuritySetting)
+router.get('/privacySetting' , middlewares.verifySeller,  SellerControllers.getPrivacySetting)
+router.patch('/privacySetting' , middlewares.verifySeller,  SellerControllers.updatePrivacySetting)
 
 module.exports = router 
