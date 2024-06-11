@@ -15,11 +15,11 @@ const updateRefreshToken = async (req, token, role) => {
 const getUser = async (req, role) => {
 
     if (role == "customer") {
-        let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] });
         return Customer;
     }
     if (role == "seller") {
-        let Seller = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        let Seller = await SellerModel.findOne({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] });
         return Seller;
     }
 }
