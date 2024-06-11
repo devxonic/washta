@@ -16,6 +16,13 @@ const getSeller = async (req) => {
 
     return Seller;
 }
+
+const getSellerByToken = async (req) => {
+
+    let Seller = await SellerModel.findOne({ $or: [{ username: req.user.username }, { email: req.user.email }] });
+
+    return Seller;
+}
 const findSeller = async (req) => {
     let Seller = await SellerModel.findById(req.user.id);
     console.log("asdasdas", req.user.id, Seller)
@@ -91,6 +98,22 @@ const logout = async (req) => {
 }
 
 
+
+// ----------------------------------------------- Business -----------------------------------------------------//
+
+const addBusiness = async (req) => {
+    try {
+        let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body }})
+        return Seller
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -106,4 +129,6 @@ module.exports = {
     getPrivacy,
     updateSecurity,
     getSecurity,
+    addBusiness,
+    getSellerByToken,
 }

@@ -112,6 +112,44 @@ const getSecuritySetting = async (req, res) => {
 }
 
 
+
+// ----------------------------------------------- Business -----------------------------------------------------//
+
+const addBusiness = async (req, res) => {
+    try {
+        let Seller = await SellerFunctions.addBusiness(req)
+        if(!Seller) return response.resBadRequest(res , "couldn't find user")
+        return response.resSuccessData(res, Seller);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getBusiness = async (req, res) => {
+    try {
+        let Seller = await SellerFunctions.getSellerByToken(req)
+        if(!Seller) return response.resBadRequest(res , "couldn't find user")
+        return response.resSuccessData(res, Seller.business);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updateBusiness = async (req, res) => {
+    try {
+        let Seller = await SellerFunctions.addBusiness(req)
+        if(!Seller) return response.resBadRequest(res , "couldn't find user")
+        return response.resSuccessData(res, Seller.business);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
 module.exports = {
     getProfile,
     editProfile,
@@ -121,5 +159,8 @@ module.exports = {
     updatePrivacySetting,
     updateSecuritySetting,
     getSecuritySetting,
+    addBusiness,
+    getBusiness,
+    updateBusiness,
 
 }
