@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 
 const SellerSchema = new Schema({
-    username: { type: String },
-    name: { type: String },
+    username: { type: String , unique: true },
+    fullName: { type: String },
     password: {
         type: String,
         required: true,
