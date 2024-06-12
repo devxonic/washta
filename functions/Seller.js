@@ -1,6 +1,8 @@
 const SellerModel = require('../models/seller');
 const ShopModel = require('../models/shop');
 const bcrypt = require('bcrypt');
+const response = require("../helpers/response");
+const { default: mongoose } = require('mongoose');
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -103,61 +105,39 @@ const logout = async (req) => {
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 const addBusiness = async (req) => {
-    try {
-        let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body } })
-        return Seller
-
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
+    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body } })
+    return Seller
 }
 
 // ----------------------------------------------- shops -----------------------------------------------------//
 
 const getAllShop = async (req) => {
-    try {
-        let Shops = await ShopModel.find({ Owner: req.user.id })
-        return Shops
-
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
+    let Shops = await ShopModel.find({ Owner: req.user.id })
+    return Shops
 }
 
 
 const getShopById = async (req) => {
-    try {
-        let Shop = await ShopModel.findById(req.params.id)
-        return Shop
-
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
+    let Shop = await ShopModel.findById(req.params.id)
+    return Shop
 }
 
 const addShop = async (req) => {
-    try {
-        let Shop = await ShopModel({...req.body}).save();
-        return Shop
+    let Shop = await ShopModel({ ...req.body }).save();
+    return Shop
+}
 
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
+const updateShop = async (req) => {
+    let id = req.params.id
+    console.log(id, "id")
+    let Shop = await ShopModel.findByIdAndUpdate(id, { $set: { ...req.body } })
+    console.log(Shop, "SHOP")
+    return Shop
 }
 
 const deleteShop = async (req) => {
-    try {
-        let Shop = await ShopModel.findByIdAndDelete(req.params.id)
-        return Shop
-
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
+    let Shop = await ShopModel.findByIdAndDelete(req.params.id)
+    return Shop
 }
 
 
@@ -184,4 +164,5 @@ module.exports = {
     getShopById,
     addShop,
     deleteShop,
+    updateShop,
 }

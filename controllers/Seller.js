@@ -185,8 +185,8 @@ const addShop = async (req, res) => {
 }
 const updateShop = async (req, res) => {
     try {
-        let Shop = await SellerFunctions.addBusiness(req)
-        if (!Shop) return response.resBadRequest(res, "couldn't find user")
+        let Shop = await SellerFunctions.updateShop(req)
+        if (!Shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, Shop);
     } catch (error) {
         console.log(error);

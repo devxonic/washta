@@ -8,27 +8,57 @@ const shopSchema = new Schema({
     coverImage: { type: String },
     sliderImage: [{ type: String }],
     isActive: { type: Boolean },
-    service: { type: String },
-    estimatedServiceTime : {type : String},
+    shopDetails: { type: String }, //services
+    estimatedServiceTime: { type: String }, // time Duration
     timing: {
-        from: { type: String },
-        to: { type: String },
+        monday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        tuesday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        wednesday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        thursday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        friday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        saturday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+        sunday: {
+            open: { type: Boolean },
+            from: { type: String },
+            to: { type: String },
+        },
+
     },
     location: {
-        string: { type: String, unique: true },
+        city: { type: String },
+        text: { type: String, unique: true },
         coordinates: {
             latitude: { type: Number },
             longitude: { type: Number }
         },
     },
-    Cost: { type: Number }
-
+    cost: { type: Number }
 })
 
-
-
-// Create a unique index on the coordinates array
-shopSchema.index({ 'location.string': 1 }, { unique: true });
 
 const shopModel = mongoose.model('shop', shopSchema);
 module.exports = shopModel;
