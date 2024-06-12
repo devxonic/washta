@@ -74,7 +74,7 @@ const signUp = async (req, res) => {
         let transporterRes = await transporter.sendMail({
             from: process.env.EmailFrom,
             to: email,
-            subject: "Forget Password",
+            subject: "Verification",
             html: Mail,
         });
         if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
