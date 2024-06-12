@@ -1,5 +1,7 @@
 const CustomerModel = require("../models/Customer")
 const SellerModel = require("../models/seller")
+const bcrypt = require("bcrypt")
+
 
 const updateRefreshToken = async (req, token, role) => {
     if (role == "customer") {
@@ -45,9 +47,22 @@ const MakeUserVerifed = async (req, role) => {
         return Customer;
     }
 }
+
+const resetPassword = async ( email, password, role) => {
+    let hash = await bcrypt.hash(password, 10);
+    if (role == "customer") {
+        let Customer = await CustomerModel.findOneAndUpdate({ email: email }, { password: hash });
+        return Customer;
+    }
+    if (role == "seller") {
+        let Customer = await SellerModel.findOneAndUpdate({ email: email }, { password: hash });
+        return Customer;
+    }
+}
 module.exports = {
     updateRefreshToken,
     getUser,
     MakeUserVerifed,
-    getUserByEmail
+    getUserByEmail,
+    resetPassword
 }
