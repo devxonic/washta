@@ -48,5 +48,6 @@ const MakeUserVerifed = async (req, role) => {
 module.exports = {
     updateRefreshToken,
     getUser,
-    MakeUserVerifed
+    MakeUserVerifed,
+    getUserByEmail
 }
