@@ -13,7 +13,7 @@ const sendOTP = async (req, res) => {
     try {
         let { email, role } = req.body;
         if (!email) return response.resBadRequest(res, "email & role value is Must required");
-        let User = await SignupFunctions.getUser(req, role);
+        let User = await SignupFunctions.getUserByEmail(req, role);
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
 
         const transporter = nodemailer.createTransport({

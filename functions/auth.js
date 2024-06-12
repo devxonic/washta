@@ -26,11 +26,11 @@ const getUser = async (req, role) => {
 const getUserByEmail = async (req, role) => {
 
     if (role == "customer") {
-        let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.email }, { email: req.body.username }] });
+        let Customer = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
         return Customer;
     }
     if (role == "seller") {
-        let Seller = await SellerModel.findOne({ $or: [{ username: req.body.email }, { email: req.body.username }] });
+        let Seller = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
         return Seller;
     }
 }
