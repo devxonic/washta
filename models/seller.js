@@ -18,7 +18,7 @@ const SellerSchema = new Schema({
         VATNumber: { type: String },
         fullName: { type: String },
         position: { type: String },
-        Email: { type: String },
+        email: { type: String },
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },
