@@ -9,8 +9,8 @@ require('dotenv').config()
 
 const getProfile = async (req, res) => {
     try {
-        let Customer = await CustomerFunctions.getProfile(req);
-        return response.resSuccessData(res, Customer);
+        let User = await CustomerFunctions.getProfile(req);
+        return response.resSuccessData(res, { ...User.Customer._doc, car: User.car });
     }
     catch (error) {
         console.log(error);
@@ -19,8 +19,8 @@ const getProfile = async (req, res) => {
 }
 const editProfile = async (req, res) => {
     try {
-        let Customer = await CustomerFunctions.editProfile(req);
-        return response.resSuccessData(res, "updated");
+        let User = await CustomerFunctions.editProfile(req);
+        return response.resSuccessData(res, { ...User.Customer, car: User.car });
     }
     catch (error) {
         console.log(error);
@@ -127,7 +127,7 @@ const getVehicles = async (req, res) => {
     }
 }
 
-const addVehicles = async (req,res) => {
+const addVehicles = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.addVehicles(req)
         return response.resSuccessData(res, Vehicles);

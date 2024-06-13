@@ -32,7 +32,7 @@ const signUp = async (req, res) => {
             let savedCustomer = await newCustomer.save()
 
             if (!savedCustomer) return response.resBadRequest(res, "There is some error on save Customer");
-            let newVehicle = await new VehiclesModel({ Owner: savedCustomer._id, ...car }).save()
+            let newVehicle = await new VehiclesModel({ Owner: savedCustomer._id, isSelected: true , ...car }).save()
             if (!newVehicle) return response.resBadRequest(res, "There is some error on save Car");
             resObj = {
                 id: savedCustomer._id,

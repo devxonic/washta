@@ -47,15 +47,33 @@ const signUpWithGoogle = async (req) => {
 }
 
 const editProfile = async (req) => {
-    const { name, phone } = req.body;
-    let customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { name: name, phone: phone } });
-    return customer;
+
+    let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
+        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } });
+    let car = await VehiclesModel.findOneAndUpdate({ _id: req.body.car._id },
+        { $set: { ...req.body.car } });
+
+    let UpdatedRes = { ...Customer._doc }
+    delete UpdatedRes.notification
+    delete UpdatedRes.privacy
+    delete UpdatedRes.security
+
+    console.log(UpdatedRes, "Updated res")
+    console.log(Customer)
+    console.log(car)
+    return { Customer:UpdatedRes, car };
 }
 
 const getProfile = async (req) => {
-    let player = await CustomerModel.findOne({ username: req.user.username }, { password: 0, __v: 0 });
-    return player;
+    let Customer = await CustomerModel.findOne({ username: req.user.username }, {
+        password: 0, __v: 0, notification: 0,
+        privacy: 0,
+        security: 0,
+        createdAt: 0,
+        updatedAt: 0,
+    });
+    let car = await VehiclesModel.findOne({ $and: [{ Owner: Customer._id }, { isSelected: true }] }, { __v: 0 });
+    return { Customer, car };
 }
 
 
