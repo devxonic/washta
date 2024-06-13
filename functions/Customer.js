@@ -61,7 +61,7 @@ const editProfile = async (req) => {
     console.log(UpdatedRes, "Updated res")
     console.log(Customer)
     console.log(car)
-    return { Customer:UpdatedRes, car };
+    return { Customer: UpdatedRes, car };
 }
 
 const getProfile = async (req) => {
@@ -140,6 +140,18 @@ const deleteVehicle = async (req) => {
     return vehicle
 }
 
+const getIsSelected = async (req) => {
+    let Vehicles = await VehiclesModel.findOne({ $and: [{ Owner: req.user.id }, { isSelected: true }] });
+    return Vehicles;
+}
+
+const updateIsSelected = async (req) => {
+    let id = req.body.id
+    let Vehicles = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { isSelected: true }] }, { isSelected: false });
+    let Selected = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { isSelected: true }, { new: true });
+    return Selected;
+}
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -158,5 +170,7 @@ module.exports = {
     getVehicles,
     updateVehicles,
     addVehicles,
-    deleteVehicle
+    deleteVehicle,
+    getIsSelected,
+    updateIsSelected,
 }

@@ -17,5 +17,7 @@ router.get('/vehicle' , middlewares.verifyCustomer,  CustomerControllers.getVehi
 router.post('/vehicle' , middlewares.verifyCustomer,  CustomerControllers.addVehicles)
 router.patch('/vehicle/:id' , middlewares.verifyCustomer,  CustomerControllers.updateVehicles)
 router.delete('/vehicle/:id' , middlewares.verifyCustomer,  CustomerControllers.DeleteVehicle)
+router.get('/Selectcar' , middlewares.verifyCustomer,  CustomerControllers.getIsSelected)
+router.patch('/Selectcar' , middlewares.verifyCustomer,  CustomerControllers.updateIsSelected)
 
 module.exports = router 

@@ -160,6 +160,28 @@ const DeleteVehicle = async (req, res) => {
     }
 }
 
+const getIsSelected = async (req, res) => {
+    try {
+        let Vehicles = await CustomerFunctions.getIsSelected(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const  updateIsSelected = async (req, res) => {
+    try {
+        let Vehicles = await CustomerFunctions.updateIsSelected(req)
+        return response.resSuccessData(res, Vehicles);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -176,4 +198,6 @@ module.exports = {
     addVehicles,
     updateVehicles,
     DeleteVehicle,
+    getIsSelected,
+    updateIsSelected
 }
