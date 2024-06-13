@@ -130,7 +130,7 @@ const addShop = async (req) => {
 const updateShop = async (req) => {
     let id = req.params.id
     console.log(id, "id")
-    let Shop = await ShopModel.findByIdAndUpdate(id, { $set: { ...req.body } })
+    let Shop = await ShopModel.findOneAndUpdate({ _id: id }, { ...req.body }, { new: true })
     console.log(Shop, "SHOP")
     return Shop
 }
