@@ -48,7 +48,7 @@ const signUpWithGoogle = async (req) => {
 const editProfile = async (req) => {
     const { name, phone } = req.body;
     let Seller = await SellerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { name: name, phone: phone } });
+        { $set: { name: name, phone: phone } }, { new: true });
     return Seller;
 }
 

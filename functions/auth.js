@@ -40,11 +40,11 @@ const getUserByEmail = async (req, role) => {
 const MakeUserVerifed = async (req, role) => {
 
     if (role == "customer") {
-        let Customer = await CustomerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true });
+        let Customer = await CustomerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
         return Customer;
     }
     if (role == "seller") {
-        let Customer = await SellerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true });
+        let Customer = await SellerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
         return Customer;
     }
 }
@@ -52,11 +52,11 @@ const MakeUserVerifed = async (req, role) => {
 const resetPassword = async (email, password, role) => {
     let hash = await bcrypt.hash(password, 10);
     if (role == "customer") {
-        let Customer = await CustomerModel.findOneAndUpdate({ email: email }, { password: hash });
+        let Customer = await CustomerModel.findOneAndUpdate({ email: email }, { password: hash }, { new: true });
         return Customer;
     }
     if (role == "seller") {
-        let Customer = await SellerModel.findOneAndUpdate({ email: email }, { password: hash });
+        let Customer = await SellerModel.findOneAndUpdate({ email: email }, { password: hash }, { new: true });
         return Customer;
     }
 }

@@ -50,9 +50,9 @@ const signUpWithGoogle = async (req) => {
 const editProfile = async (req) => {
 
     let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } });
+        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, { new: true });
     let car = await VehiclesModel.findOneAndUpdate({ _id: req.body.car._id },
-        { $set: { ...req.body.car } });
+        { $set: { ...req.body.car } }, { new: true });
 
     let UpdatedRes = { ...Customer._doc }
     delete UpdatedRes.notification
@@ -138,7 +138,7 @@ const addVehicles = async (req) => {
 
 const updateVehicles = async (req) => {
     let { id } = req.params
-    let vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { ...req.body })
+    let vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { ...req.body }, { new: true })
     return vehicle
 }
 
