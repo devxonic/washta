@@ -119,6 +119,7 @@ const getSecuritySetting = async (req, res) => {
 const getVehicles = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.getVehicles(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicle")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {
@@ -130,6 +131,7 @@ const getVehicles = async (req, res) => {
 const addVehicles = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.addVehicles(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicle")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {
@@ -141,6 +143,7 @@ const addVehicles = async (req, res) => {
 const updateVehicles = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.updateVehicles(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicle")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {
@@ -152,6 +155,7 @@ const updateVehicles = async (req, res) => {
 const DeleteVehicle = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.deleteVehicle(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicle")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {
@@ -163,6 +167,7 @@ const DeleteVehicle = async (req, res) => {
 const getIsSelected = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.getIsSelected(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicles")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {
@@ -171,9 +176,10 @@ const getIsSelected = async (req, res) => {
     }
 }
 
-const  updateIsSelected = async (req, res) => {
+const updateIsSelected = async (req, res) => {
     try {
         let Vehicles = await CustomerFunctions.updateIsSelected(req)
+        if (!Vehicles) return response.resBadRequest(res, "couldn't find Vehicles")
         return response.resSuccessData(res, Vehicles);
 
     } catch (error) {

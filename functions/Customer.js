@@ -1,6 +1,7 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
 const VehiclesModel = require('../models/Vehicles');
+const SellerModel = require('../models/seller');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -105,8 +106,15 @@ const getSecurity = async (req) => {
     return player.security;
 }
 const logout = async (req) => {
-    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
-    return player
+    console.log(req.user)
+    if (req.user.role == "customer") {
+        let User = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
+        return User
+    }
+    if (req.user.role == "seller") {
+        let User = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
+        return User
+    }
 }
 
 

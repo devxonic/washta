@@ -10,14 +10,14 @@ const otpSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  For : {
-    type : String,
-    enum : ["registration" , "forgetPassword"]
+  For: {
+    type: String,
+    enum: ["registration", "forgetPassword"]
   },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 1000 
+    expires: 120 // 2 minutes in seconds
   }
 });
 

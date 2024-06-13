@@ -15,7 +15,10 @@ const sendOTP = async (req, res) => {
         let { email, role } = req.body;
         if (!email) return response.resBadRequest(res, "email & role value is Must required");
         let User = await SignupFunctions.getUserByEmail(req, role);
+        let isOTPAlreadySended = await SignupFunctions.isOTPAlreadySended(req);
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
+        if (isOTPAlreadySended) return response.resBadRequest(res, "OTP Already Sended On Your Email");
+
 
         const transporter = nodemailer.createTransport({
             host: process.env.mailerHost,
@@ -74,7 +77,7 @@ const setPassword = async (req, res) => {
         let decoded = jwt.verify(token, process.env.OTPPasswordToken)
         console.log(decoded.email)
         if (!decoded) return response.resUnauthorized(res, "Invailed Token");
-        let customer = await SignupFunctions.resetPassword(decoded.email , newPassword, role);
+        let customer = await SignupFunctions.resetPassword(decoded.email, newPassword, role);
         console.log("", customer)
         if (!customer) return response.resUnauthorized(res, "This Customer doesn't Exist");
         return response.resSuccess(res, "Password Successfully Changed");

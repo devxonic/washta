@@ -1,5 +1,6 @@
 const CustomerModel = require("../models/Customer")
 const SellerModel = require("../models/seller")
+const OtpModel = require("../models/Otp")
 const bcrypt = require("bcrypt")
 
 
@@ -48,7 +49,7 @@ const MakeUserVerifed = async (req, role) => {
     }
 }
 
-const resetPassword = async ( email, password, role) => {
+const resetPassword = async (email, password, role) => {
     let hash = await bcrypt.hash(password, 10);
     if (role == "customer") {
         let Customer = await CustomerModel.findOneAndUpdate({ email: email }, { password: hash });
@@ -59,10 +60,23 @@ const resetPassword = async ( email, password, role) => {
         return Customer;
     }
 }
+
+const isOTPAlreadySended = async (req) => {
+    let OTP = await OtpModel.find({ email: req.body.email })
+    if (OTP.length < 1) return false;
+    let createdAt = new Date(OTP[OTP.length - 1]._doc.createdAt)
+    let currentDate = new Date
+    let isExpire = (currentDate - createdAt) > 120000
+    console.log(isExpire)
+    return !isExpire;
+
+}
+
 module.exports = {
     updateRefreshToken,
     getUser,
     MakeUserVerifed,
     getUserByEmail,
-    resetPassword
+    resetPassword,
+    isOTPAlreadySended
 }
