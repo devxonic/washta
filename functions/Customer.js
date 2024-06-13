@@ -138,7 +138,7 @@ const addVehicles = async (req) => {
 
 const updateVehicles = async (req) => {
     let { id } = req.params
-    let vehicle = await VehiclesModel.findByIdAndUpdate({ _id: id }, { $set: { ...req.body } })
+    let vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { ...req.body })
     return vehicle
 }
 
