@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const shopSchema = new Schema({
     Owner: { type: mongoose.Types.ObjectId, ref: 'seller' },
-    shopName: { type: String, unique: true },
+    shopName: { type: String },
     coverImage: { type: String },
     sliderImage: [{ type: String }],
     isActive: { type: Boolean },
@@ -50,7 +50,7 @@ const shopSchema = new Schema({
     },
     location: {
         city: { type: String },
-        text: { type: String, unique: true },
+        text: { type: String },
         coordinates: {
             latitude: { type: Number },
             longitude: { type: Number }

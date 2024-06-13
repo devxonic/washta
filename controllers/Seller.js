@@ -119,7 +119,7 @@ const addBusiness = async (req, res) => {
     try {
         let Seller = await SellerFunctions.addBusiness(req)
         if (!Seller) return response.resBadRequest(res, "couldn't find user")
-        return response.resSuccessData(res, Seller);
+        return response.resSuccessData(res, Seller._doc.business);
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error)
