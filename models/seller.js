@@ -11,6 +11,16 @@ const SellerSchema = new Schema({
     },
     email: { type: String },
     phone: { type: String },
+    business: {
+        uploadDocument: { type: String },
+        companyName: { type: String },
+        location: { type: String },
+        VATNumber: { type: String },
+        fullName: { type: String },
+        position: { type: String },
+        Email: { type: String },
+    },
+    shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String

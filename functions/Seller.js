@@ -1,5 +1,8 @@
 const SellerModel = require('../models/seller');
+const ShopModel = require('../models/shop');
 const bcrypt = require('bcrypt');
+const response = require("../helpers/response");
+const { default: mongoose } = require('mongoose');
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -13,6 +16,13 @@ const signUp = async (req) => {
 const getSeller = async (req) => {
 
     let Seller = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+
+    return Seller;
+}
+
+const getSellerByToken = async (req) => {
+
+    let Seller = await SellerModel.findOne({ $or: [{ username: req.user.username }, { email: req.user.email }] });
 
     return Seller;
 }
@@ -91,6 +101,48 @@ const logout = async (req) => {
 }
 
 
+
+// ----------------------------------------------- Business -----------------------------------------------------//
+
+const addBusiness = async (req) => {
+    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body } })
+    return Seller
+}
+
+// ----------------------------------------------- shops -----------------------------------------------------//
+
+const getAllShop = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id })
+    return Shops
+}
+
+
+const getShopById = async (req) => {
+    let Shop = await ShopModel.findById(req.params.id)
+    return Shop
+}
+
+const addShop = async (req) => {
+    let Shop = await ShopModel({ ...req.body }).save();
+    return Shop
+}
+
+const updateShop = async (req) => {
+    let id = req.params.id
+    console.log(id, "id")
+    let Shop = await ShopModel.findByIdAndUpdate(id, { $set: { ...req.body } })
+    console.log(Shop, "SHOP")
+    return Shop
+}
+
+const deleteShop = async (req) => {
+    let Shop = await ShopModel.findByIdAndDelete(req.params.id)
+    return Shop
+}
+
+
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -106,4 +158,11 @@ module.exports = {
     getPrivacy,
     updateSecurity,
     getSecurity,
+    addBusiness,
+    getSellerByToken,
+    getAllShop,
+    getShopById,
+    addShop,
+    deleteShop,
+    updateShop,
 }
