@@ -2,6 +2,8 @@ const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
+const shopModel = require('../models/shop');
+const OrderModel = require('../models/Order');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -160,6 +162,36 @@ const updateIsSelected = async (req) => {
     return Selected;
 }
 
+
+// ----------------------------------------------- shop -----------------------------------------------------//
+
+
+const getAllShops = async (req) => {
+    let Shops = await shopModel.find({})
+    return Shops
+}
+
+const getShopById = async (req) => {
+    let Shops = await shopModel.findById(req.params.id)
+    return Shops
+}
+
+// ----------------------------------------------- Bookings -----------------------------------------------------//
+
+const getMyBookings = async (req) => {
+    let Bookings = await OrderModel.find({ customerId: req.user.id })
+    return Bookings
+}
+
+const getMyBookingById = async (req) => {
+    let Bookings = await OrderModel.findById(req.params.id)
+    return Bookings
+}
+
+const createNewBooking = async (req) => {
+    let Bookings = await OrderModel({...req.body}).save();
+    return Bookings
+}
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -181,4 +213,9 @@ module.exports = {
     deleteVehicle,
     getIsSelected,
     updateIsSelected,
+    getAllShops,
+    getShopById,
+    getMyBookings,
+    getMyBookingById,
+    createNewBooking,
 }
