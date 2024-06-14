@@ -123,6 +123,7 @@ const getShopById = async (req) => {
 }
 
 const addShop = async (req) => {
+    req.body.location = { ...req.body.location, type: "Point", coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0] }
     let Shop = await ShopModel({ ...req.body }).save();
     return Shop
 }

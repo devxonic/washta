@@ -216,6 +216,18 @@ const getShopById = async (req, res) => {
     }
 }
 
+const getShopByLocation = async (req, res) => {
+    try {
+        let Shop = await CustomerFunctions.getShopByLocation(req)
+        if (!Shop) return response.resBadRequest(res, "couldn't find shop")
+        return response.resSuccessData(res, Shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 // ----------------------------------------------- Booking -----------------------------------------------------//
 
@@ -273,6 +285,7 @@ module.exports = {
     updateIsSelected,
     getAllShops,
     getShopById,
+    getShopByLocation,
     getMyBookings,
     getMyBookingById,
     createNewBooking,

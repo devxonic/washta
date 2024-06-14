@@ -176,6 +176,24 @@ const getShopById = async (req) => {
     return Shops
 }
 
+const getShopByLocation = async (req) => {
+    console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
+    let Shops = await shopModel.find({
+        location: {
+            $nearSphere:
+            {
+                $geometry: {
+                    type: "Point",
+                    coordinates: [req.query.long, req.query.lat]
+                },
+                $minDistance: 0,
+                $maxDistance: parseFloat(req.query.radius ? req.query.radius : 1000)
+            }
+        }
+    })
+    return Shops
+}
+
 // ----------------------------------------------- Bookings -----------------------------------------------------//
 
 const getMyBookings = async (req) => {
@@ -189,7 +207,7 @@ const getMyBookingById = async (req) => {
 }
 
 const createNewBooking = async (req) => {
-    let Bookings = await OrderModel({...req.body}).save();
+    let Bookings = await OrderModel({ ...req.body }).save();
     return Bookings
 }
 module.exports = {
@@ -218,4 +236,5 @@ module.exports = {
     getMyBookings,
     getMyBookingById,
     createNewBooking,
+    getShopByLocation,
 }

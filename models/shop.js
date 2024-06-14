@@ -2,6 +2,18 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
+const pointSchema = new Schema({
+    type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+    },
+    coordinates: {
+        type: [Number],
+        required: true,
+    },
+});
+
 const shopSchema = new Schema({
     Owner: { type: mongoose.Types.ObjectId, ref: 'seller' },
     shopName: { type: String },
@@ -49,16 +61,16 @@ const shopSchema = new Schema({
 
     },
     location: {
-        city: { type: String },
-        text: { type: String },
-        coordinates: {
-            latitude: { type: Number },
-            longitude: { type: Number }
+        type: pointSchema,
+        default: {
+            type: "Point",
+            coordinates: [0, 0]
         },
+        index: "2dsphere"
     },
     cost: { type: Number }
 })
-
+shopSchema.index({ location: "2dsphere" });
 
 const shopModel = mongoose.model('shop', shopSchema);
 module.exports = shopModel;
