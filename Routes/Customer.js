@@ -35,6 +35,7 @@ router.get('/Shop/:id', middlewares.verifyCustomer, CustomerControllers.getShopB
 router.get('/booking', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
 router.get('/booking/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
 router.post('/booking', middlewares.verifyCustomer, CustomerControllers.createNewBooking)
+router.get('/bookingbyStatus', middlewares.verifyCustomer, CustomerControllers.getbookingbyStatus)
 
 
 module.exports = router 

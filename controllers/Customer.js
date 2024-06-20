@@ -268,6 +268,22 @@ const createNewBooking = async (req, res) => {
     }
 }
 
+
+// ----------------------------------------------- Booking -----------------------------------------------------//
+
+const getbookingbyStatus = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getbookingbyStatus(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 module.exports = {
     getProfile,
     editProfile,
@@ -289,4 +305,5 @@ module.exports = {
     getMyBookings,
     getMyBookingById,
     createNewBooking,
+    getbookingbyStatus,
 }

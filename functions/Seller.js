@@ -1,5 +1,6 @@
 const SellerModel = require('../models/seller');
 const ShopModel = require('../models/shop');
+const OrderModel = require('../models/Order');
 const bcrypt = require('bcrypt');
 const response = require("../helpers/response");
 const { default: mongoose } = require('mongoose');
@@ -140,6 +141,31 @@ const deleteShop = async (req) => {
 }
 
 
+// ----------------------------------------------- order -----------------------------------------------------//
+
+const getAllOrders = async (req) => {
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ shopId: { $in: Shops } })
+    console.log(Order)
+    return Order
+}
+
+
+const getOrderById = async (req) => {
+    let Order = await OrderModel.findById(req.params.id)
+    return Order
+}
+
+
+const orderStatus = async (req) => {
+    let id = req.params.id
+    let Order = await OrderModel.findOneAndUpdate({ _id: id }, { status: req.body.status }, { new: true, fields: { status: 1 } })
+    return Order
+}
+
+
 
 
 module.exports = {
@@ -164,4 +190,7 @@ module.exports = {
     addShop,
     deleteShop,
     updateShop,
+    getAllOrders,
+    getOrderById,
+    orderStatus,
 }

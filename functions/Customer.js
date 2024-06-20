@@ -210,6 +210,11 @@ const createNewBooking = async (req) => {
     let Bookings = await OrderModel({ ...req.body }).save();
     return Bookings
 }
+
+const getbookingbyStatus = async (req) => {
+    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
+    return Bookings
+}
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -237,4 +242,5 @@ module.exports = {
     getMyBookingById,
     createNewBooking,
     getShopByLocation,
+    getbookingbyStatus,
 }
