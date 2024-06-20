@@ -165,6 +165,26 @@ const orderStatus = async (req) => {
     return Order
 }
 
+const getorderbyStatus = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { status: req.query.status }] })
+    return Order
+}
+
+const getpastorder = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }] })
+    return Order
+}
+const getActiveOrder = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { status: "pending" }] })
+    return Order
+}
+
 
 
 
@@ -193,4 +213,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getorderbyStatus,
+    getpastorder,
+    getActiveOrder
 }
