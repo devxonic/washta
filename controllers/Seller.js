@@ -205,6 +205,44 @@ const deleteShop = async (req, res) => {
 }
 
 
+
+// ----------------------------------------------- Shop -----------------------------------------------------//
+
+const getAllOrders = async (req, res) => {
+    try {
+        let Orders = await SellerFunctions.getAllOrders(req)
+        if (!Orders) return response.resBadRequest(res, "couldn't find any Order")
+        return response.resSuccessData(res, Orders);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getOrderById = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getOrderById(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order on this ID")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const orderStatus = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.orderStatus(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 module.exports = {
     getProfile,
     editProfile,
@@ -222,5 +260,7 @@ module.exports = {
     addShop,
     updateShop,
     deleteShop,
-
+    getAllOrders,
+    getOrderById,
+    orderStatus,
 }

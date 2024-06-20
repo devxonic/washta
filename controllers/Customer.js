@@ -189,6 +189,99 @@ const updateIsSelected = async (req, res) => {
 }
 
 
+// ----------------------------------------------- shop -----------------------------------------------------//
+
+
+const getAllShops = async (req, res) => {
+    try {
+        let shop = await CustomerFunctions.getAllShops(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getShopById = async (req, res) => {
+    try {
+        let Shop = await CustomerFunctions.getShopById(req)
+        if (!Shop) return response.resBadRequest(res, "couldn't find shop")
+        return response.resSuccessData(res, Shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getShopByLocation = async (req, res) => {
+    try {
+        let Shop = await CustomerFunctions.getShopByLocation(req)
+        if (!Shop) return response.resBadRequest(res, "couldn't find shop")
+        return response.resSuccessData(res, Shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- Booking -----------------------------------------------------//
+
+
+const getMyBookings = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getMyBookings(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getMyBookingById = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getMyBookingById(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const createNewBooking = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createNewBooking(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- Booking -----------------------------------------------------//
+
+const getbookingbyStatus = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getbookingbyStatus(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 
 module.exports = {
@@ -205,5 +298,12 @@ module.exports = {
     updateVehicles,
     DeleteVehicle,
     getIsSelected,
-    updateIsSelected
+    updateIsSelected,
+    getAllShops,
+    getShopById,
+    getShopByLocation,
+    getMyBookings,
+    getMyBookingById,
+    createNewBooking,
+    getbookingbyStatus,
 }

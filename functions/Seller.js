@@ -1,5 +1,6 @@
 const SellerModel = require('../models/seller');
 const ShopModel = require('../models/shop');
+const OrderModel = require('../models/Order');
 const bcrypt = require('bcrypt');
 const response = require("../helpers/response");
 const { default: mongoose } = require('mongoose');
@@ -123,6 +124,7 @@ const getShopById = async (req) => {
 }
 
 const addShop = async (req) => {
+    req.body.location = { ...req.body.location, type: "Point", coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0] }
     let Shop = await ShopModel({ ...req.body }).save();
     return Shop
 }
@@ -136,6 +138,31 @@ const updateShop = async (req) => {
 const deleteShop = async (req) => {
     let Shop = await ShopModel.findByIdAndDelete(req.params.id)
     return Shop
+}
+
+
+// ----------------------------------------------- order -----------------------------------------------------//
+
+const getAllOrders = async (req) => {
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ shopId: { $in: Shops } })
+    console.log(Order)
+    return Order
+}
+
+
+const getOrderById = async (req) => {
+    let Order = await OrderModel.findById(req.params.id)
+    return Order
+}
+
+
+const orderStatus = async (req) => {
+    let id = req.params.id
+    let Order = await OrderModel.findOneAndUpdate({ _id: id }, { status: req.body.status }, { new: true, fields: { status: 1 } })
+    return Order
 }
 
 
@@ -163,4 +190,7 @@ module.exports = {
     addShop,
     deleteShop,
     updateShop,
+    getAllOrders,
+    getOrderById,
+    orderStatus,
 }

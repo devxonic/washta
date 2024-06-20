@@ -32,5 +32,12 @@ router.post('/shop' , middlewares.verifySeller,  SellerControllers.addShop)
 router.patch('/shop/:id' , middlewares.verifySeller,  SellerControllers.updateShop)
 router.delete('/shop/:id' , middlewares.verifySeller,  SellerControllers.deleteShop)
 
+// ----------------------------------------------- Orders -----------------------------------------------------//
+
+router.get('/order' , middlewares.verifySeller,  SellerControllers.getAllOrders)
+router.get('/order/:id' , middlewares.verifySeller,  SellerControllers.getOrderById)
+router.patch('/orderStatus/:id' , middlewares.verifySeller,  SellerControllers.orderStatus)
+
+
 
 module.exports = router 
