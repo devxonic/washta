@@ -243,6 +243,38 @@ const orderStatus = async (req, res) => {
     }
 }
 
+const getorderbyStatus = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getorderbyStatus(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getpastorder = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getpastorder(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getActiveOrder = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getActiveOrder(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 module.exports = {
     getProfile,
     editProfile,
@@ -263,4 +295,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getorderbyStatus,
+    getpastorder,
+    getActiveOrder,
 }
