@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 
 const SellerSchema = new Schema({
-    username: { type: String , unique: true },
+    username: { type: String, unique: true },
     fullName: { type: String },
     password: {
         type: String,
@@ -19,6 +19,8 @@ const SellerSchema = new Schema({
         fullName: { type: String },
         position: { type: String },
         email: { type: String },
+        status: { type: String, enum: ["approved", "pending", "rejected"], defualt: "pending" },
+        isApproved: { type: Boolean }
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },
