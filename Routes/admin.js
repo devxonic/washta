@@ -11,12 +11,20 @@ router.post('/Signup', AuthController.AdminSignUp)
 router.post('/login', AuthController.AdminlogIn)
 // router.post('/logOut' , AuthController.logOut)
 
-// ----------------------------------------------- Auth -----------------------------------------------------//
+// ----------------------------------------------- Business -----------------------------------------------------//
 
 router.get('/businessBystatus', AdminController.getBusinessbyStatus)
 router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
 router.patch('/businessApprove/:id' , AdminController.businessApprove)
 router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
+
+// ----------------------------------------------- Job History -----------------------------------------------------//
+
+router.get('/JobHistory', AdminController.JobHistory)
+// router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
+// router.patch('/businessApprove/:id' , AdminController.businessApprove)
+// router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
+
 
 
 module.exports = router 

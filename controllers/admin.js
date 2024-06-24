@@ -60,6 +60,22 @@ const businessTerminate = async (req, res) => {
 }
 
 
+// ----------------------------------------------- Job History -----------------------------------------------------//
+
+
+const JobHistory = async (req, res) => {
+    try {
+        let business = await AdminFunctions.JobHistory(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 
 
@@ -67,5 +83,6 @@ module.exports = {
     getBusinessbyStatus,
     updateStatus,
     businessApprove,
-    businessTerminate
+    businessTerminate,
+    CustomerJobHistory
 }
