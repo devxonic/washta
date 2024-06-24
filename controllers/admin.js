@@ -21,7 +21,6 @@ const getBusinessbyStatus = async (req, res) => {
 
 
 
-
 const updateStatus = async (req, res) => {
     try {
         let business = await AdminFunctions.updateStatus(req)
