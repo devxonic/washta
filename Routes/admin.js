@@ -15,6 +15,8 @@ router.post('/login', AuthController.AdminlogIn)
 
 router.get('/businessBystatus', AdminController.getBusinessbyStatus)
 router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
+router.patch('/businessApprove/:id' , AdminController.businessApprove)
+router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
 
 
 module.exports = router 
