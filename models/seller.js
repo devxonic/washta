@@ -20,7 +20,7 @@ const SellerSchema = new Schema({
         position: { type: String },
         email: { type: String },
         status: { type: String, enum: ["approved", "pending", "rejected"], defualt: "pending" },
-        isApproved: { type: Boolean }
+        isApproved: { type: Boolean , defualt  : false }
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },

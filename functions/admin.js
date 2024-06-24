@@ -30,7 +30,21 @@ const updateStatus = async (req) => {
     return Business
 }
 
+const businessApprove = async (req) => {
+    let id = req.params.id
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    return Business
+}
+
+const businessTerminate = async (req) => {
+    let id = req.params.id
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    return Business
+}
+
 module.exports = {
     getBusinessbyStatus,
-    updateStatus
+    updateStatus,
+    businessApprove,
+    businessTerminate
 }
