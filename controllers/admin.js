@@ -84,5 +84,5 @@ module.exports = {
     updateStatus,
     businessApprove,
     businessTerminate,
-    CustomerJobHistory
+    JobHistory
 }
