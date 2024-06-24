@@ -26,5 +26,8 @@ router.get('/JobHistory', AdminController.JobHistory)
 // router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
 
 
+// ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
+
+router.get('/TopCustomers', AdminController.getTopCustomer)
 
 module.exports = router 

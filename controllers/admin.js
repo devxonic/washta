@@ -76,6 +76,20 @@ const JobHistory = async (req, res) => {
 }
 
 
+// ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
+
+const getTopCustomer = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getTopCustomer(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -84,5 +98,6 @@ module.exports = {
     updateStatus,
     businessApprove,
     businessTerminate,
-    JobHistory
+    JobHistory,
+    getTopCustomer
 }

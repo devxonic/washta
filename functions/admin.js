@@ -53,11 +53,22 @@ const JobHistory = async (req) => {
     return Business
 }
 
+// ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
+
+const getTopCustomer = async (req) => {
+    let Order = await OrderModel.find({}).populate([{ path: "shopId", select: "-timing" }, {
+        path: "customerId", select: ["-privacy", "-password", "-createdAt", "-updatedAt", "-__v"]
+    }, { path: "vehicleId" }])
+    console.log(Order)
+    return Order
+}
+
 
 module.exports = {
     getBusinessbyStatus,
     updateStatus,
     businessApprove,
     businessTerminate,
-    JobHistory
+    JobHistory,
+    getTopCustomer
 }
