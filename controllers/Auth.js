@@ -107,6 +107,11 @@ const logIn = async (req, res) => {
         let { role, password } = req.body
 
         let User = await SignupFunctions.getUser(req, role);
+        if(!User._doc.isVerifed) return res.send({
+            status: false,
+            code: 200,
+            message: "un Verifed user , Please Verify your Email with OTP",
+        })
         if (role == "seller" && User._doc.business.status != "approved") return res.send({
             status: false,
             code: 200,
