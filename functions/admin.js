@@ -4,6 +4,7 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const helper = require('../helpers/helper');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -56,11 +57,23 @@ const JobHistory = async (req) => {
 // ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
 
 const getTopCustomer = async (req) => {
-    let Order = await OrderModel.find({}).populate([{ path: "shopId", select: "-timing" }, {
-        path: "customerId", select: ["-privacy", "-password", "-createdAt", "-updatedAt", "-__v"]
-    }, { path: "vehicleId" }])
+    let Order = await OrderModel.find({})
+    let Customer = await CustomerModel.find({})
+    // console.log(Order)
+    // console.log("query ------------", req.query.limit)
+
+    let sortedData = helper.getTopCustomersBySpending(Order, Customer, req.query.limit)
+    return sortedData
+}
+
+
+const getTopCompanies = async (req) => {
+    let Order = await OrderModel.find({})
     console.log(Order)
-    return Order
+    console.log("query ------------", req.query.limit)
+
+    let sortedData = helper.getTopCustomersBySpending(Order, req.query.limit)
+    return sortedData
 }
 
 
@@ -70,5 +83,6 @@ module.exports = {
     businessApprove,
     businessTerminate,
     JobHistory,
-    getTopCustomer
+    getTopCustomer,
+    getTopCompanies
 }

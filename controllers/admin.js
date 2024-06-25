@@ -91,6 +91,19 @@ const getTopCustomer = async (req, res) => {
 }
 
 
+const getTopCompanies = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getTopCompanies(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 
 module.exports = {
@@ -99,5 +112,6 @@ module.exports = {
     businessApprove,
     businessTerminate,
     JobHistory,
-    getTopCustomer
+    getTopCustomer,
+    getTopCompanies
 }
