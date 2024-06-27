@@ -50,7 +50,6 @@ const JobHistory = async (req) => {
     let Business = await OrderModel.find({}).populate([{ path: "shopId", select: "-timing" }, {
         path: "customerId", select: ["-privacy", "-password", "-createdAt", "-updatedAt", "-__v"]
     }, { path: "vehicleId" }])
-    console.log(Business)
     return Business
 }
 
@@ -77,6 +76,27 @@ const getTopCompanies = async (req) => {
 }
 
 
+// ----------------------------------------------- Shop -----------------------------------------------------//
+
+const getShop = async (req) => {
+    let Shop = await OrderModel.find({})
+    return Shop
+}
+
+const getShopbyid = async (req) => {
+    let id = req.params.id
+    let Shop = await OrderModel.findById(id)
+    return Shop
+}
+
+
+const UpdateShopbyAmdin = async (req) => {
+    let id = req.params.id
+    let { location, coverdAreaRaduis, service, cost } = req.body
+    let Shop = await OrderModel.findByIdAndUpdate(id, { location, coverdAreaRaduis, service, cost }, { new: true })
+    return Shop
+}
+
 module.exports = {
     getBusinessbyStatus,
     updateStatus,
@@ -84,5 +104,9 @@ module.exports = {
     businessTerminate,
     JobHistory,
     getTopCustomer,
-    getTopCompanies
+    getTopCompanies,
+    UpdateShopbyAmdin,
+    getShop,
+    getShopbyid
+
 }

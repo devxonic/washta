@@ -28,7 +28,15 @@ router.get('/JobHistory', AdminController.JobHistory)
 
 // ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
 
-router.get('/TopCustomers', AdminController.getTopCustomer)
-router.get('/TopCustomers', AdminController.getTopCompanies)
+// router.get('/TopCustomers', AdminController.getTopCustomer)
+// router.get('/TopCustomers', AdminController.getTopCompanies)
+
+// ----------------------------------------------- Shop  -----------------------------------------------------//
+
+router.get('/shop', AdminController.getShop)
+router.get('/shop/:id', AdminController.getTopCustomer)
+router.get('/shop/:id', AdminController.getTopCompanies)
+
+
 
 module.exports = router 

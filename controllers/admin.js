@@ -104,6 +104,33 @@ const getTopCompanies = async (req, res) => {
 }
 
 
+// ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
+
+
+const getShop = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShop(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getShopbyid = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopbyid(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 module.exports = {
@@ -113,5 +140,7 @@ module.exports = {
     businessTerminate,
     JobHistory,
     getTopCustomer,
-    getTopCompanies
+    getTopCompanies,
+    getShopbyid,
+    getShop
 }
