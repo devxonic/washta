@@ -35,7 +35,7 @@ router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 
 router.get('/shop', middlewares.verifyAdmin, AdminController.getShop)
 router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
-router.get('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
+router.patch('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
 
 
 
