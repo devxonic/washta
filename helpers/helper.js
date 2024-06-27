@@ -15,40 +15,43 @@ function getTopCustomersBySpending(ordersList, customerList, limit) {
 
 
 
-    console.log("CustomerList ----------------- ", customerList)
+    // console.log("CustomerList ----------------- ", customerList)
     ordersList.forEach(order => {
         const { customerId, cost } = order;
 
-        // for (let i = 0; i < customerList.length; i++) {
-        if (!customerOrders[customerId]) {
-            let SelectedCustomer = customerList.filter((x) => {
-                if (x._id.toString() == customerId.toString()) { return x }
-            })[0]
-            if (SelectedCustomer) {
-                customerOrders[customerId] = {
-                    ...SelectedCustomer,
-                    totalSpent: parseInt(cost)
+        let SelectedCustomer = customerList.map((x) => {
+            console.log("customer --------------- ", x._id.toString() == customerId.toString())
+            console.log("cost  --------------- ",  parseInt(cost))
+            if (x._id.toString() == customerId.toString()) {
+                if (!customerOrders[customerId]) {
+                    customerOrders[customerId] = {
+                        ...x._doc,
+                        totalSpent: parseInt(cost)
+                    }
                 }
                 customerOrders[customerId].totalSpent += parseInt(cost);
+                return customerOrders
             }
-        }
-    });
-
-    console.log("customerOrders ----------------- ", customerOrders)
-
-    const sortedCustomers = Object.values(customerOrders).sort((a, b) => b.totalSpent - a.totalSpent);
-
-    let result = sortedCustomers.map(customer => {
-        console.log("customer ------------- ",customer)
-        return {
-            ...customer._doc,
-            totalSpent: customer.totalSpent.toString()
-        };
+        })
+        console.log(" -------------------------------------------------------------------------------------- ",SelectedCustomer)
     });
 
 
+    console.log
 
-    if (!limit) return result
+    const result = Object.values(customerOrders).sort((a, b) => b.totalSpent - a.totalSpent);
+
+    // let result = sortedCustomers.map(customer => {
+    //     console.log("customer ------------- ", customer)
+    //     return {
+    //         ...customer._doc,
+    //         totalSpent: customer.totalSpent.toString()
+    //     };
+    // });
+
+
+
+    if (!limit) return customerOrders
     return result.slice(0, limit);
 }
 
