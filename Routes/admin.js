@@ -34,8 +34,8 @@ router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
 router.get('/shop', middlewares.verifyAdmin, AdminController.getShop)
-router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getTopCustomer)
-router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getTopCompanies)
+router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
+router.get('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
 
 
 

@@ -79,13 +79,13 @@ const getTopCompanies = async (req) => {
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
 const getShop = async (req) => {
-    let Shop = await OrderModel.find({})
+    let Shop = await shopModel.find({})
     return Shop
 }
 
 const getShopbyid = async (req) => {
     let id = req.params.id
-    let Shop = await OrderModel.findById(id)
+    let Shop = await shopModel.findById(id)
     return Shop
 }
 
@@ -93,7 +93,7 @@ const getShopbyid = async (req) => {
 const UpdateShopbyAmdin = async (req) => {
     let id = req.params.id
     let { location, coverdAreaRaduis, service, cost } = req.body
-    let Shop = await OrderModel.findByIdAndUpdate(id, { location, coverdAreaRaduis, service, cost }, { new: true })
+    let Shop = await shopModel.findByIdAndUpdate(id, { location, coverdAreaRaduis, service, cost }, { new: true })
     return Shop
 }
 

@@ -104,13 +104,13 @@ const getTopCompanies = async (req, res) => {
 }
 
 
-// ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
+// ----------------------------------------------- shop -----------------------------------------------------//
 
 
 const getShop = async (req, res) => {
     try {
         let shop = await AdminFunctions.getShop(req)
-        if (!shop) return response.resBadRequest(res, "couldn't find Booking")
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, shop);
 
     } catch (error) {
@@ -122,7 +122,19 @@ const getShop = async (req, res) => {
 const getShopbyid = async (req, res) => {
     try {
         let shop = await AdminFunctions.getShopbyid(req)
-        if (!shop) return response.resBadRequest(res, "couldn't find Booking")
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const UpdateShopbyAmdin = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.UpdateShopbyAmdin(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, shop);
 
     } catch (error) {
@@ -142,5 +154,6 @@ module.exports = {
     getTopCustomer,
     getTopCompanies,
     getShopbyid,
-    getShop
+    getShop,
+    UpdateShopbyAmdin
 }
