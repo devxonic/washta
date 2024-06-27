@@ -93,7 +93,17 @@ const getShopbyid = async (req) => {
 const UpdateShopbyAmdin = async (req) => {
     let id = req.params.id
     let { location, coverdAreaRaduis, service, cost } = req.body
-    let Shop = await shopModel.findByIdAndUpdate(id, { "location.String" : location, coverdAreaRaduis, service, cost }, { new: true })
+    let Shop = await shopModel.findByIdAndUpdate(id, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
+    return Shop
+}
+
+const updateShopTiming = async (req) => {
+    let { shopId, timing } = req.body
+    let Shop = await shopModel.updateMany({ _id: { $in: shopId } }, { timing })
+    if (Shop.modifiedCount > 0) {
+        const updatedShop = await shopModel.find({ _id: { $in: shopId } }, { timing: 1 });
+        return updatedShop
+    }
     return Shop
 }
 
@@ -107,6 +117,7 @@ module.exports = {
     getTopCompanies,
     UpdateShopbyAmdin,
     getShop,
-    getShopbyid
+    getShopbyid,
+    updateShopTiming
 
 }

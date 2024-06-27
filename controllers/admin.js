@@ -143,6 +143,18 @@ const UpdateShopbyAmdin = async (req, res) => {
     }
 }
 
+const updateShopTiming = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.updateShopTiming(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 module.exports = {
@@ -155,5 +167,6 @@ module.exports = {
     getTopCompanies,
     getShopbyid,
     getShop,
-    UpdateShopbyAmdin
+    UpdateShopbyAmdin,
+    updateShopTiming
 }
