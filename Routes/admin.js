@@ -13,14 +13,14 @@ router.post('/login', AuthController.AdminlogIn)
 
 // ----------------------------------------------- Business -----------------------------------------------------//
 
-router.get('/businessBystatus', AdminController.getBusinessbyStatus)
-router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
-router.patch('/businessApprove/:id' , AdminController.businessApprove)
-router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
+router.get('/businessBystatus', middlewares.verifyAdmin, AdminController.getBusinessbyStatus)
+router.patch('/businessUpdateStatus/:id', middlewares.verifyAdmin, AdminController.updateStatus)
+router.patch('/businessApprove/:id', middlewares.verifyAdmin, AdminController.businessApprove)
+router.patch('/businessTerminate/:id', middlewares.verifyAdmin, AdminController.businessTerminate)
 
 // ----------------------------------------------- Job History -----------------------------------------------------//
 
-router.get('/JobHistory', AdminController.JobHistory)
+router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 // router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
 // router.patch('/businessApprove/:id' , AdminController.businessApprove)
 // router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
@@ -33,9 +33,9 @@ router.get('/JobHistory', AdminController.JobHistory)
 
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
-router.get('/shop', AdminController.getShop)
-router.get('/shop/:id', AdminController.getTopCustomer)
-router.get('/shop/:id', AdminController.getTopCompanies)
+router.get('/shop', middlewares.verifyAdmin, AdminController.getShop)
+router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getTopCustomer)
+router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getTopCompanies)
 
 
 
