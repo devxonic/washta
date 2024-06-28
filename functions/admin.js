@@ -110,7 +110,37 @@ const updateShopTiming = async (req) => {
 }
 
 
-// ----------------------------------------------- shop -----------------------------------------------------//
+// ----------------------------------------------- Customer -----------------------------------------------------//
+
+const getCustomer = async (req) => {
+    let Customer = await CustomerModel.find({}).populate({
+        path: "vehicle",
+    })
+    return Customer
+}
+
+const getCustomerByid = async (req) => {
+    let id = req.params.id
+    let Customer = await CustomerModel.findById(id).populate({
+        path: "vehicle",
+    })
+    return Customer
+}
+
+
+const updateCustomer = async (req) => {
+    let id = req.params.id
+    let { location, numberPlate, phone, email } = req.body // email is sensitive
+    let Customer = await CustomerModel.findByIdAndUpdate(id, { location, phone, }, { new: true, fields: { location: 1, phone: 1 } })
+    let Vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { isSelected: true }] }, { vehiclePlateNumber: numberPlate, }, { new: true })
+     
+    return { Customer, Vehicle }
+}
+
+
+
+
+// ----------------------------------------------- Service fee -----------------------------------------------------//
 
 const createServiceFee = async (req) => {
     let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
@@ -201,6 +231,9 @@ module.exports = {
     getShop,
     getShopbyid,
     updateShopTiming,
+    getCustomer,
+    getCustomerByid,
+    updateCustomer,
     getserviceFee,
     createServiceFee,
     getserviceFeeById,

@@ -34,6 +34,13 @@ router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
 router.patch('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
 router.patch('/shop', middlewares.verifyAdmin, AdminController.updateShopTiming)
 
+// ----------------------------------------------- Customer  -----------------------------------------------------//
+
+router.get('/customer', middlewares.verifyAdmin, AdminController.getCustomer)
+router.get('/customer/:id', middlewares.verifyAdmin, AdminController.getCustomerByid)
+router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCustomer)
+// router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateShopTiming)
+
 // ----------------------------------------------- Service fee  -----------------------------------------------------//
 
 router.post('/serviceFee', middlewares.verifyAdmin, AdminController.createServiceFee)

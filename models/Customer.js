@@ -13,6 +13,7 @@ const CustomerSchema = new Schema({
     phone: {
         type: String,
     },
+    isTernimated: { type: Boolean },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String

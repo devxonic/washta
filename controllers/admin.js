@@ -154,6 +154,47 @@ const updateShopTiming = async (req, res) => {
     }
 }
 
+
+
+// ----------------------------------------------- customer -----------------------------------------------------//
+
+
+const getCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getCustomerByid = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getCustomerByid(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updateCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.updateCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- service Fee -----------------------------------------------------//
 
 const getserviceFee = async (req, res) => {
@@ -273,6 +314,9 @@ module.exports = {
     getShop,
     UpdateShopbyAmdin,
     updateShopTiming,
+    getCustomer,
+    getCustomerByid,
+    updateCustomer,
     getserviceFee,
     createServiceFee,
     getserviceFeeById,
