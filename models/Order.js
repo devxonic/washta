@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
-    customerId: { type: mongoose.Types.ObjectId, ref: "customer" },
+    customerId: { type: mongoose.Types.ObjectId, ref: "Customer" },
     vehicleId: { type: mongoose.Types.ObjectId, ref: "vehicle" },
     shopId: { type: mongoose.Types.ObjectId, ref: "shop" },
     status: { type: String, enum: ["ongoing", "completed", "pending", "cancelled"], default: "pending" },

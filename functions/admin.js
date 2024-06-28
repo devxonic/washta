@@ -4,6 +4,7 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const helper = require('../helpers/helper');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -42,9 +43,81 @@ const businessTerminate = async (req) => {
     return Business
 }
 
+
+// ----------------------------------------------- Job History -----------------------------------------------------//
+
+const JobHistory = async (req) => {
+    let Business = await OrderModel.find({}).populate([{ path: "shopId", select: "-timing" }, {
+        path: "customerId", select: ["-privacy", "-password", "-createdAt", "-updatedAt", "-__v"]
+    }, { path: "vehicleId" }])
+    return Business
+}
+
+// ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
+
+const getTopCustomer = async (req) => {
+    let Order = await OrderModel.find({})
+    let Customer = await CustomerModel.find({})
+    // console.log(Order)
+    // console.log("query ------------", req.query.limit)
+
+    let sortedData = helper.getTopCustomersBySpending(Order, Customer, req.query.limit)
+    return sortedData
+}
+
+
+const getTopCompanies = async (req) => {
+    let Order = await OrderModel.find({})
+    console.log(Order)
+    console.log("query ------------", req.query.limit)
+
+    let sortedData = helper.getTopCustomersBySpending(Order, req.query.limit)
+    return sortedData
+}
+
+
+// ----------------------------------------------- Shop -----------------------------------------------------//
+
+const getShop = async (req) => {
+    let Shop = await shopModel.find({})
+    return Shop
+}
+
+const getShopbyid = async (req) => {
+    let id = req.params.id
+    let Shop = await shopModel.findById(id)
+    return Shop
+}
+
+
+const UpdateShopbyAmdin = async (req) => {
+    let id = req.params.id
+    let { location, coverdAreaRaduis, service, cost } = req.body
+    let Shop = await shopModel.findByIdAndUpdate(id, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
+    return Shop
+}
+
+const updateShopTiming = async (req) => {
+    let { shopId, timing } = req.body
+    let Shop = await shopModel.updateMany({ _id: { $in: shopId } }, { timing })
+    if (Shop.modifiedCount > 0) {
+        const updatedShop = await shopModel.find({ _id: { $in: shopId } }, { timing: 1 });
+        return updatedShop
+    }
+    return Shop
+}
+
 module.exports = {
     getBusinessbyStatus,
     updateStatus,
     businessApprove,
-    businessTerminate
+    businessTerminate,
+    JobHistory,
+    getTopCustomer,
+    getTopCompanies,
+    UpdateShopbyAmdin,
+    getShop,
+    getShopbyid,
+    updateShopTiming
+
 }
