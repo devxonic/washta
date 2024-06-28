@@ -1,6 +1,9 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
 const VehiclesModel = require('../models/Vehicles');
+const SellerModel = require('../models/seller');
+const shopModel = require('../models/shop');
+const OrderModel = require('../models/Order');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -47,15 +50,33 @@ const signUpWithGoogle = async (req) => {
 }
 
 const editProfile = async (req) => {
-    const { name, phone } = req.body;
-    let customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { name: name, phone: phone } });
-    return customer;
+
+    let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
+        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, { new: true });
+    let car = await VehiclesModel.findOneAndUpdate({ _id: req.body.car._id },
+        { $set: { ...req.body.car } }, { new: true });
+
+    let UpdatedRes = { ...Customer._doc }
+    delete UpdatedRes.notification
+    delete UpdatedRes.privacy
+    delete UpdatedRes.security
+
+    console.log(UpdatedRes, "Updated res")
+    console.log(Customer)
+    console.log(car)
+    return { Customer: UpdatedRes, car };
 }
 
 const getProfile = async (req) => {
-    let player = await CustomerModel.findOne({ username: req.user.username }, { password: 0, __v: 0 });
-    return player;
+    let Customer = await CustomerModel.findOne({ username: req.user.username }, {
+        password: 0, __v: 0, notification: 0,
+        privacy: 0,
+        security: 0,
+        createdAt: 0,
+        updatedAt: 0,
+    });
+    let car = await VehiclesModel.findOne({ $and: [{ Owner: Customer._id }, { isSelected: true }] }, { __v: 0 });
+    return { Customer, car };
 }
 
 
@@ -87,8 +108,15 @@ const getSecurity = async (req) => {
     return player.security;
 }
 const logout = async (req) => {
-    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
-    return player
+    console.log(req.user)
+    if (req.user.role == "customer") {
+        let User = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
+        return User
+    }
+    if (req.user.role == "seller") {
+        let User = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
+        return User
+    }
 }
 
 
@@ -112,7 +140,7 @@ const addVehicles = async (req) => {
 
 const updateVehicles = async (req) => {
     let { id } = req.params
-    let vehicle = await VehiclesModel.findByIdAndUpdate({ _id: id }, { $set: { ...req.body } })
+    let vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { ...req.body }, { new: true })
     return vehicle
 }
 
@@ -122,6 +150,71 @@ const deleteVehicle = async (req) => {
     return vehicle
 }
 
+const getIsSelected = async (req) => {
+    let Vehicles = await VehiclesModel.findOne({ $and: [{ Owner: req.user.id }, { isSelected: true }] });
+    return Vehicles;
+}
+
+const updateIsSelected = async (req) => {
+    let id = req.body.id
+    let Vehicles = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { isSelected: true }] }, { isSelected: false });
+    let Selected = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { _id: id }] }, { isSelected: true }, { new: true });
+    return Selected;
+}
+
+
+// ----------------------------------------------- shop -----------------------------------------------------//
+
+
+const getAllShops = async (req) => {
+    let Shops = await shopModel.find({})
+    return Shops
+}
+
+const getShopById = async (req) => {
+    let Shops = await shopModel.findById(req.params.id)
+    return Shops
+}
+
+const getShopByLocation = async (req) => {
+    console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
+    let Shops = await shopModel.find({
+        location: {
+            $nearSphere:
+            {
+                $geometry: {
+                    type: "Point",
+                    coordinates: [req.query.long, req.query.lat]
+                },
+                $minDistance: 0,
+                $maxDistance: parseFloat(req.query.radius ? req.query.radius : 1000)
+            }
+        }
+    })
+    return Shops
+}
+
+// ----------------------------------------------- Bookings -----------------------------------------------------//
+
+const getMyBookings = async (req) => {
+    let Bookings = await OrderModel.find({ customerId: req.user.id })
+    return Bookings
+}
+
+const getMyBookingById = async (req) => {
+    let Bookings = await OrderModel.findById(req.params.id)
+    return Bookings
+}
+
+const createNewBooking = async (req) => {
+    let Bookings = await OrderModel({ ...req.body }).save();
+    return Bookings
+}
+
+const getbookingbyStatus = async (req) => {
+    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
+    return Bookings
+}
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -140,5 +233,14 @@ module.exports = {
     getVehicles,
     updateVehicles,
     addVehicles,
-    deleteVehicle
+    deleteVehicle,
+    getIsSelected,
+    updateIsSelected,
+    getAllShops,
+    getShopById,
+    getMyBookings,
+    getMyBookingById,
+    createNewBooking,
+    getShopByLocation,
+    getbookingbyStatus,
 }

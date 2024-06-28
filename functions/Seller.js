@@ -1,5 +1,9 @@
 const SellerModel = require('../models/seller');
+const ShopModel = require('../models/shop');
+const OrderModel = require('../models/Order');
 const bcrypt = require('bcrypt');
+const response = require("../helpers/response");
+const { default: mongoose } = require('mongoose');
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -13,6 +17,13 @@ const signUp = async (req) => {
 const getSeller = async (req) => {
 
     let Seller = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+
+    return Seller;
+}
+
+const getSellerByToken = async (req) => {
+
+    let Seller = await SellerModel.findOne({ $or: [{ username: req.user.username }, { email: req.user.email }] });
 
     return Seller;
 }
@@ -48,7 +59,7 @@ const signUpWithGoogle = async (req) => {
 const editProfile = async (req) => {
     const { name, phone } = req.body;
     let Seller = await SellerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { name: name, phone: phone } });
+        { $set: { name: name, phone: phone } }, { new: true });
     return Seller;
 }
 
@@ -91,6 +102,92 @@ const logout = async (req) => {
 }
 
 
+
+// ----------------------------------------------- Business -----------------------------------------------------//
+
+const addBusiness = async (req) => {
+    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { business: req.body } }, { new: true })
+    return Seller
+}
+
+// ----------------------------------------------- shops -----------------------------------------------------//
+
+const getAllShop = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id })
+    return Shops
+}
+
+
+const getShopById = async (req) => {
+    let Shop = await ShopModel.findById(req.params.id)
+    return Shop
+}
+
+const addShop = async (req) => {
+    req.body.location = { ...req.body.location, type: "Point", coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0] }
+    let Shop = await ShopModel({ ...req.body }).save();
+    return Shop
+}
+
+const updateShop = async (req) => {
+    let id = req.params.id
+    let Shop = await ShopModel.findOneAndUpdate({ _id: id }, { ...req.body }, { new: true })
+    return Shop
+}
+
+const deleteShop = async (req) => {
+    let Shop = await ShopModel.findByIdAndDelete(req.params.id)
+    return Shop
+}
+
+
+// ----------------------------------------------- order -----------------------------------------------------//
+
+const getAllOrders = async (req) => {
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ shopId: { $in: Shops } })
+    console.log(Order)
+    return Order
+}
+
+
+const getOrderById = async (req) => {
+    let Order = await OrderModel.findById(req.params.id)
+    return Order
+}
+
+
+const orderStatus = async (req) => {
+    let id = req.params.id
+    let Order = await OrderModel.findOneAndUpdate({ _id: id }, { status: req.body.status }, { new: true, fields: { status: 1 } })
+    return Order
+}
+
+const getorderbyStatus = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { status: req.query.status }] })
+    return Order
+}
+
+const getpastorder = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }] })
+    return Order
+}
+const getActiveOrder = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
+    Shops = Shops.map((x) => (x._id.toString()))
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { status: "pending" }] })
+    return Order
+}
+
+
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -106,4 +203,17 @@ module.exports = {
     getPrivacy,
     updateSecurity,
     getSecurity,
+    addBusiness,
+    getSellerByToken,
+    getAllShop,
+    getShopById,
+    addShop,
+    deleteShop,
+    updateShop,
+    getAllOrders,
+    getOrderById,
+    orderStatus,
+    getorderbyStatus,
+    getpastorder,
+    getActiveOrder
 }

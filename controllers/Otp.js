@@ -6,15 +6,19 @@ const { generate4DigitCode } = require('../helpers/helper')
 const jwt = require('jsonwebtoken')
 const nodemailer = require('nodemailer')
 const path = require('path')
-const ejs = require('ejs')
+const ejs = require('ejs');
+const SellerModel = require('../models/seller');
 
 
 const sendOTP = async (req, res) => {
     try {
         let { email, role } = req.body;
         if (!email) return response.resBadRequest(res, "email & role value is Must required");
-        let User = await SignupFunctions.getUser(req, role);
+        let User = await SignupFunctions.getUserByEmail(req, role);
+        let isOTPAlreadySended = await SignupFunctions.isOTPAlreadySended(req);
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
+        if (isOTPAlreadySended) return response.resBadRequest(res, "OTP Already Sended On Your Email");
+
 
         const transporter = nodemailer.createTransport({
             host: process.env.mailerHost,
@@ -56,7 +60,7 @@ const VerifyCode = async (req, res) => {
         let Passwordtoken = jwt.sign(
             { ...OTP._doc },
             process.env.OTPPasswordToken,
-            { expiresIn: 60 * 2 }
+            { expiresIn: 60 * 5 }
         );
         response.resSuccessData(res, { token: Passwordtoken })
     } catch (error) {
@@ -73,14 +77,11 @@ const setPassword = async (req, res) => {
         let decoded = jwt.verify(token, process.env.OTPPasswordToken)
         console.log(decoded.email)
         if (!decoded) return response.resUnauthorized(res, "Invailed Token");
-        if (role === "customer") {
-            let customer = await CustomerModel.findOneAndUpdate({ email: decoded.email }, { password: newPassword });
-            console.log("", customer)
-            if (!customer) {
-                return response.resUnauthorized(res, "This Customer doesn't Exist");
-            }
-            return response.resSuccess(res, "Password Successfully Changed")
-        }
+        let customer = await SignupFunctions.resetPassword(decoded.email, newPassword, role);
+        console.log("", customer)
+        if (!customer) return response.resUnauthorized(res, "This Customer doesn't Exist");
+        return response.resSuccess(res, "Password Successfully Changed");
+
     } catch (error) {
         console.error(error);
         return response.resBadRequest(res, error);
