@@ -113,16 +113,20 @@ const updateShopTiming = async (req) => {
 // ----------------------------------------------- Customer -----------------------------------------------------//
 
 const getCustomer = async (req) => {
-    let Customer = await CustomerModel.find({}).populate({
-        path: "vehicle",
-    })
+    let Customer = await CustomerModel.find({}, {
+        privacy: 0, password: 0, createdAt: 0, updatedAt: 0
+    }).populate([{
+        path: "selectedVehicle",
+    }])
     return Customer
 }
 
 const getCustomerByid = async (req) => {
     let id = req.params.id
-    let Customer = await CustomerModel.findById(id).populate({
-        path: "vehicle",
+    let Customer = await CustomerModel.findById(id, {
+        privacy: 0, password: 0, createdAt: 0, updatedAt: 0
+    }).populate({
+        path: "selectedVehicle",
     })
     return Customer
 }
@@ -132,9 +136,32 @@ const updateCustomer = async (req) => {
     let id = req.params.id
     let { location, numberPlate, phone, email } = req.body // email is sensitive
     let Customer = await CustomerModel.findByIdAndUpdate(id, { location, phone, }, { new: true, fields: { location: 1, phone: 1 } })
-    let Vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: req.user.id }, { isSelected: true }] }, { vehiclePlateNumber: numberPlate, }, { new: true })
-     
+    let Vehicle = await VehiclesModel.findOneAndUpdate({ $and: [{ Owner: id }, { isSelected: true }] }, { vehiclePlateNumber: numberPlate, }, { new: true })
+
     return { Customer, Vehicle }
+}
+
+// ----------------------------------------------- Vehical -----------------------------------------------------//
+
+const getVehicles = async (req) => {
+    let Vehicles = await VehiclesModel.find({})
+    return Vehicles
+}
+
+
+const getvehiclesById = async (req) => {
+    let id = req.params.id
+    let Vehicles = await VehiclesModel.findById(id)
+    return Vehicles
+}
+
+
+const updateVehicles = async (req) => {
+    let id = req.params.id
+    let { vehicleManufacturer, vehiclePlateNumber, vehicleName, vehicleType } = req.body
+    let Vehicle = await VehiclesModel.findOneAndUpdate({ $or: [{ $and: [{ Owner: id }, { isSelected: true }] }, { _id: id }] }, { vehicleManufacturer, vehiclePlateNumber, vehicleName, vehicleType }, { new: true })
+
+    return Vehicle
 }
 
 
@@ -246,5 +273,8 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    getVehicles,
+    getvehiclesById,
+    updateVehicles
 
 }

@@ -194,6 +194,39 @@ const updateCustomer = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+const getVehicles = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getVehicles(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+const getvehiclesById = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getvehiclesById(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+const updateVehicles = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.updateVehicles(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 // ----------------------------------------------- service Fee -----------------------------------------------------//
 
@@ -325,4 +358,7 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    getVehicles,
+    getvehiclesById,
+    updateVehicles,
 }
