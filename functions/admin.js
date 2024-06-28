@@ -4,6 +4,8 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const ServiceFeeModel = require('../models/servicefee');
+const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
 
 
@@ -107,6 +109,86 @@ const updateShopTiming = async (req) => {
     return Shop
 }
 
+
+// ----------------------------------------------- shop -----------------------------------------------------//
+
+const createServiceFee = async (req) => {
+    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    if (applyAtAll) {
+        let shops = await shopModel.find({}, { _id: 1 })
+        let Formated = shops.map((x) => x._id.toString())
+        Data.applyAt = Formated
+    }
+    let Service = await ServiceFeeModel(Data).save()
+    return Service
+}
+
+const getserviceFee = async (req) => {
+    let Service = await ServiceFeeModel.find({})
+    return Service
+}
+
+const getserviceFeeById = async (req) => {
+    let id = req.params.id
+    let ServiceFee = await ServiceFeeModel.findById(id)
+    return ServiceFee
+}
+
+const updateServiceFee = async (req) => {
+    let id = req.params.id
+    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    if (applyAtAll) {
+        let shops = await shopModel.find({}, { _id: 1 })
+        let Formated = shops.map((x) => x._id.toString())
+        Data.applyAt = Formated
+    }
+    let ServiceFee = await ServiceFeeModel.findByIdAndUpdate(id, Data, { new: true })
+    return ServiceFee
+}
+
+// ----------------------------------------------- Promo Code -----------------------------------------------------//
+
+const createPromoCode = async (req) => {
+    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
+    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    if (giveToAll) {
+        let Customer = await CustomerModel.find({}, { _id: 1 })
+        let Formated = Customer.map((x) => x._id.toString())
+        Data.giveTo = Formated
+    }
+    console.log(giveTo)
+    let upatedPromoCode = await PromoCodeModel(Data).save()
+    return upatedPromoCode
+}
+
+const getPromoCode = async (req) => {
+    let PromoCode = await PromoCodeModel.find({})
+    return PromoCode
+}
+
+const getPromoCodeById = async (req) => {
+    let id = req.params.id
+    let PromoCode = await PromoCodeModel.findById(id)
+    return PromoCode
+}
+
+const updatePromoCode = async (req) => {
+    let id = req.params.id
+    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
+    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    if (giveToAll) {
+        let Customer = await CustomerModel.find({}, { _id: 1 })
+        let Formated = Customer.map((x) => x._id.toString())
+        Data.giveTo = Formated
+    }
+    let Promocode = await PromoCodeModel.findByIdAndUpdate(id, Data, { new: true })
+    return Promocode
+}
+
+
+
 module.exports = {
     getBusinessbyStatus,
     updateStatus,
@@ -118,6 +200,18 @@ module.exports = {
     UpdateShopbyAmdin,
     getShop,
     getShopbyid,
-    updateShopTiming
+    updateShopTiming,
+    getserviceFee,
+    createServiceFee,
+    getserviceFeeById,
+    updateServiceFee,
+    createServiceFee,
+    getserviceFee,
+    getserviceFeeById,
+    updateServiceFee,
+    createPromoCode,
+    getPromoCode,
+    getPromoCodeById,
+    updatePromoCode,
 
 }

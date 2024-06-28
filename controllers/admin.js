@@ -154,6 +154,111 @@ const updateShopTiming = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- service Fee -----------------------------------------------------//
+
+const getserviceFee = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getserviceFee(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getserviceFeeById = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getserviceFeeById(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Service fee")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const createServiceFee = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.createServiceFee(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updateServiceFee = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.updateServiceFee(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- service Fee -----------------------------------------------------//
+
+
+const getPromoCode = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getPromoCode(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getPromoCodeById = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getPromoCodeById(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const createPromoCode = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.createPromoCode(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updatePromoCode = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.updatePromoCode(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 
 module.exports = {
@@ -167,5 +272,13 @@ module.exports = {
     getShopbyid,
     getShop,
     UpdateShopbyAmdin,
-    updateShopTiming
+    updateShopTiming,
+    getserviceFee,
+    createServiceFee,
+    getserviceFeeById,
+    updateServiceFee,
+    createPromoCode,
+    getPromoCode,
+    getPromoCodeById,
+    updatePromoCode,
 }

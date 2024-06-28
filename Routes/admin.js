@@ -21,10 +21,6 @@ router.patch('/businessTerminate/:id', middlewares.verifyAdmin, AdminController.
 // ----------------------------------------------- Job History -----------------------------------------------------//
 
 router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
-// router.patch('/businessUpdateStatus/:id' , AdminController.updateStatus)
-// router.patch('/businessApprove/:id' , AdminController.businessApprove)
-// router.patch('/businessTerminate/:id' , AdminController.businessTerminate)
-
 
 // ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
 
@@ -38,6 +34,19 @@ router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
 router.patch('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
 router.patch('/shop', middlewares.verifyAdmin, AdminController.updateShopTiming)
 
+// ----------------------------------------------- Service fee  -----------------------------------------------------//
+
+router.post('/serviceFee', middlewares.verifyAdmin, AdminController.createServiceFee)
+router.get('/serviceFee', middlewares.verifyAdmin, AdminController.getserviceFee)
+router.get('/serviceFee/:id', middlewares.verifyAdmin, AdminController.getserviceFeeById)
+router.patch('/serviceFee/:id', middlewares.verifyAdmin, AdminController.updateServiceFee)
+
+// ----------------------------------------------- Promo Code  -----------------------------------------------------//
+
+router.post('/promoCode', middlewares.verifyAdmin, AdminController.createPromoCode)
+router.get('/promoCode', middlewares.verifyAdmin, AdminController.getPromoCode)
+router.get('/promoCode/:id', middlewares.verifyAdmin, AdminController.getPromoCodeById)
+router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePromoCode)
 
 
 module.exports = router 
