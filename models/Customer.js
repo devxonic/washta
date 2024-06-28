@@ -13,6 +13,8 @@ const CustomerSchema = new Schema({
     phone: {
         type: String,
     },
+    selectedVehicle: { type: mongoose.Types.ObjectId, ref: "vehicle" },
+    isTernimated: { type: Boolean },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String
