@@ -1,4 +1,3 @@
-
 const CustomerFunctions = require('../functions/Customer');
 const SignupFunctions = require('../functions/auth');
 const response = require('../helpers/response');
@@ -20,7 +19,7 @@ require('dotenv').config();
 
 const signUp = async (req, res) => {
     try {
-        let { role, username, email, name, phone, password, car } = req.body
+        let { role, username, email, fullName, phone, password, car } = req.body
         console.log('siggning user up');
         let resObj = {};
 
@@ -28,7 +27,7 @@ const signUp = async (req, res) => {
             let customerExists = await SignupFunctions.getUserByEmail(req, role)
             if (customerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
-            let customerBody = { username, name, email, phone, password: hash }
+            let customerBody = { username, fullName, email, phone, password: hash }
             let newCustomer = new CustomerModel(customerBody)
             let savedCustomer = await newCustomer.save()
 
@@ -40,14 +39,14 @@ const signUp = async (req, res) => {
                 username: savedCustomer.username,
                 email: savedCustomer.email,
                 phone: savedCustomer.phone,
-                name: savedCustomer.name,
+                fullName: savedCustomer.fullName,
             }
         }
         if (role == "seller") {
             let SellerExists = await SignupFunctions.getUser(req, role)
             if (SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
-            let SellerBody = { username, name, email, phone, password: hash }
+            let SellerBody = { username, fullName, email, phone, password: hash }
             let newSeller = new SellerModel(SellerBody)
             let savedSeller = await newSeller.save()
             if (!savedSeller) return response.resBadRequest(res, "There is some error on save Customer");
@@ -57,7 +56,7 @@ const signUp = async (req, res) => {
                 username: savedSeller.username,
                 email: savedSeller.email,
                 phone: savedSeller.phone,
-                name: savedSeller.name,
+                fullName: savedSeller.fullName,
             }
         }
 
@@ -107,7 +106,7 @@ const logIn = async (req, res) => {
         let { role, password } = req.body
 
         let User = await SignupFunctions.getUser(req, role);
-        if(!User._doc.isVerifed) return res.send({
+        if (!User._doc.isVerifed) return res.send({
             status: false,
             code: 200,
             message: "un Verifed user , Please Verify your Email with OTP",
@@ -172,13 +171,13 @@ const logOut = async (req, res) => {
 
 const AdminSignUp = async (req, res) => {
     try {
-        let { username, email, name, phone, password } = req.body
+        let { username, email, fullName, phone, password } = req.body
         console.log('siggning user up');
         let resObj = {};
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let adminBody = { username, name, email, phone, password: hash }
+        let adminBody = { username, fullName, email, phone, password: hash }
         let newAdmin = new AdminModel(adminBody)
         let savedAdmin = await newAdmin.save()
 
@@ -253,11 +252,98 @@ const AdminlogIn = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Agent -----------------------------------------------------//
+
+const AgentSignUp = async (req, res) => {
+    try {
+        let { username, email, fullName, password } = req.body
+        console.log('siggning user up');
+        let resObj = {};
+        let agentExists = await SignupFunctions.getAgentByEmail(req)
+        if (agentExists) return response.resBadRequest(res, "username or email already exists");
+        let hash = await bcrypt.hash(password, 10);
+        let AgentBody = { username, fullName, email, phone, password: hash }
+        let newAgent = new AdminModel(AgentBody)
+        let savedAgent = await newAgent.save()
+
+        if (!savedAgent) return response.resBadRequest(res, "There is some error on save Customer");
+
+        let refrashToken = jwt.sign({
+            id: savedAgent._id,
+            email: savedAgent.email,
+            username: savedAgent.username
+        }, process.env.agentToken, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, "admin")
+        let token = jwt.sign({
+            id: savedAgent.id,
+            email: savedAgent.email,
+            username: savedAgent.username
+        }, process.env.agentToken, { expiresIn: '7d' })
+
+        return response.resSuccessData(res, {
+            user: {
+                id: savedAgent.id,
+                username: savedAgent.username,
+                email: savedAgent.email,
+                phone: savedAgent.phone,
+            },
+            accessToken: token, refrashToken
+        });
+
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const AgentLogin = async (req, res) => {
+    try {
+        let { password } = req.body
+
+        let Agent = await SignupFunctions.getAgent(req);
+        if (!Agent) return response.resBadRequest(res, "couldn't find user");
+        if (!await validationFunctions.verifyPassword(password, Agent.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+
+        let refrashToken = jwt.sign({
+            id: Agent.id,
+            email: Agent.email,
+            username: Agent.username
+        }, process.env.agentToken, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, "admin")
+
+        let token = jwt.sign({
+            id: Agent.id,
+            email: Agent.email,
+            username: Agent.username
+        }, process.env.agentToken, { expiresIn: '7d' })
+
+
+        return response.resSuccessData(res, {
+            user: {
+                id: Agent.id,
+                name: Agent.name,
+                username: Agent.username,
+                email: Agent.email,
+                profileImage: Agent.avatarPath
+            }, accessToken: token, refrashToken
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
 module.exports = {
     signUp,
     logOut,
     logIn,
     AdminSignUp,
     AdminlogIn,
+    AgentSignUp,
+    AgentLogin,
 
 }

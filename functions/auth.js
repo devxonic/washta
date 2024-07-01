@@ -3,6 +3,7 @@ const SellerModel = require("../models/seller")
 const OtpModel = require("../models/Otp")
 const bcrypt = require("bcrypt")
 const AdminModel = require("../models/admin")
+const AgentModel = require("../models/agent")
 
 
 const updateRefreshToken = async (req, token, role) => {
@@ -92,6 +93,19 @@ const getAdmin = async (req) => {
     return admin;
 }
 
+const getAgent = async (req) => {
+
+    let Agent = await AgentModel.findOne({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] });
+    return Agent;
+}
+
+
+const getAgentByEmail = async (req) => {
+
+    let Agent = await AgentModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+    return Agent;
+}
+
 module.exports = {
     updateRefreshToken,
     getUser,
@@ -100,5 +114,7 @@ module.exports = {
     resetPassword,
     isOTPAlreadySended,
     getAdminByEmail,
-    getAdmin
+    getAdmin,
+    getAgent,
+    getAgentByEmail
 }
