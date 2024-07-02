@@ -13,6 +13,7 @@ const nodemailer = require('nodemailer');
 const path = require('path')
 const ejs = require('ejs');
 const AdminModel = require('../models/admin');
+const AgentModel = require('../models/agent');
 
 
 require('dotenv').config();
@@ -256,14 +257,14 @@ const AdminlogIn = async (req, res) => {
 
 const AgentSignUp = async (req, res) => {
     try {
-        let { username, email, fullName, password } = req.body
+        let { username, email, fullName, phone, password } = req.body
         console.log('siggning user up');
         let resObj = {};
         let agentExists = await SignupFunctions.getAgentByEmail(req)
         if (agentExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
         let AgentBody = { username, fullName, email, phone, password: hash }
-        let newAgent = new AdminModel(AgentBody)
+        let newAgent = new AgentModel(AgentBody)
         let savedAgent = await newAgent.save()
 
         if (!savedAgent) return response.resBadRequest(res, "There is some error on save Customer");
