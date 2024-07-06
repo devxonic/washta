@@ -1,6 +1,41 @@
+require('dotenv').config;
 const jwt = require('jsonwebtoken');
 const response = require('../helpers/response');
-require('dotenv').config;
+const aws = require('aws-sdk');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
+aws.config.update({
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    region: process.env.S3_REGION 
+})
+
+const s3 = new aws.S3();
+
+
+const awsUpload = new multer({
+    storage: multerS3({
+        s3: s3,
+        dirname: '/files',
+        bucket: process.env.S3_BUCKET_NAME,
+        contentDisposition: 'inline',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        // acl: 'public-read',
+        key: function (req, file, cb) {
+            let dateparam = new Date();
+            console.log('FFILER::', file);
+            cb(
+                null,
+                `files/${dateparam.getTime()}_${file.originalname}`
+            );
+        },
+    }),
+});
+
+
+
+
 
 const verifyCustomer = (req, res, next) => {
     const bearerHeader = req.headers["authorization"];
@@ -64,5 +99,6 @@ const verifyAdmin = (req, res, next) => {
 module.exports = {
     verifyCustomer,
     verifySeller,
-    verifyAdmin
+    verifyAdmin,
+    awsUpload
 }
