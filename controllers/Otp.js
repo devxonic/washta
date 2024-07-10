@@ -100,8 +100,8 @@ const userVerifiaction = async (req, res) => {
         if (!OTP) return response.resBadRequest(res, "Invailed payload");
         let User = await SignupFunctions.MakeUserVerifed(req, role)
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
-
-        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : role == "admin" ?  process.env.adminToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
         let refrashToken = jwt.sign({
             id: User._id,
