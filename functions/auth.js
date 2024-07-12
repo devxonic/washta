@@ -52,6 +52,10 @@ const MakeUserVerifed = async (req, role) => {
         let Customer = await SellerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
         return Customer;
     }
+    if (role == "admin") {
+        let Customer = await AdminModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
+        return Customer;
+    }
 }
 
 const resetPassword = async (email, password, role) => {
