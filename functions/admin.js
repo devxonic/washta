@@ -12,36 +12,40 @@ const helper = require('../helpers/helper');
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 const getBusinessbyStatus = async (req) => {
-    let Business = await SellerModel.find({ 'business.status': req.query.status }, {
-        notification: 0,
-        privacy: 0,
-        security: 0,
-        password: 0,
-        shops: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        __v: 0,
-    })
-    return Business
+    if (req.query.status) {
+        let Business = await SellerModel.find({ 'business.status': req.query.status }, {
+            notification: 0,
+            privacy: 0,
+            security: 0,
+            password: 0,
+            shops: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            __v: 0,
+        })
+        return Business
+    } else {
+        let AllBusiness = await SellerModel.find({}, { business: 1 })
+        return AllBusiness
+    }
 }
 
 
 const updateStatus = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.status': req.body.status } }, { fields: { 'business.status': 1 } })
-    console.log("Body", Business)
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.status': req.body.status } }, { new: true, fields: { 'business': 1 } })
     return Business
 }
 
 const businessApprove = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business': 1} })
     return Business
 }
 
 const businessTerminate = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected" } }, { new: true, fields: { 'business': 1 } })
     return Business
 }
 
