@@ -1,5 +1,8 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const path = require('path');
+const ejs = require('ejs');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
@@ -24,28 +27,88 @@ const getBusinessbyStatus = async (req) => {
             __v: 0,
         })
         return Business
-    } else {
-        let AllBusiness = await SellerModel.find({}, { business: 1 })
-        return AllBusiness
     }
+    return null
 }
 
+const getAllBusniess = async (req) => {
 
-const updateStatus = async (req) => {
-    let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.status': req.body.status } }, { new: true, fields: { 'business': 1 } })
+    let Business = await SellerModel.find({}, { business: 1 })
     return Business
 }
 
+const getBusinessById = async (req) => {
+    if (req.query.status) {
+        let Business = await SellerModel.findById(req.params.id, { business: 1 })
+        return Business
+    }
+    return null
+}
+
+
 const businessApprove = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business': 1} })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
+    let transporterRes = await transporter.sendMail({
+        from: process.env.mailerEmail,
+        to: Business.email,
+        subject: "Verification",
+        html: Mail,
+    })
     return Business
 }
 
 const businessTerminate = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected" } }, { new: true, fields: { 'business': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "terminate", 'business.isTerminated': true, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
+    let transporterRes = await transporter.sendMail({
+        from: process.env.mailerEmail,
+        to: Business.email,
+        subject: "Verification",
+        html: Mail,
+    })
+    return Business
+}
+
+const businessReject = async (req) => {
+    let id = req.params.id
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected", 'business.isTerminated': false, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
+    let transporterRes = await transporter.sendMail({
+        from: process.env.mailerEmail,
+        to: Business.email,
+        subject: "Verification",
+        html: Mail,
+    })
     return Business
 }
 
@@ -252,7 +315,6 @@ const updatePromoCode = async (req) => {
 
 module.exports = {
     getBusinessbyStatus,
-    updateStatus,
     businessApprove,
     businessTerminate,
     JobHistory,
@@ -279,6 +341,9 @@ module.exports = {
     updatePromoCode,
     getVehicles,
     getvehiclesById,
-    updateVehicles
+    updateVehicles,
+    getAllBusniess,
+    getBusinessById,
+    businessReject
 
 }
