@@ -11,23 +11,21 @@ const SellerSchema = new Schema(
         },
         email: { type: String },
         phone: { type: String },
-        business: [
-            {
-                uploadDocument: { type: String },
-                companyName: { type: String },
-                location: { type: String },
-                VATNumber: { type: String },
-                fullName: { type: String },
-                position: { type: String },
-                email: { type: String },
-                status: {
-                    type: String,
-                    enum: ["approved", "pending", "rejected"],
-                    defualt: "pending",
-                },
-                isApproved: { type: Boolean, defualt: false },
+        business: {
+            uploadDocument: { type: String },
+            companyName: { type: String },
+            location: { type: String },
+            VATNumber: { type: String },
+            fullName: { type: String },
+            position: { type: String },
+            email: { type: String },
+            status: {
+                type: String,
+                enum: ["approved", "pending", "rejected"],
+                defualt: "pending",
             },
-        ],
+            isApproved: { type: Boolean, defualt: false },
+        },
         shops: [{ type: mongoose.Types.ObjectId, ref: "shop" }],
         isVerifed: { type: Boolean, default: false },
         sessionKey: {

@@ -134,7 +134,7 @@ const logout = async (req) => {
 const addBusiness = async (req) => {
     let Seller = await SellerModel.findByIdAndUpdate(
         { _id: req.user.id },
-        { $push: { business: req.body } },
+        { $set: { business: req.body } },
         { new: true },
     );
     return Seller;
