@@ -38,10 +38,8 @@ const getAllBusniess = async (req) => {
 }
 
 const getBusinessById = async (req) => {
-    if (req.query.status) {
-        let Business = await SellerModel.findById(req.params.id, { business: 1 })
-        return Business
-    }
+    let Business = await SellerModel.findById(req.params.id, { business: 1 })
+    return Business
     return null
 }
 
