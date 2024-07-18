@@ -7,6 +7,17 @@ const bcrypt = require('bcrypt');
 require('dotenv').config()
 
 
+const getBusinessbyStatus = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getBusinessbyStatus(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking Please Add Status")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 const getAllBusniess = async (req, res) => {
     try {
         let business = await AdminFunctions.getAllBusniess(req)
@@ -386,4 +397,5 @@ module.exports = {
     getAllBusniess,
     getBusinessById,
     businessReject,
+    getBusinessbyStatus
 }

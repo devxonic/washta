@@ -13,6 +13,7 @@ router.post('/login', AuthController.AdminlogIn)
 
 // ----------------------------------------------- Business -----------------------------------------------------//
 
+router.get('/businessBystatus', middlewares.verifyAdmin, AdminController.getBusinessbyStatus)
 router.get('/business', middlewares.verifyAdmin, AdminController.getAllBusniess)
 router.get('/business/:id', middlewares.verifyAdmin, AdminController.getBusinessById)
 router.patch('/businessReject/:id', middlewares.verifyAdmin, AdminController.businessReject)
