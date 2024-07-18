@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 
@@ -19,9 +19,9 @@ const SellerSchema = new Schema({
         fullName: { type: String },
         position: { type: String },
         email: { type: String },
-        status: { type: String, enum: ["approved", "pending", "rejected","terminate"], default: "pending" },
-        isApproved: { type: Boolean , default  : false },
-        isTerminated: { type: Boolean , default  : false },
+        status: { type: String, enum: ["approved", "pending", "rejected", "terminate"], default: "pending" },
+        isApproved: { type: Boolean, default: false },
+        isTerminated: { type: Boolean, default: false },
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },
@@ -73,11 +73,10 @@ const SellerSchema = new Schema({
         touchId: {
             type: Boolean
         },
+    }
+},
+    { timestamps: true },
+);
 
-    },
-}, { timestamps: true })
-
-
-
-const SellerModel = mongoose.model('seller', SellerSchema);
+const SellerModel = mongoose.model("seller", SellerSchema);
 module.exports = SellerModel;
