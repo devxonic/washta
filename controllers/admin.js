@@ -10,7 +10,29 @@ require('dotenv').config()
 const getBusinessbyStatus = async (req, res) => {
     try {
         let business = await AdminFunctions.getBusinessbyStatus(req)
-        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        if (!business) return response.resBadRequest(res, "couldn't find Booking Please Add Status")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+const getAllBusniess = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getAllBusniess(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking Please Add Status")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+const getBusinessById = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getBusinessById(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking Please Add Status")
         return response.resSuccessData(res, business);
 
     } catch (error) {
@@ -49,6 +71,18 @@ const businessApprove = async (req, res) => {
 const businessTerminate = async (req, res) => {
     try {
         let business = await AdminFunctions.businessTerminate(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const businessReject = async (req, res) => {
+    try {
+        let business = await AdminFunctions.businessReject(req)
         if (!business) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, business);
 
@@ -336,7 +370,6 @@ const updatePromoCode = async (req, res) => {
 
 
 module.exports = {
-    getBusinessbyStatus,
     updateStatus,
     businessApprove,
     businessTerminate,
@@ -361,4 +394,8 @@ module.exports = {
     getVehicles,
     getvehiclesById,
     updateVehicles,
+    getAllBusniess,
+    getBusinessById,
+    businessReject,
+    getBusinessbyStatus
 }

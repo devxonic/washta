@@ -132,14 +132,9 @@ const logout = async (req) => {
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 const addBusiness = async (req) => {
-    req.body.status = "pending";
-    let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
-        { $set: { business: req.body } },
-        { new: true },
-    );
-    return Seller;
-};
+    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.params.id }, { $set: { business: req.body } }, { new: true })
+    return Seller
+}
 
 // ----------------------------------------------- shops -----------------------------------------------------//
 
