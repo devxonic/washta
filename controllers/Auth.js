@@ -112,7 +112,6 @@ const logIn = async (req, res) => {
             code: 200,
             message: "un Verifed user , Please Verify your Email with OTP",
         })
-        console.log("User._doc.business.isApproved",User._doc.business.isApproved)
         if (role == "seller" && !User._doc.business.isApproved) return res.send({
             status: false,
             code: 200,
