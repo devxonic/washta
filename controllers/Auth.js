@@ -107,7 +107,8 @@ const logIn = async (req, res) => {
         let { role, password } = req.body
 
         let User = await SignupFunctions.getUser(req, role);
-        if (!User._doc.isVerifed) return res.send({
+        if (!User) return response.resBadRequest(res, "couldn't find user");
+        if (!User?._doc.isVerifed) return res.send({
             status: false,
             code: 200,
             message: "un Verifed user , Please Verify your Email with OTP",
@@ -117,7 +118,6 @@ const logIn = async (req, res) => {
             code: 200,
             message: "Account is Not Approved by Admin Please contact to Admin",
         })
-        if (!User) return response.resBadRequest(res, "couldn't find user");
         if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
 
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
