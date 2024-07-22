@@ -14,7 +14,9 @@ router.post('/login', AuthController.AdminlogIn)
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 router.get('/businessBystatus', middlewares.verifyAdmin, AdminController.getBusinessbyStatus)
-router.patch('/businessUpdateStatus/:id', middlewares.verifyAdmin, AdminController.updateStatus)
+router.get('/business', middlewares.verifyAdmin, AdminController.getAllBusniess)
+router.get('/business/:id', middlewares.verifyAdmin, AdminController.getBusinessById)
+router.patch('/businessReject/:id', middlewares.verifyAdmin, AdminController.businessReject)
 router.patch('/businessApprove/:id', middlewares.verifyAdmin, AdminController.businessApprove)
 router.patch('/businessTerminate/:id', middlewares.verifyAdmin, AdminController.businessTerminate)
 

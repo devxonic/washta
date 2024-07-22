@@ -20,7 +20,7 @@ router.patch('/privacySetting', middlewares.verifySeller, SellerControllers.upda
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 router.get('/Business', middlewares.verifySeller, SellerControllers.getBusiness)
-router.post('/Business', middlewares.verifySeller, SellerControllers.addBusiness)
+router.post('/Business/:id', SellerControllers.addBusiness)
 router.patch('/Business', middlewares.verifySeller, SellerControllers.updateBusiness)
 
 
