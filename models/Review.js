@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const ratingSchema = new mongoose.Schema({
+const ReviewSchema = new mongoose.Schema({
     comment: { type: String },
     rating: {
         type: Number,
@@ -30,5 +30,5 @@ const ratingSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-const RatingModel = mongoose.model('Rating', ratingSchema);
+const RatingModel = mongoose.model('review', ReviewSchema);
 module.exports = RatingModel;

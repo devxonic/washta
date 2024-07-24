@@ -43,4 +43,11 @@ router.get('/bookingbyStatus', middlewares.verifyCustomer, CustomerControllers.g
 router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
 router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
 
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+
+router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.createShopRating)
+router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
+router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
+
 module.exports = router 
