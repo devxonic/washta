@@ -225,6 +225,28 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 
+// ----------------------------------------------- Invoice -----------------------------------------------------//
+
+const getAllInvoice = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    let Order = await OrderModel.find({
+        $and: [{ shopId: { $in: Shops } }, { status: "pending" }],
+    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    return Order;
+};
+
+
+const getAllInvoiceById = async (req) => {
+    let { id } = req.params
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    let Order = await OrderModel.findOne({
+        $and: [{ shopId: { $in: Shops } }, { _id: id }],
+    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    return Order;
+};
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -253,4 +275,6 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getAllInvoice,
+    getAllInvoiceById,
 };

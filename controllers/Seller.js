@@ -281,6 +281,31 @@ const getActiveOrder = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+
+const getAllInvoice = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getAllInvoice(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find invoice")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAllInvoiceById = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getAllInvoice(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find invoice")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 module.exports = {
     getProfile,
     editProfile,
@@ -304,4 +329,6 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getAllInvoice,
+    getAllInvoiceById,
 }
