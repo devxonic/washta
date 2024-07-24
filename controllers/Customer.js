@@ -283,6 +283,20 @@ const getbookingbyStatus = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+const createShopRating = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createShopRating(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 module.exports = {
     getProfile,

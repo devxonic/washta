@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const ratingSchema = new mongoose.Schema({
-    value: {
+    comment: { type: String },
+    rating: {
         type: Number,
         required: true,
         validate: {
