@@ -41,6 +41,15 @@ router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.ord
 router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
 router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
 
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInvoiceById)
+// router.get('/order/:id', middlewares.verifySeller, SellerControllers.getOrderById)
+// router.get('/orderbyStatus', middlewares.verifySeller, SellerControllers.getorderbyStatus)
+// router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.orderStatus)
+// router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
+// router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
 
 
 module.exports = router 
