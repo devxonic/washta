@@ -4,6 +4,7 @@ const OrderModel = require("../models/Order");
 const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
+const ReviewModel = require("../models/Review");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -225,6 +226,24 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+
+const getMyShopReviews = async (req) => {
+    let { shopId } = req.query
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    if (shopId) {
+        if (!Shops.includes(shopId)) return null
+        let Reviews = await ReviewModel.find({ shopId });
+        return Reviews
+    }
+    let Reviews = await ReviewModel.find({
+        $and: { shopId: { $in: Shops } },
+    });
+    return Reviews
+};
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -253,4 +272,5 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getMyShopReviews,
 };

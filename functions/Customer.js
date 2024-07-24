@@ -250,7 +250,7 @@ const createShopRating = async (req) => {
     let { orderId, shopId, rating, comment } = req.body
     let { id } = req.user
 
-    let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, comment }).save()
+    let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment }).save()
     return Rating
 }
 

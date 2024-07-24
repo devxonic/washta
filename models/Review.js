@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 
+const commnetSchema = new mongoose.Schema({
+    text: { type: String }
+})
 const ReviewSchema = new mongoose.Schema({
-    comment: { type: String },
+    comment: commnetSchema,
     rating: {
         type: Number,
         required: true,
@@ -28,6 +31,16 @@ const ReviewSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'seller',
     },
+    reply: [
+        {
+            replyTo: { type: mongoose.Schema.Types.ObjectId},
+            replyBy: {
+                id: { type: mongoose.Schema.Types.ObjectId },
+                role: { type: String, enum: ['seller', 'customer', 'admin', 'agent'] }
+            },
+            comment: commnetSchema
+        }
+    ]
 }, { timestamps: true });
 
 const RatingModel = mongoose.model('review', ReviewSchema);
