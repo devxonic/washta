@@ -19,6 +19,14 @@ const ratingSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'order',
     },
+    shopId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'shop',
+    },
+    sellerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'seller',
+    },
 }, { timestamps: true });
 
 const RatingModel = mongoose.model('Rating', ratingSchema);
