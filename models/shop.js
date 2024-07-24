@@ -12,7 +12,7 @@ const pointSchema = new Schema({
         type: [Number],
         required: true,
     },
-    String: { type: String }
+    text: { type: String }
 });
 
 const shopSchema = new Schema({
