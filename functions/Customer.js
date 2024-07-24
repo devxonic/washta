@@ -234,6 +234,11 @@ const getMyBookingById = async (req) => {
 }
 
 const createNewBooking = async (req) => {
+    req.body.location = {
+        ...req.body.location,
+        type: "Point",
+        coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
+    };
     let Bookings = await OrderModel({ ...req.body }).save();
     return Bookings
 }
