@@ -229,6 +229,11 @@ const AdminlogIn = async (req, res) => {
 
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
+        if (!admin?._doc.isVerifed) return res.send({
+            status: false,
+            code: 200,
+            message: "un Verifed user , Please Verify your Email with OTP",
+        })
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
 
         let refrashToken = jwt.sign({
