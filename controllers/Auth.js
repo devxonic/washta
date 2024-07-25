@@ -108,11 +108,37 @@ const logIn = async (req, res) => {
 
         let User = await SignupFunctions.getUser(req, role);
         if (!User) return response.resBadRequest(res, "couldn't find user");
-        if (!User?._doc.isVerifed) return res.send({
-            status: false,
-            code: 200,
-            message: "un Verifed user , Please Verify your Email with OTP",
-        })
+        if (!User?._doc.isVerifed) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.mailerHost,
+                port: process.env.mailerPort,
+                auth: {
+                    user: process.env.mailerEmail,
+                    pass: process.env.mailerPassword,
+                },
+            });
+            let OTP = generate4DigitCode()
+            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+            let transporterRes = await transporter.sendMail({
+                from: process.env.mailerEmail,
+                to: User._doc.email,
+                subject: "Verification",
+                html: Mail,
+            });
+            if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+            let Otp = await new OtpModel({
+                otp: OTP,
+                email: User._doc.email,
+                For: "registration"
+            }).save();
+
+            return res.send({
+                status: false,
+                code: 200,
+                message: "Unverified user, please verify your email with the OTP sent to your email again",
+            })
+        }
         if (role == "seller" && !User._doc.business.isApproved) return res.send({
             status: false,
             code: 200,
@@ -178,7 +204,7 @@ const AdminSignUp = async (req, res) => {
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let adminBody = { username, fullname, email : email, phone, password: hash }
+        let adminBody = { username, fullname, email: email, phone, password: hash }
         console.log(adminBody)
         let newAdmin = new AdminModel(adminBody)
         let savedAdmin = await newAdmin.save()
@@ -229,11 +255,37 @@ const AdminlogIn = async (req, res) => {
 
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
-        if (!admin?._doc.isVerifed) return res.send({
-            status: false,
-            code: 200,
-            message: "un Verifed user , Please Verify your Email with OTP",
-        })
+        if (!admin?._doc.isVerifed) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.mailerHost,
+                port: process.env.mailerPort,
+                auth: {
+                    user: process.env.mailerEmail,
+                    pass: process.env.mailerPassword,
+                },
+            });
+            let OTP = generate4DigitCode()
+            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+            let transporterRes = await transporter.sendMail({
+                from: process.env.mailerEmail,
+                to: admin._doc.email,
+                subject: "Verification",
+                html: Mail,
+            });
+            if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+            let Otp = await new OtpModel({
+                otp: OTP,
+                email: admin._doc.email,
+                For: "registration"
+            }).save();
+
+            return res.send({
+                status: false,
+                code: 200,
+                message: "Unverified user, please verify your email with the OTP sent to your email again",
+            })
+        }
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
 
         let refrashToken = jwt.sign({
