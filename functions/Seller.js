@@ -175,7 +175,7 @@ const getorderbyStatus = async (req) => {
 const getpastorder = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 })
     Shops = Shops.map((x) => (x._id.toString()))
-    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }] })
+    let Order = await OrderModel.find({ $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }] }).populate({ path: "vehicleId" })
     return Order
 }
 const getActiveOrder = async (req) => {
