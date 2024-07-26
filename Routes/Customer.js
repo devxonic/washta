@@ -40,7 +40,7 @@ router.get('/bookingbyStatus', middlewares.verifyCustomer, CustomerControllers.g
 // ----------------------------------------------- incoive -----------------------------------------------------//
 
 
-router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
-router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
+router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getInvoiceById)
 
 module.exports = router 

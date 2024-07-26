@@ -108,6 +108,7 @@ const logIn = async (req, res) => {
 
         let User = await SignupFunctions.getUser(req, role);
         if (!User) return response.resBadRequest(res, "couldn't find user");
+        if (!User) return response.resBadRequest(res, "couldn't find user");
         if (!User?._doc.isVerifed) {
             const transporter = nodemailer.createTransport({
                 host: process.env.mailerHost,
