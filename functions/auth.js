@@ -2,6 +2,7 @@ const CustomerModel = require("../models/Customer")
 const SellerModel = require("../models/seller")
 const OtpModel = require("../models/Otp")
 const bcrypt = require("bcrypt")
+const AdminModel = require("../models/admin")
 
 
 const updateRefreshToken = async (req, token, role) => {
@@ -12,6 +13,10 @@ const updateRefreshToken = async (req, token, role) => {
     if (role == "seller") {
         let seller = await SellerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
         return seller
+    }
+    if (role == "admin") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
+        return admin
     }
 }
 
@@ -47,6 +52,10 @@ const MakeUserVerifed = async (req, role) => {
         let Customer = await SellerModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
         return Customer;
     }
+    if (role == "admin") {
+        let Customer = await AdminModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
+        return Customer;
+    }
 }
 
 const resetPassword = async (email, password, role) => {
@@ -72,11 +81,28 @@ const isOTPAlreadySended = async (req) => {
 
 }
 
+
+// ----------------------------------------------- Bookings -----------------------------------------------------//
+
+const getAdminByEmail = async (req) => {
+
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+    return admin;
+}
+
+const getAdmin = async (req) => {
+
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] });
+    return admin;
+}
+
 module.exports = {
     updateRefreshToken,
     getUser,
     MakeUserVerifed,
     getUserByEmail,
     resetPassword,
-    isOTPAlreadySended
+    isOTPAlreadySended,
+    getAdminByEmail,
+    getAdmin
 }

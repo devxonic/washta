@@ -101,8 +101,19 @@ const userVerifiaction = async (req, res) => {
         let User = await SignupFunctions.MakeUserVerifed(req, role)
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
 
-        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : role == "admin" ? process.env.adminToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
+        if (role == "seller") {
+            console.log("i am in Seller")
+            return response.resSuccessData(res, {
+                user: {
+                    id: User.id,
+                    username: User.username,
+                    email: User.email,
+                    phone: User.phone,
+                },
+            });
+        }
         let refrashToken = jwt.sign({
             id: User._id,
             email: User.email,

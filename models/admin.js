@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
-const CustomerSchema = new Schema({
+const AdminSchema = new Schema({
     username: { type: String, unique: true },
     fullName: { type: String },
     password: {
@@ -10,11 +10,7 @@ const CustomerSchema = new Schema({
         required: true,
     },
     email: { type: String },
-    phone: {
-        type: String,
-    },
-    selectedVehicle: { type: mongoose.Types.ObjectId, ref: "vehicle" },
-    isTernimated: { type: Boolean },
+    phone: { type: String },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String
@@ -64,10 +60,11 @@ const CustomerSchema = new Schema({
         touchId: {
             type: Boolean
         },
-    }
-}, { timestamps: true });
+
+    },
+}, { timestamps: true })
 
 
 
-const CustomerModel = mongoose.model('Customer', CustomerSchema);
-module.exports = CustomerModel;
+const AdminModel = mongoose.model('admin', AdminSchema);
+module.exports = AdminModel;
