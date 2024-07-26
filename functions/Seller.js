@@ -197,6 +197,7 @@ const orderStatus = async (req) => {
     let OBJ = { status }
     if (status == "ongoing") OBJ = { ...OBJ, orderAcceptedAt: date }
     if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date }
+    if (status == "cancelled") OBJ = { ...OBJ, isCancel: true, cancelBy: "seller", cancellationTime: date }
     let Order = await OrderModel.findOneAndUpdate(
         { _id: id },
         { $set: OBJ },
