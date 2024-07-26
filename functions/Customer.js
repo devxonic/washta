@@ -234,6 +234,13 @@ const getMyBookingById = async (req) => {
     return Bookings
 }
 
+const cancelBooking = async (req) => {
+    let { cancellationResion } = req.body
+    let date = new Date()
+    let Bookings = await OrderModel.findByIdAndUpdate(req.params.id, { isCancel: true, cancelBy: "customer", cancellationResion: cancellationResion, status: "cancelled", cancellationTime: date }, { new: true })
+    return Bookings
+}
+
 const createNewBooking = async (req) => {
     req.body.location = {
         ...req.body.location,
@@ -308,5 +315,6 @@ module.exports = {
     getbookingbyStatus,
     getAllInvoice,
     getInvoiceById,
+    cancelBooking,
     getTimeDifferenceFormatted,
 }

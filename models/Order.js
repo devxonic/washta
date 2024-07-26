@@ -29,6 +29,10 @@ const OrderSchema = new mongoose.Schema({
     orderAcceptedAt: { type: Date },
     carReceivedCenterAt: { type: Date },
     orderCompleteAt: { type: Date },
+    isCancel: { type: Boolean },
+    cancelBy: { type: String, enum: ["customer", 'seller', 'admin'] },
+    cancellationResion: { type: String },
+    cancellationTime: { type: Date },
     paymentId: { type: String },
     location: {
         type: pointSchema,

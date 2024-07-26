@@ -256,6 +256,18 @@ const getMyBookingById = async (req, res) => {
     }
 }
 
+const cancelBooking = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.cancelBooking(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const createNewBooking = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createNewBooking(req)
@@ -335,4 +347,5 @@ module.exports = {
     getbookingbyStatus,
     getAllInvoice,
     getInvoiceById,
+    cancelBooking,
 }

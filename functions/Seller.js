@@ -197,6 +197,7 @@ const orderStatus = async (req) => {
     let OBJ = { status }
     if (status == "ongoing") OBJ = { ...OBJ, orderAcceptedAt: date }
     if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date }
+    if (status == "cancelled") OBJ = { ...OBJ, isCancel: true, cancelBy: "seller", cancellationTime: date }
     let Order = await OrderModel.findOneAndUpdate(
         { _id: id },
         { $set: OBJ },
@@ -220,7 +221,7 @@ const getpastorder = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
-    });
+    }).populate({ path: "vehicleId" });
     return Order;
 };
 const getActiveOrder = async (req) => {
