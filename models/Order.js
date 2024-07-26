@@ -12,7 +12,7 @@ const pointSchema = new mongoose.Schema({
         required: true,
     },
     text: { type: String }
-});
+}, { _id: false });
 
 
 const OrderSchema = new mongoose.Schema({
@@ -25,6 +25,10 @@ const OrderSchema = new mongoose.Schema({
     cost: { type: String },
     discount: { price: { type: Number, default: 0 }, percent: { type: String, default: "0%" } },
     // costSummary: { type: String }, // pending
+    orderCompleteAt: { type: Date },
+    orderAcceptedAt: { type: Date },
+    carReceivedCenterAt: { type: Date },
+    orderCompleteAt: { type: Date },
     paymentId: { type: String },
     location: {
         type: pointSchema,
