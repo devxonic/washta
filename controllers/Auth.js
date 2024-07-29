@@ -255,18 +255,19 @@ const AdminlogIn = async (req, res) => {
 
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
+        const transporter = nodemailer.createTransport({
+            host: process.env.mailerHost,
+            port: process.env.mailerPort,
+            auth: {
+                user: process.env.mailerEmail,
+                pass: process.env.mailerPassword,
+            },
+        });
+        let OTP = generate4DigitCode()
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!admin?._doc.isVerifed) {
-            const transporter = nodemailer.createTransport({
-                host: process.env.mailerHost,
-                port: process.env.mailerPort,
-                auth: {
-                    user: process.env.mailerEmail,
-                    pass: process.env.mailerPassword,
-                },
-            });
-            let OTP = generate4DigitCode()
-            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
             let transporterRes = await transporter.sendMail({
                 from: process.env.mailerEmail,
                 to: admin._doc.email,
@@ -286,31 +287,23 @@ const AdminlogIn = async (req, res) => {
                 message: "Unverified user, please verify your email with the OTP sent to your email again",
             })
         }
-        if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
-
-        let refrashToken = jwt.sign({
-            id: admin.id,
-            email: admin.email,
-            username: admin.username
-        }, process.env.adminToken, { expiresIn: '30 days' })
-
-        await SignupFunctions.updateRefreshToken(req, refrashToken, "admin")
-
-        let token = jwt.sign({
-            id: admin.id,
-            email: admin.email,
-            username: admin.username
-        }, process.env.adminToken, { expiresIn: '7d' })
-
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: admin._doc.email,
+            subject: "Login",
+            html: Mail,
+        });
+        if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+        let Otp = await new OtpModel({
+            otp: OTP,
+            email: admin._doc.email,
+            For: "registration"
+        }).save();
 
         return response.resSuccessData(res, {
-            user: {
-                id: admin.id,
-                name: admin.name,
-                username: admin.username,
-                email: admin.email,
-                profileImage: admin.avatarPath
-            }, accessToken: token, refrashToken
+            email: Otp.email,
+            For: "Login",
+            message: "Login OTP Sended On Your Email"
         });
     }
     catch (error) {
