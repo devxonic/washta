@@ -108,18 +108,7 @@ const logIn = async (req, res) => {
 
         let User = await SignupFunctions.getUser(req, role);
         if (!User) return response.resBadRequest(res, "couldn't find user");
-        const transporter = nodemailer.createTransport({
-            host: process.env.mailerHost,
-            port: process.env.mailerPort,
-            auth: {
-                user: process.env.mailerEmail,
-                pass: process.env.mailerPassword,
-            },
-        });
-        let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
-        if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+        if (!User) return response.resBadRequest(res, "couldn't find user");
         if (!User?._doc.isVerifed) {
             let transporterRes = await transporter.sendMail({
                 from: process.env.mailerEmail,

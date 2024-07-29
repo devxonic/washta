@@ -4,6 +4,7 @@ const OrderModel = require("../models/Order");
 const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
+const { getTimeDifferenceFormatted } = require("../helpers/helper");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -191,11 +192,18 @@ const getOrderById = async (req) => {
 
 const orderStatus = async (req) => {
     let id = req.params.id;
+    let { status } = req.body;
+    let date = new Date();
+    let OBJ = { status }
+    if (status == "ongoing") OBJ = { ...OBJ, orderAcceptedAt: date }
+    if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date }
+    if (status == "cancelled") OBJ = { ...OBJ, isCancel: true, cancelBy: "seller", cancellationTime: date }
     let Order = await OrderModel.findOneAndUpdate(
         { _id: id },
-        { status: req.body.status },
-        { new: true, fields: { status: 1 } },
-    );
+        { $set: OBJ },
+        { new: true },
+    ).populate({ path: 'vehicleId' })
+
     return Order;
 };
 
@@ -213,7 +221,7 @@ const getpastorder = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
-    });
+    }).populate({ path: "vehicleId" });
     return Order;
 };
 const getActiveOrder = async (req) => {
@@ -230,10 +238,20 @@ const getActiveOrder = async (req) => {
 const getAllInvoice = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    let Order = await OrderModel.find({
-        $and: [{ shopId: { $in: Shops } }, { status: "pending" }],
+    let orders = await OrderModel.find({
+        $and: [{ shopId: { $in: Shops } }, { status: "completed" }],
     }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
-    return Order;
+
+    let updatedOrder = orders.map(order => {
+        if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
+            return order._doc = {
+                ...order._doc, duration: getTimeDifferenceFormatted(order._doc.orderAcceptedAt, order._doc.orderCompleteAt)
+            }
+        }
+        return order._doc
+
+    })
+    return updatedOrder;
 };
 
 
@@ -241,10 +259,14 @@ const getAllInvoiceById = async (req) => {
     let { id } = req.params
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    let Order = await OrderModel.findOne({
-        $and: [{ shopId: { $in: Shops } }, { _id: id }],
+    let orders = await OrderModel.findOne({
+        $and: [{ shopId: { $in: Shops } }, { status: "completed" }, { _id: id }],
     }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
-    return Order;
+    if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
+        console.log("Order time")
+        orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
+    }
+    return orders._doc;
 };
 
 module.exports = {
