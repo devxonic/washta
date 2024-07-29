@@ -248,11 +248,8 @@ const getMyShopReviews = async (req) => {
 const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
-    if (!reviewId) return null
-    let Review = await ReviewModel.find({ _id: reviewId });
-
-    console.log(Review)
-    console.log(comment)
+    let Review = await ReviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
     let body = {
         replyTo,
         replyBy: {
@@ -263,7 +260,24 @@ const replyToReview = async (req) => {
     }
     console.log(body)
 
-    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { reply: body }, { new: true })
+    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    return reply
+};
+
+const editMyReplys = async (req) => {
+    let { reviewId } = req.query
+    let { commentId, comment } = req.body
+    let Review = await ReviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.map(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            reply.comment.text = comment.text
+            return reply
+        }
+        return reply
+    })
+
+    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
 };
 
@@ -297,4 +311,5 @@ module.exports = {
     getActiveOrder,
     getMyShopReviews,
     replyToReview,
+    editMyReplys,
 };

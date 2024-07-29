@@ -45,10 +45,7 @@ router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActive
 
 router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
 router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
-// router.get('/orderbyStatus', middlewares.verifySeller, SellerControllers.getorderbyStatus)
-// router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.orderStatus)
-// router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
-// router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
+router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
 
 
 
