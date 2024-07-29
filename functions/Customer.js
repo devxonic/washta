@@ -265,7 +265,7 @@ const updatesShopReview = async (req) => {
     let { rating, comment } = req.body
     let { id } = req.params
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, comment }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text' : comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     return Rating
 }
 

@@ -296,6 +296,16 @@ const getMyShopReviews = async (req, res) => {
     }
 }
 
+const replyToReview = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.replyToReview(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 
 
@@ -323,4 +333,5 @@ module.exports = {
     getpastorder,
     getActiveOrder,
     getMyShopReviews,
+    replyToReview
 }

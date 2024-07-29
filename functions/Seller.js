@@ -244,6 +244,29 @@ const getMyShopReviews = async (req) => {
     return Reviews
 };
 
+
+const replyToReview = async (req) => {
+    let { reviewId } = req.query
+    let { comment, replyTo } = req.body
+    if (!reviewId) return null
+    let Review = await ReviewModel.find({ _id: reviewId });
+
+    console.log(Review)
+    console.log(comment)
+    let body = {
+        replyTo,
+        replyBy: {
+            id: req.user.id,
+            role: 'seller'
+        },
+        comment
+    }
+    console.log(body)
+
+    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { reply: body }, { new: true })
+    return reply
+};
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -273,4 +296,5 @@ module.exports = {
     getpastorder,
     getActiveOrder,
     getMyShopReviews,
+    replyToReview,
 };
