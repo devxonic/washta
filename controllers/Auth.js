@@ -108,19 +108,19 @@ const logIn = async (req, res) => {
 
         let User = await SignupFunctions.getUser(req, role);
         if (!User) return response.resBadRequest(res, "couldn't find user");
-        const transporter = nodemailer.createTransport({
-            host: process.env.mailerHost,
-            port: process.env.mailerPort,
-            auth: {
-                user: process.env.mailerEmail,
-                pass: process.env.mailerPassword,
-            },
-        });
-        let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!User?._doc.isVerifed) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.mailerHost,
+                port: process.env.mailerPort,
+                auth: {
+                    user: process.env.mailerEmail,
+                    pass: process.env.mailerPassword,
+                },
+            });
+            let OTP = generate4DigitCode()
+            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
             let transporterRes = await transporter.sendMail({
                 from: process.env.mailerEmail,
                 to: User._doc.email,
@@ -133,7 +133,6 @@ const logIn = async (req, res) => {
                 email: User._doc.email,
                 For: "registration"
             }).save();
-
             return res.send({
                 status: false,
                 code: 200,
@@ -145,23 +144,33 @@ const logIn = async (req, res) => {
             code: 200,
             message: "Account is Not Approved by Admin Please contact to Admin",
         })
-        let transporterRes = await transporter.sendMail({
-            from: process.env.mailerEmail,
-            to: User._doc.email,
-            subject: "Login",
-            html: Mail,
-        });
-        if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
-        let Otp = await new OtpModel({
-            otp: OTP,
-            email: User._doc.email,
-            For: "registration"
-        }).save();
+
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
+        if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
+
+        let refrashToken = jwt.sign({
+            id: User.id,
+            email: User.email,
+            username: User.username
+        }, selectEnv, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+
+        let token = jwt.sign({
+            id: User.id,
+            email: User.email,
+            username: User.username
+        }, selectEnv, { expiresIn: '7d' })
+
 
         return response.resSuccessData(res, {
-            email: Otp.email,
-            For: "Login",
-            message: "Login OTP Sended On Your Email"
+            user: {
+                id: User.id,
+                name: User.name,
+                username: User.username,
+                email: User.email,
+                profileImage: User.avatarPath
+            }, accessToken: token, refrashToken
         });
     }
     catch (error) {
