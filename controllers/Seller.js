@@ -298,7 +298,7 @@ const getAllInvoice = async (req, res) => {
 
 const getAllInvoiceById = async (req, res) => {
     try {
-        let Order = await SellerFunctions.getAllInvoice(req)
+        let Order = await SellerFunctions.getAllInvoiceById(req)
         if (!Order) return response.resBadRequest(res, "couldn't find invoice")
         return response.resSuccessData(res, Order);
     } catch (error) {
