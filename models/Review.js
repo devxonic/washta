@@ -15,7 +15,7 @@ const ReviewSchema = new mongoose.Schema({
             message: props => `${props.value} is not a valid rating! Rating must be between 0.5 and 5.0 in increments of 0.5.`
         }
     },
-    date: { type: Date, defualt: new Date() },
+    date: { type: Date, default: new Date() },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
