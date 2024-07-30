@@ -240,7 +240,27 @@ const getAllInvoice = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }],
-    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
 
     let updatedOrder = orders.map(order => {
         if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
@@ -261,9 +281,28 @@ const getAllInvoiceById = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.findOne({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }, { _id: id }],
-    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
     if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
-        console.log("Order time")
         orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
     }
     return orders._doc;
