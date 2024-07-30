@@ -4,7 +4,6 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
-const { getTimeDifferenceFormatted } = require('../helpers/helper');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -255,36 +254,6 @@ const getbookingbyStatus = async (req) => {
     let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
     return Bookings
 }
-
-
-// ----------------------------------------------- Invoice -----------------------------------------------------//
-
-const getAllInvoice = async (req) => {
-    let orders = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: 'completed' }] }).populate({ path: "vehicleId" })
-    let updatedOrder = orders.map(order => {
-        if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
-            return order._doc = {
-                ...order._doc, duration: getTimeDifferenceFormatted(order._doc.orderAcceptedAt, order._doc.orderCompleteAt)
-            }
-        }
-        return order._doc
-
-    })
-    return updatedOrder
-}
-
-
-const getInvoiceById = async (req) => {
-
-    let orders = await OrderModel.findOne({ $and: [{ customerId: req.user.id }, { status: 'completed' }, { _id: req.params.id }] }).populate({ path: "vehicleId" })
-    if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
-        console.log("Order time")
-        orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
-    }
-    return orders._doc
-}
-
-
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -313,8 +282,4 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
-    getAllInvoice,
-    getInvoiceById,
-    cancelBooking,
-    getTimeDifferenceFormatted,
 }
