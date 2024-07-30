@@ -331,6 +331,20 @@ const getAllInvoiceById = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+
+const getAllMyNotifications = async (req, res) => {
+    try {
+        let Notifications = await SellerFunctions.getAllMyNotifications(req)
+        if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
+            return response.resSuccessData(res, Notifications);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const editMyReplys = async (req, res) => {
     try {
         let Order = await SellerFunctions.editMyReplys(req)
@@ -372,4 +386,5 @@ module.exports = {
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
+    getAllMyNotifications,
 }
