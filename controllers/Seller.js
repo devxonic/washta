@@ -281,45 +281,6 @@ const getActiveOrder = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
-
-// ----------------------------------------------- Reviews -----------------------------------------------------//
-
-
-const getMyShopReviews = async (req, res) => {
-    try {
-        let Order = await SellerFunctions.getMyShopReviews(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
-        return response.resSuccessData(res, Order);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
-
-const replyToReview = async (req, res) => {
-    try {
-        let Order = await SellerFunctions.replyToReview(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
-        return response.resSuccessData(res, Order);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
-
-const editMyReplys = async (req, res) => {
-    try {
-        let Order = await SellerFunctions.editMyReplys(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
-        return response.resSuccessData(res, Order);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
-
-
-
 module.exports = {
     getProfile,
     editProfile,
@@ -343,7 +304,4 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
-    getMyShopReviews,
-    replyToReview,
-    editMyReplys
 }

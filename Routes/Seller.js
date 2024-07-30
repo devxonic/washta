@@ -47,6 +47,10 @@ router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopR
 router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
 router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
 
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInvoiceById)
 
 
 module.exports = router 

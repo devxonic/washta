@@ -4,7 +4,6 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
-const ReviewModel = require('../models/Review');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -234,7 +233,19 @@ const getMyBookingById = async (req) => {
     return Bookings
 }
 
+const cancelBooking = async (req) => {
+    let { cancellationResion } = req.body
+    let date = new Date()
+    let Bookings = await OrderModel.findByIdAndUpdate(req.params.id, { isCancel: true, cancelBy: "customer", cancellationResion: cancellationResion, status: "cancelled", cancellationTime: date }, { new: true })
+    return Bookings
+}
+
 const createNewBooking = async (req) => {
+    req.body.location = {
+        ...req.body.location,
+        type: "Point",
+        coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
+    };
     let Bookings = await OrderModel({ ...req.body }).save();
     return Bookings
 }
@@ -243,32 +254,6 @@ const getbookingbyStatus = async (req) => {
     let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
     return Bookings
 }
-
-// ----------------------------------------------- Ratings -----------------------------------------------------//
-
-const createShopRating = async (req) => {
-    let { orderId, shopId, rating, comment } = req.body
-    let { id } = req.user
-
-    let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment }).save()
-    return Rating
-}
-
-const getMyReviews = async (req) => {
-    let { id } = req.user
-    console.log(req.user.id)
-    let Rating = await ReviewModel.find({ customerId: id })
-    return Rating
-}
-
-const updatesShopReview = async (req) => {
-    let { rating, comment } = req.body
-    let { id } = req.params
-
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text' : comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
-    return Rating
-}
-
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -297,7 +282,4 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
-    createShopRating,
-    updatesShopReview,
-    getMyReviews,
 }
