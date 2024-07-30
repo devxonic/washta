@@ -302,9 +302,7 @@ const getAllInvoiceById = async (req) => {
                 vehicleType: 1,
             }
         }]);
-        console.log("123456",orders)
     if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
-        console.log("Order time")
         orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
     }
     return orders._doc;
