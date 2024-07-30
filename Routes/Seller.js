@@ -41,6 +41,12 @@ router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.ord
 router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
 router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
 
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
+router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
+router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
+
 // ----------------------------------------------- invoice -----------------------------------------------------//
 
 router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)

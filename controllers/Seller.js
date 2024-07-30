@@ -282,6 +282,19 @@ const getActiveOrder = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+
+const getMyShopReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getMyShopReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 // ----------------------------------------------- invoice -----------------------------------------------------//
 
 
@@ -296,9 +309,20 @@ const getAllInvoice = async (req, res) => {
     }
 }
 
+const replyToReview = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.replyToReview(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const getAllInvoiceById = async (req, res) => {
     try {
-        let Order = await SellerFunctions.getAllInvoice(req)
+        let Order = await SellerFunctions.getAllInvoiceById(req)
         if (!Order) return response.resBadRequest(res, "couldn't find invoice")
         return response.resSuccessData(res, Order);
     } catch (error) {
@@ -312,14 +336,27 @@ const getAllInvoiceById = async (req, res) => {
 
 const getAllMyNotifications = async (req, res) => {
     try {
-        let Order = await SellerFunctions.getAllMyNotifications(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Notifications")
+        let Notifications = await SellerFunctions.getAllMyNotifications(req)
+        if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
+            return response.resSuccessData(res, Notifications);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const editMyReplys = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.editMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, Order);
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error)
     }
 }
+
+
 
 module.exports = {
     getProfile,
@@ -344,6 +381,9 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getMyShopReviews,
+    replyToReview,
+    editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
     getAllMyNotifications,

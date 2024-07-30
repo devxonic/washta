@@ -7,6 +7,7 @@ const notificationModel = require("../models/notification");
 const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
+const ReviewModel = require("../models/Review");
 const { getTimeDifferenceFormatted } = require("../helpers/helper");
 
 const signUp = async (req) => {
@@ -236,6 +237,60 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+
+const getMyShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    if (shopId) {
+        if (!Shops.includes(shopId)) return null
+        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+        return Reviews
+    }
+    let Reviews = await ReviewModel.find({
+        $and: { shopId: { $in: Shops } },
+    }).sort({ createdAt: 1 }).limit(limit ?? null)
+    return Reviews
+};
+
+
+const replyToReview = async (req) => {
+    let { reviewId } = req.query
+    let { comment, replyTo } = req.body
+    let Review = await ReviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let body = {
+        replyTo,
+        replyBy: {
+            id: req.user.id,
+            role: 'seller'
+        },
+        comment
+    }
+    console.log(body)
+
+    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    return reply
+};
+
+const editMyReplys = async (req) => {
+    let { reviewId } = req.query
+    let { commentId, comment } = req.body
+    let Review = await ReviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.map(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            reply.comment.text = comment.text
+            return reply
+        }
+        return reply
+    })
+
+    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
+}
 // ----------------------------------------------- Invoice -----------------------------------------------------//
 
 const getAllInvoice = async (req) => {
@@ -243,7 +298,27 @@ const getAllInvoice = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }],
-    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
 
     let updatedOrder = orders.map(order => {
         if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
@@ -264,9 +339,28 @@ const getAllInvoiceById = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.findOne({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }, { _id: id }],
-    }).populate({ path: "customerId", select: { username: 1, profile: 1 } });
+    }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
     if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
-        console.log("Order time")
         orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
     }
     return orders._doc;
@@ -348,6 +442,9 @@ module.exports = {
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getMyShopReviews,
+    replyToReview,
+    editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
     getAllMyNotifications,
