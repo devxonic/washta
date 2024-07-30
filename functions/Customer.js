@@ -270,7 +270,11 @@ const createShopRating = async (req) => {
 
 const getMyReviews = async (req) => {
     let { id } = req.user
-    console.log(req.user.id)
+    let { shopId } = req.query
+    if (shopId) {
+        let Rating = await ReviewModel.find({ customerId: id, shopId })
+        return Rating
+    }
     let Rating = await ReviewModel.find({ customerId: id })
     return Rating
 }
