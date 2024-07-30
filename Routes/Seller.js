@@ -46,5 +46,9 @@ router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActive
 router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)
 router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInvoiceById)
 
+// ----------------------------------------------- Notiification -----------------------------------------------------//
+
+router.get('/Notifications', middlewares.verifySeller, SellerControllers.getAllMyNotifications)
+
 
 module.exports = router 

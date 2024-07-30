@@ -306,6 +306,21 @@ const getAllInvoiceById = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+
+const getAllMyNotifications = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getAllMyNotifications(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Notifications")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 module.exports = {
     getProfile,
     editProfile,
@@ -331,4 +346,5 @@ module.exports = {
     getActiveOrder,
     getAllInvoice,
     getAllInvoiceById,
+    getAllMyNotifications,
 }

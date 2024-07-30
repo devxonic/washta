@@ -5,6 +5,7 @@ const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
 const { getTimeDifferenceFormatted } = require('../helpers/helper');
+const { NotificationOnBooking } = require('../helpers/notification');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -248,6 +249,7 @@ const createNewBooking = async (req) => {
         coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
     };
     let Bookings = await OrderModel({ ...req.body }).save();
+    if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
 
