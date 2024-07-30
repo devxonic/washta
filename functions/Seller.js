@@ -230,17 +230,17 @@ const getActiveOrder = async (req) => {
 
 
 const getMyShopReviews = async (req) => {
-    let { shopId } = req.query
+    let { shopId, limit } = req.query
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     if (shopId) {
         if (!Shops.includes(shopId)) return null
-        let Reviews = await ReviewModel.find({ shopId });
+        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
         return Reviews
     }
     let Reviews = await ReviewModel.find({
         $and: { shopId: { $in: Shops } },
-    });
+    }).sort({ createdAt: 1 }).limit(limit ?? null)
     return Reviews
 };
 
