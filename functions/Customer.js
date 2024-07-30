@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
+const ReviewModel = require('../models/Review');
 const OrderModel = require('../models/Order');
 const { getTimeDifferenceFormatted } = require('../helpers/helper');
 const { NotificationOnBooking } = require('../helpers/notification');
@@ -257,6 +258,34 @@ const getbookingbyStatus = async (req) => {
     let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
     return Bookings
 }
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+const createShopRating = async (req) => {
+    let { orderId, shopId, rating, comment } = req.body
+    let { id } = req.user
+
+    let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment.text }).save()
+    return Rating
+}
+
+const getMyReviews = async (req) => {
+    let { id } = req.user
+    let { shopId } = req.query
+    if (shopId) {
+        let Rating = await ReviewModel.find({ customerId: id, shopId })
+        return Rating
+    }
+    let Rating = await ReviewModel.find({ customerId: id })
+    return Rating
+}
+
+const updatesShopReview = async (req) => {
+    let { rating, comment } = req.body
+    let { id } = req.params
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    return Rating
+}
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -285,4 +314,8 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
+    cancelBooking,
+    createShopRating,
+    updatesShopReview,
+    getMyReviews,
 }
