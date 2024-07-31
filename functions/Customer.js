@@ -232,7 +232,29 @@ const getMyBookings = async (req) => {
 }
 
 const getMyBookingById = async (req) => {
-    let Bookings = await OrderModel.findById(req.params.id)
+    let Bookings = await OrderModel.findById(req.params.id).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "vehicleId", select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+                vehicleModel: 1,
+            }
+        },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        }
+    ])
     return Bookings
 }
 
@@ -255,7 +277,29 @@ const createNewBooking = async (req) => {
 }
 
 const getbookingbyStatus = async (req) => {
-    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
+    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] }).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "vehicleId", select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+                vehicleModel: 1,
+            }
+        },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        }
+    ])
     return Bookings
 }
 // ----------------------------------------------- Ratings -----------------------------------------------------//
