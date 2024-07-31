@@ -330,10 +330,10 @@ const getMyReviews = async (req) => {
         },
         {
             path: "orderId", select: {
-                customerId : 0,
-                vehicleId : 0,
-                shopId : 0,
-                location : 0,
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
             }
         }
     ]
@@ -352,6 +352,37 @@ const updatesShopReview = async (req) => {
     let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     return Rating
 }
+
+
+const getShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+
+    if (!shopId) return null
+    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ])
+    return Reviews
+
+};
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -384,4 +415,5 @@ module.exports = {
     createShopRating,
     updatesShopReview,
     getMyReviews,
+    getShopReviews,
 }
