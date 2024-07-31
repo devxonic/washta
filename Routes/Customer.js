@@ -50,5 +50,6 @@ router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getIn
 router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.createShopRating)
 router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
 router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
+router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getShopReviews)
 
 module.exports = router 
