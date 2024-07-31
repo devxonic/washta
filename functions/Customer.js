@@ -315,32 +315,33 @@ const createShopRating = async (req) => {
 const getMyReviews = async (req) => {
     let { id } = req.user
     let { shopId } = req.query
-    if (shopId) {
-        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate([
-            { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-            {
-                path: "shopId", select: {
-                    Owner: 1,
-                    shopName: 1,
-                    coverImage: 1,
-                    isActive: 1,
-                    shopDetails: 1,
-                    estimatedServiceTime: 1,
-                    cost: 1,
-                }
-            },
-            {
-                path: "orderId", select: {
-                    customerId : 0,
-                    vehicleId : 0,
-                    shopId : 0,
-                    location : 0,
-                }
+    let poplate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
             }
-        ])
+        },
+        {
+            path: "orderId", select: {
+                customerId : 0,
+                vehicleId : 0,
+                shopId : 0,
+                location : 0,
+            }
+        }
+    ]
+    if (shopId) {
+        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(poplate)
         return Rating
     }
-    let Rating = await ReviewModel.find({ customerId: id })
+    let Rating = await ReviewModel.find({ customerId: id }).poplate(poplate)
     return Rating
 }
 
