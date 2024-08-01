@@ -312,9 +312,18 @@ const createShopRating = async (req) => {
     return Rating
 }
 
+const createSellerReview = async (req) => {
+    let { orderId, sellerId, rating, comment } = req.body
+    let { id } = req.user
+
+    console.log(sellerId)
+    let Rating = await ReviewModel({ orderId, sellerId: sellerId, customerId: id, rating, 'comment.text': comment.text }).save()
+    return Rating
+}
+
 const getMyReviews = async (req) => {
     let { id } = req.user
-    let { shopId } = req.query
+    let { shopId, sellerId } = req.query
     let poplate = [
         { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
         {
@@ -341,6 +350,11 @@ const getMyReviews = async (req) => {
         let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(poplate)
         return Rating
     }
+    if (sellerId) {
+        let Rating = await ReviewModel.find({ customerId: id, sellerId }).populate(poplate)
+        return Rating
+    }
+
     let Rating = await ReviewModel.find({ customerId: id }).poplate(poplate)
     return Rating
 }
@@ -383,6 +397,46 @@ const getShopReviews = async (req) => {
     return Reviews
 
 };
+
+const getSellerReview = async (req) => {
+    let { sellerId, shopId, limit } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!sellerId && !shopId) return null
+    if (sellerId) {
+        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+    if (shopId) {
+        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        if(!owner) return null
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+};
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -416,4 +470,6 @@ module.exports = {
     updatesShopReview,
     getMyReviews,
     getShopReviews,
+    createSellerReview,
+    getSellerReview,
 }
