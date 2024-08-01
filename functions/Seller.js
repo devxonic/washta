@@ -194,21 +194,28 @@ const getOrderById = async (req) => {
     return Order;
 };
 
-const orderStatus = async (req) => {
+const orderStatus = async (req, res) => {
     let id = req.params.id;
     let { status } = req.body;
     let date = new Date();
+    let checkOrder = await OrderModel.findOne({ _id: id }, {
+        isCompleted: 1,
+        isAccepted: 1,
+        isCancel: 1,
+    })
+    if (checkOrder?.isCompleted && checkOrder.isCompleted) return response.resBadRequest(res, "This order has already been completed. You can't change its status");
     let OBJ = { status }
-    if (status == "ongoing") OBJ = { ...OBJ, orderAcceptedAt: date }
-    if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date }
-    if (status == "cancelled") OBJ = { ...OBJ, isCancel: true, cancelBy: "seller", cancellationTime: date }
+    if (status == "inprocess") OBJ = { ...OBJ, orderAcceptedAt: date, isAccepted: true }
+    if (status == "cancelled") OBJ = { ...OBJ, cancelBy: "seller", cancellationTime: date, isCancel: true, }
+    if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date, isCompleted: true }
     let Order = await OrderModel.findOneAndUpdate(
         { _id: id },
         { $set: OBJ },
         { new: true },
     ).populate({ path: 'vehicleId' })
 
-    return Order;
+    return response.resSuccessData(res, Order);
+    ;
 };
 
 const getorderbyStatus = async (req) => {

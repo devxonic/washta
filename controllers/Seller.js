@@ -240,9 +240,7 @@ const getOrderById = async (req, res) => {
 
 const orderStatus = async (req, res) => {
     try {
-        let Order = await SellerFunctions.orderStatus(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Order")
-        return response.resSuccessData(res, Order);
+        let Order = await SellerFunctions.orderStatus(req, res)
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error)
@@ -338,7 +336,7 @@ const getAllMyNotifications = async (req, res) => {
     try {
         let Notifications = await SellerFunctions.getAllMyNotifications(req)
         if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
-            return response.resSuccessData(res, Notifications);
+        return response.resSuccessData(res, Notifications);
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error)
