@@ -366,6 +366,20 @@ const updatePromoCode = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+const getShopReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -397,5 +411,6 @@ module.exports = {
     getAllBusniess,
     getBusinessById,
     businessReject,
-    getBusinessbyStatus
+    getBusinessbyStatus,
+    getShopReviews
 }

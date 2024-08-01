@@ -7,9 +7,11 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const reviewModel = require('../models/Review');
 const ServiceFeeModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
+const { default: mongoose } = require('mongoose');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -320,6 +322,14 @@ const updatePromoCode = async (req) => {
     return Promocode
 }
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+const getShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+    let Reviews = await reviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+    return Reviews
+    return Reviews
+}
 
 
 module.exports = {
@@ -353,6 +363,7 @@ module.exports = {
     updateVehicles,
     getAllBusniess,
     getBusinessById,
-    businessReject
+    businessReject,
+    getShopReviews
 
 }
