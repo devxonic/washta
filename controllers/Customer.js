@@ -345,7 +345,30 @@ const updatesShopReview = async (req, res) => {
     }
 }
 
+const createSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
 
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 // ----------------------------------------------- Booking -----------------------------------------------------//
 
 const getAllInvoice = async (req, res) => {
@@ -402,4 +425,6 @@ module.exports = {
     getInvoiceById,
     cancelBooking,
     getShopReviews,
+    createSellerReview,
+    getSellerReview
 }

@@ -9,6 +9,7 @@ const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
 const { getTimeDifferenceFormatted } = require("../helpers/helper");
+const shopModel = require("../models/shop");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -249,16 +250,72 @@ const getActiveOrder = async (req) => {
 
 const getMyShopReviews = async (req) => {
     let { shopId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     if (shopId) {
         if (!Shops.includes(shopId)) return null
-        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         return Reviews
     }
     let Reviews = await ReviewModel.find({
         $and: { shopId: { $in: Shops } },
-    }).sort({ createdAt: 1 }).limit(limit ?? null)
+    }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    return Reviews
+};
+
+const getSellerReviews = async (req) => {
+    let { shopId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+    if (shopId) {
+        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        if (!owner) return null
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+    let Reviews = await ReviewModel.find({ sellerId: req.user.id }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
     return Reviews
 };
 
@@ -455,4 +512,5 @@ module.exports = {
     getAllInvoice,
     getAllInvoiceById,
     getAllMyNotifications,
+    getSellerReviews,
 };
