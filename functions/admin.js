@@ -328,9 +328,26 @@ const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let Reviews = await reviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
     return Reviews
-    return Reviews
 }
 
+const replyToReview = async (req)=>{
+    let { reviewId } = req.query
+    let { comment, replyTo } = req.body
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let body = {
+        replyTo,
+        replyBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+        comment
+    }
+    console.log(body)
+
+    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    return reply
+}
 
 module.exports = {
     getBusinessbyStatus,
@@ -364,6 +381,7 @@ module.exports = {
     getAllBusniess,
     getBusinessById,
     businessReject,
-    getShopReviews
+    getShopReviews,
+    replyToReview
 
 }
