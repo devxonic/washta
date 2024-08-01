@@ -393,6 +393,18 @@ const replyToReview = async (req, res) => {
     }
 }
 
+const editMyReplys = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.replyToReview(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -426,5 +438,6 @@ module.exports = {
     businessReject,
     getBusinessbyStatus,
     getShopReviews,
-    replyToReview
+    replyToReview,
+    editMyReplys
 }
