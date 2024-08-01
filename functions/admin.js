@@ -7,9 +7,11 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const reviewModel = require('../models/Review');
 const ServiceFeeModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
+const { default: mongoose } = require('mongoose');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -320,6 +322,49 @@ const updatePromoCode = async (req) => {
     return Promocode
 }
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+const getShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+    let Reviews = await reviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+    return Reviews
+}
+
+const replyToReview = async (req) => {
+    let { reviewId } = req.query
+    let { comment, replyTo } = req.body
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let body = {
+        replyTo,
+        replyBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+        comment
+    }
+    console.log(body)
+
+    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    return reply
+}
+
+const editMyReplys = async (req) => {
+    let { reviewId } = req.query
+    let { commentId, comment } = req.body
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.map(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            reply.comment.text = comment.text
+            return reply
+        }
+        return reply
+    })
+
+    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
+}
 
 
 module.exports = {
@@ -353,6 +398,9 @@ module.exports = {
     updateVehicles,
     getAllBusniess,
     getBusinessById,
-    businessReject
+    businessReject,
+    getShopReviews,
+    replyToReview,
+    editMyReplys
 
 }

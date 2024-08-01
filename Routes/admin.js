@@ -63,4 +63,12 @@ router.get('/promoCode/:id', middlewares.verifyAdmin, AdminController.getPromoCo
 router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePromoCode)
 
 
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+router.get('/shopReview', middlewares.verifySeller, AdminController.getShopReviews)
+router.post('/replyReview', middlewares.verifySeller, AdminController.replyToReview) // ...
+router.patch('/editReply', middlewares.verifySeller, AdminController.editMyReplys) // ...
+
+
+
 module.exports = router 
