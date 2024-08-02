@@ -44,13 +44,12 @@ router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActive
 // ----------------------------------------------- Review -----------------------------------------------------//
 
 router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
-router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
-router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
-
-
 router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
+router.get('/OrderReview', middlewares.verifySeller, SellerControllers.getOrderReviews)
 router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
 router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
+
+
 
 // ----------------------------------------------- invoice -----------------------------------------------------//
 

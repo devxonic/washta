@@ -366,6 +366,17 @@ const getSellerReviews = async (req, res) => {
     }
 }
 
+const getOrderReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getOrderReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 module.exports = {
     getProfile,
     editProfile,
@@ -396,4 +407,5 @@ module.exports = {
     getAllInvoiceById,
     getAllMyNotifications,
     getSellerReviews,
+    getOrderReviews,
 }

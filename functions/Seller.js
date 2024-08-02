@@ -320,6 +320,36 @@ const getSellerReviews = async (req) => {
 };
 
 
+
+const getOrderReviews = async (req) => {
+    let { orderId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+    let Reviews = await ReviewModel.find({ orderId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    return Reviews
+};
+
+
 const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
@@ -362,7 +392,28 @@ const replyToReview = async (req) => {
 const editMyReplys = async (req) => {
     let { reviewId } = req.query
     let { commentId, comment } = req.body
-    let Review = await ReviewModel.findOne({ _id: reviewId });
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+    let filter = {
+        $or: [
+            {
+                $and: [
+                    { shopId: { $in: Shops } },
+                    { _id: reviewId }
+                ]
+            },
+            {
+                $and: [
+                    { sellerId: req.user.id },
+                    { _id: reviewId }
+                ]
+            }
+        ]
+    }
+
+    let Review = await ReviewModel.findOne(filter);
     if (!Review) return null
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -372,7 +423,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
 }
 // ----------------------------------------------- Invoice -----------------------------------------------------//
@@ -533,4 +584,5 @@ module.exports = {
     getAllInvoiceById,
     getAllMyNotifications,
     getSellerReviews,
+    getOrderReviews
 };
