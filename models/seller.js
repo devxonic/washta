@@ -25,7 +25,7 @@ const SellerSchema = new Schema({
         isRejected: { type: Boolean, default: false },
         approvedAt: { type: Date },
         terminatedAt: { type: Date },
-        pendingAt: { type: Date },
+        cratedAt: { type: Date },
         rejectedAt: { type: Date },
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],

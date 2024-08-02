@@ -48,81 +48,103 @@ const getBusinessById = async (req) => {
 const businessApprove = async (req) => {
     let id = req.params.id
     let date = new Date()
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, isApproved: false, isTernimated: false, 'business.status': "approved", approvedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let body = {
+        isApproved: true,
+        isTernimated: false,
+        isRejected: false,
+        status: "approved",
+        approvedAt: date
+    }
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { business: body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
     if (!Business) return null
 
-    const transporter = nodemailer.createTransport({
-        host: process.env.mailerHost,
-        port: process.env.mailerPort,
-        auth: {
-            user: process.env.mailerEmail,
-            pass: process.env.mailerPassword,
-        },
-    });
-    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
-    if (Business.email) {
-        let transporterRes = await transporter.sendMail({
-            from: process.env.mailerEmail,
-            to: Business.email,
-            subject: "Verification",
-            html: Mail,
-        })
-    }
+    // const transporter = nodemailer.createTransport({
+    //     host: process.env.mailerHost,
+    //     port: process.env.mailerPort,
+    //     auth: {
+    //         user: process.env.mailerEmail,
+    //         pass: process.env.mailerPassword,
+    //     },
+    // });
+    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
+    // if (Business.email) {
+    //     let transporterRes = await transporter.sendMail({
+    //         from: process.env.mailerEmail,
+    //         to: Business.email,
+    //         subject: "Verification",
+    //         html: Mail,
+    //     })
+    // }
     return Business
 }
 
 const businessTerminate = async (req) => {
     let id = req.params.id
     let date = new Date()
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "terminate", 'business.isTerminated': true, terminatedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
-    const transporter = nodemailer.createTransport({
-        host: process.env.mailerHost,
-        port: process.env.mailerPort,
-        auth: {
-            user: process.env.mailerEmail,
-            pass: process.env.mailerPassword,
-        },
-    });
-    console.log("mails -------------",)
-    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
-    if (Business.email) {
-        let transporterRes = transporter.sendMail({
-            from: process.env.mailerEmail,
-            to: Business.email,
-            subject: "Verification",
-            html: Mail,
-        })
+    let body = {
+        isApproved: false,
+        isRejected: false,
+        isTernimated: true,
+        status: 'terminated',
+        terminatedAt: date
     }
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { business: body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    // const transporter = nodemailer.createTransport({
+    //     host: process.env.mailerHost,
+    //     port: process.env.mailerPort,
+    //     auth: {
+    //         user: process.env.mailerEmail,
+    //         pass: process.env.mailerPassword,
+    //     },
+    // });
+    console.log("mails -------------",)
+    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
+    // if (Business.email) {
+    //     let transporterRes = transporter.sendMail({
+    //         from: process.env.mailerEmail,
+    //         to: Business.email,
+    //         subject: "Verification",
+    //         html: Mail,
+    //     })
+    // }
     return Business
 }
 
 const businessReject = async (req) => {
     let id = req.params.id
     let date = new Date()
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected", 'business.isTerminated': false, isRejected: true, rejectedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let body = {
+        isApproved: false,
+        isRejected: true,
+        isTernimated: false,
+        status: 'rejected',
+        rejectedAt: date
+    }
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { business: body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
     if (!Business) return null
-    const transporter = nodemailer.createTransport({
-        host: process.env.mailerHost,
-        port: process.env.mailerPort,
-        auth: {
-            user: process.env.mailerEmail,
-            pass: process.env.mailerPassword,
-        },
-    });
-    console.log(id)
-    console.log(Business)
-    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
-    if (Business.email) {
-        let transporterRes = await transporter.sendMail({
-            from: process.env.mailerEmail,
-            to: Business.email,
-            subject: "Verification",
-            html: Mail,
-        })
-    } return Business
+    // const transporter = nodemailer.createTransport({
+    //     host: process.env.mailerHost,
+    //     port: process.env.mailerPort,
+    //     auth: {
+    //         user: process.env.mailerEmail,
+    //         pass: process.env.mailerPassword,
+    //     },
+    // });
+    // console.log(id)
+    // console.log(Business)
+    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
+    // if (Business.email) {
+    //     let transporterRes = await transporter.sendMail({
+    //         from: process.env.mailerEmail,
+    //         to: Business.email,
+    //         subject: "Verification",
+    //         html: Mail,
+    //     })
+    // }
+    return Business
 }
 
 
