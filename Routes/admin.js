@@ -66,8 +66,12 @@ router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePr
 // ----------------------------------------------- Review -----------------------------------------------------//
 
 router.get('/shopReview', middlewares.verifySeller, AdminController.getShopReviews)
+router.get('/sellerReview', middlewares.verifySeller, AdminController.getSellerReviews)
+router.get('/orderReview', middlewares.verifySeller, AdminController.getOrderReviews)
+router.get('/customerReview', middlewares.verifySeller, AdminController.getCustomerReviews)
 router.post('/replyReview', middlewares.verifySeller, AdminController.replyToReview) // ...
 router.patch('/editReply', middlewares.verifySeller, AdminController.editMyReplys) // ...
+router.delete('/deleteReview', middlewares.verifySeller, AdminController.deleteReviews) // ...
 
 
 

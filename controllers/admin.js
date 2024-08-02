@@ -380,6 +380,42 @@ const getShopReviews = async (req, res) => {
     }
 }
 
+const getSellerReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getOrderReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getCustomerReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getCustomerReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 const replyToReview = async (req, res) => {
     try {
@@ -396,6 +432,18 @@ const replyToReview = async (req, res) => {
 const editMyReplys = async (req, res) => {
     try {
         let shop = await AdminFunctions.replyToReview(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteReviews(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
         return response.resSuccessData(res, shop);
 
@@ -439,5 +487,9 @@ module.exports = {
     getBusinessbyStatus,
     getShopReviews,
     replyToReview,
-    editMyReplys
+    editMyReplys,
+    deleteReviews,
+    getSellerReviews,
+    getOrderReviews,
+    getCustomerReviews,
 }
