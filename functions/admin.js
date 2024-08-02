@@ -42,13 +42,13 @@ const getAllBusniess = async (req) => {
 const getBusinessById = async (req) => {
     let Business = await SellerModel.findById(req.params.id, { business: 1 })
     return Business
-    return null
 }
 
 
 const businessApprove = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let date = new Date()
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, isApproved: false, isTernimated: false, 'business.status': "approved", approvedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
     if (!Business) return null
 
     const transporter = nodemailer.createTransport({
@@ -74,7 +74,8 @@ const businessApprove = async (req) => {
 
 const businessTerminate = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "terminate", 'business.isTerminated': true, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let date = new Date()
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "terminate", 'business.isTerminated': true, terminatedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
     const transporter = nodemailer.createTransport({
         host: process.env.mailerHost,
         port: process.env.mailerPort,
@@ -99,7 +100,8 @@ const businessTerminate = async (req) => {
 
 const businessReject = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected", 'business.isTerminated': false, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let date = new Date()
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected", 'business.isTerminated': false, isRejected: true, rejectedAt: date } }, { new: true, fields: { 'business': 1, 'email': 1 } })
     if (!Business) return null
     const transporter = nodemailer.createTransport({
         host: process.env.mailerHost,
