@@ -369,6 +369,19 @@ const getSellerReview = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+
+const updatesSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- Booking -----------------------------------------------------//
 
 const getAllInvoice = async (req, res) => {
@@ -426,5 +439,6 @@ module.exports = {
     cancelBooking,
     getShopReviews,
     createSellerReview,
-    getSellerReview
+    getSellerReview,
+    updatesSellerReview
 }
