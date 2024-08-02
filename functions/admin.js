@@ -367,6 +367,13 @@ const editMyReplys = async (req) => {
 }
 
 
+const deleteReviews = async (req) => {
+    let { reviewId } = req.query
+    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDelete: true }, { new: true });
+    return Review
+}
+
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -401,6 +408,7 @@ module.exports = {
     businessReject,
     getShopReviews,
     replyToReview,
-    editMyReplys
+    editMyReplys,
+    deleteReviews,
 
 }
