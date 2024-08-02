@@ -326,9 +326,145 @@ const updatePromoCode = async (req) => {
 
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
-    let Reviews = await reviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!shopId) {
+        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
     return Reviews
 }
+
+
+const getSellerReviews = async (req) => {
+    let { sellerId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!sellerId) {
+        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    return Reviews
+}
+
+const getOrderReviews = async (req) => {
+    let { orderId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!orderId) {
+        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    return Reviews
+}
+
+const getCustomerReviews = async (req) => {
+    let { customerId, limit } = req.query
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!customerId) {
+        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    return Reviews
+}
+
 
 const replyToReview = async (req) => {
     let { reviewId } = req.query
@@ -369,7 +505,7 @@ const editMyReplys = async (req) => {
 
 const deleteReviews = async (req) => {
     let { reviewId } = req.query
-    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDelete: true }, { new: true });
+    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
     return Review
 }
 
@@ -410,5 +546,8 @@ module.exports = {
     replyToReview,
     editMyReplys,
     deleteReviews,
+    getSellerReviews,
+    getOrderReviews,
+    getCustomerReviews,
 
 }

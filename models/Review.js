@@ -46,7 +46,7 @@ const ReviewSchema = new mongoose.Schema({
         id: { type: mongoose.Types.ObjectId },
         role: { type: String, enum: ['customer', 'admin'] }
     },
-    isDelete: { type: Boolean }
+    isDeleted: { type: Boolean }
 }, { timestamps: true });
 
 const RatingModel = mongoose.model('review', ReviewSchema);
