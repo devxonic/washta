@@ -34,8 +34,30 @@ router.get('/Shop/:id', middlewares.verifyCustomer, CustomerControllers.getShopB
 
 router.get('/booking', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
 router.get('/booking/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
+router.patch('/booking/:id', middlewares.verifyCustomer, CustomerControllers.cancelBooking)
 router.post('/booking', middlewares.verifyCustomer, CustomerControllers.createNewBooking)
 router.get('/bookingbyStatus', middlewares.verifyCustomer, CustomerControllers.getbookingbyStatus)
+
+// ----------------------------------------------- incoive -----------------------------------------------------//
+
+
+router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getInvoiceById)
+
+// ----------------------------------------------- shop Reviews -----------------------------------------------------//
+
+
+router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.createShopRating)
+router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
+router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
+router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getShopReviews)
+
+// ----------------------------------------------- seller Reviews -----------------------------------------------------//
+
+router.post('/sellerReview', middlewares.verifyCustomer, CustomerControllers.createSellerReview)
+// router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
+router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
+
 
 
 module.exports = router 

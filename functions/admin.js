@@ -1,48 +1,126 @@
 const CustomerModel = require('../models/Customer');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const path = require('path');
+const ejs = require('ejs');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const reviewModel = require('../models/Review');
 const ServiceFeeModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
+const { default: mongoose } = require('mongoose');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 const getBusinessbyStatus = async (req) => {
-    let Business = await SellerModel.find({ 'business.status': req.query.status }, {
-        notification: 0,
-        privacy: 0,
-        security: 0,
-        password: 0,
-        shops: 0,
-        createdAt: 0,
-        updatedAt: 0,
-        __v: 0,
-    })
+    if (req.query.status) {
+        let Business = await SellerModel.find({ 'business.status': req.query.status }, {
+            notification: 0,
+            privacy: 0,
+            security: 0,
+            password: 0,
+            shops: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            __v: 0,
+        })
+        return Business
+    }
+    return null
+}
+
+const getAllBusniess = async (req) => {
+
+    let Business = await SellerModel.find({}, { business: 1 })
     return Business
 }
 
-
-const updateStatus = async (req) => {
-    let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.status': req.body.status } }, { fields: { 'business.status': 1 } })
-    console.log("Body", Business)
+const getBusinessById = async (req) => {
+    let Business = await SellerModel.findById(req.params.id, { business: 1 })
     return Business
+    return null
 }
+
 
 const businessApprove = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': true, 'business.status': "approved" } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    if (!Business) return null
+
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
+    if (Business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.email,
+            subject: "Verification",
+            html: Mail,
+        })
+    }
     return Business
 }
 
 const businessTerminate = async (req) => {
     let id = req.params.id
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected" } }, { new: true, fields: { 'business.status': 1, 'business.isApproved': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "terminate", 'business.isTerminated': true, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    console.log("mails -------------",)
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
+    if (Business.email) {
+        let transporterRes = transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.email,
+            subject: "Verification",
+            html: Mail,
+        })
+    }
     return Business
+}
+
+const businessReject = async (req) => {
+    let id = req.params.id
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { 'business.isApproved': false, 'business.status': "rejected", 'business.isTerminated': false, } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    if (!Business) return null
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    console.log(id)
+    console.log(Business)
+    let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
+    if (Business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.email,
+            subject: "Verification",
+            html: Mail,
+        })
+    } return Business
 }
 
 
@@ -244,11 +322,53 @@ const updatePromoCode = async (req) => {
     return Promocode
 }
 
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+const getShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+    let Reviews = await reviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null)
+    return Reviews
+}
+
+const replyToReview = async (req) => {
+    let { reviewId } = req.query
+    let { comment, replyTo } = req.body
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let body = {
+        replyTo,
+        replyBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+        comment
+    }
+    console.log(body)
+
+    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    return reply
+}
+
+const editMyReplys = async (req) => {
+    let { reviewId } = req.query
+    let { commentId, comment } = req.body
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.map(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            reply.comment.text = comment.text
+            return reply
+        }
+        return reply
+    })
+
+    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
+}
 
 
 module.exports = {
     getBusinessbyStatus,
-    updateStatus,
     businessApprove,
     businessTerminate,
     JobHistory,
@@ -275,6 +395,12 @@ module.exports = {
     updatePromoCode,
     getVehicles,
     getvehiclesById,
-    updateVehicles
+    updateVehicles,
+    getAllBusniess,
+    getBusinessById,
+    businessReject,
+    getShopReviews,
+    replyToReview,
+    editMyReplys
 
 }

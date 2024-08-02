@@ -256,6 +256,18 @@ const getMyBookingById = async (req, res) => {
     }
 }
 
+const cancelBooking = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.cancelBooking(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const createNewBooking = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createNewBooking(req)
@@ -274,6 +286,106 @@ const createNewBooking = async (req, res) => {
 const getbookingbyStatus = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getbookingbyStatus(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+const createShopRating = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createShopRating(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getMyReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getMyReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getShopReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getShopReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updatesShopReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesShopReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const createSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+// ----------------------------------------------- Booking -----------------------------------------------------//
+
+const getAllInvoice = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getAllInvoice(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getInvoiceById = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getInvoiceById(req)
         if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, Booking);
 
@@ -306,4 +418,13 @@ module.exports = {
     getMyBookingById,
     createNewBooking,
     getbookingbyStatus,
+    createShopRating,
+    getMyReviews,
+    updatesShopReview,
+    getAllInvoice,
+    getInvoiceById,
+    cancelBooking,
+    getShopReviews,
+    createSellerReview,
+    getSellerReview
 }

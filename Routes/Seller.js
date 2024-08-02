@@ -20,7 +20,7 @@ router.patch('/privacySetting', middlewares.verifySeller, SellerControllers.upda
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 router.get('/Business', middlewares.verifySeller, SellerControllers.getBusiness)
-router.post('/Business', middlewares.verifySeller, SellerControllers.addBusiness)
+router.post('/Business/:id', SellerControllers.addBusiness)
 router.patch('/Business', middlewares.verifySeller, SellerControllers.updateBusiness)
 
 
@@ -41,6 +41,25 @@ router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.ord
 router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
 router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
 
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
+router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
+router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
+
+
+router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
+router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
+router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
+
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInvoiceById)
+
+// ----------------------------------------------- Notiification -----------------------------------------------------//
+
+router.get('/Notifications', middlewares.verifySeller, SellerControllers.getAllMyNotifications)
 
 
 module.exports = router 

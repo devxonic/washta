@@ -55,8 +55,25 @@ function getTopCustomersBySpending(ordersList, customerList, limit) {
     return result.slice(0, limit);
 }
 
+function getTimeDifferenceFormatted(startTime, endTime) {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const timeDifference = end - start;
+
+    const hours = Math.floor(timeDifference / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(seconds).padStart(2, '0');
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
+
 
 module.exports = {
     generate4DigitCode,
-    getTopCustomersBySpending
+    getTopCustomersBySpending,
+    getTimeDifferenceFormatted,
 }

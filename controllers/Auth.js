@@ -20,7 +20,7 @@ require('dotenv').config();
 
 const signUp = async (req, res) => {
     try {
-        let { role, username, email, name, phone, password, car } = req.body
+        let { role, username, email, fullname, phone, password, car } = req.body
         console.log('siggning user up');
         let resObj = {};
 
@@ -28,7 +28,7 @@ const signUp = async (req, res) => {
             let customerExists = await SignupFunctions.getUserByEmail(req, role)
             if (customerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
-            let customerBody = { username, name, email, phone, password: hash }
+            let customerBody = { username, fullname, email, phone, password: hash }
             let newCustomer = new CustomerModel(customerBody)
             let savedCustomer = await newCustomer.save()
 
@@ -47,7 +47,7 @@ const signUp = async (req, res) => {
             let SellerExists = await SignupFunctions.getUser(req, role)
             if (SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
-            let SellerBody = { username, name, email, phone, password: hash }
+            let SellerBody = { username, fullname, email, phone, password: hash }
             let newSeller = new SellerModel(SellerBody)
             let savedSeller = await newSeller.save()
             if (!savedSeller) return response.resBadRequest(res, "There is some error on save Customer");
@@ -73,7 +73,7 @@ const signUp = async (req, res) => {
         let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
         let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         let transporterRes = await transporter.sendMail({
-            from: process.env.EmailFrom,
+            from: process.env.mailerEmail,
             to: email,
             subject: "Verification",
             html: Mail,
@@ -107,18 +107,43 @@ const logIn = async (req, res) => {
         let { role, password } = req.body
 
         let User = await SignupFunctions.getUser(req, role);
-        if(!User._doc.isVerifed) return res.send({
-            status: false,
-            code: 200,
-            message: "un Verifed user , Please Verify your Email with OTP",
-        })
-        if (role == "seller" && User._doc.business.status != "approved") return res.send({
+        if (!User) return response.resBadRequest(res, "couldn't find user");
+        if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+        if (!User?._doc.isVerifed) {
+            const transporter = nodemailer.createTransport({
+                host: process.env.mailerHost,
+                port: process.env.mailerPort,
+                auth: {
+                    user: process.env.mailerEmail,
+                    pass: process.env.mailerPassword,
+                },
+            });
+            let OTP = generate4DigitCode()
+            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+            let transporterRes = await transporter.sendMail({
+                from: process.env.mailerEmail,
+                to: User._doc.email,
+                subject: "Verification",
+                html: Mail,
+            });
+            if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+            let Otp = await new OtpModel({
+                otp: OTP,
+                email: User._doc.email,
+                For: "registration"
+            }).save();
+            return res.send({
+                status: false,
+                code: 200,
+                message: "Unverified user, please verify your email with the OTP sent to your email again",
+            })
+        }
+        if (role == "seller" && !User._doc.business.isApproved) return res.send({
             status: false,
             code: 200,
             message: "Account is Not Approved by Admin Please contact to Admin",
         })
-        if (!User) return response.resBadRequest(res, "couldn't find user");
-        if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
 
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
@@ -172,39 +197,48 @@ const logOut = async (req, res) => {
 
 const AdminSignUp = async (req, res) => {
     try {
-        let { username, email, name, phone, password } = req.body
+        let { username, email, fullname, phone, password } = req.body
         console.log('siggning user up');
         let resObj = {};
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let adminBody = { username, name, email, phone, password: hash }
+        let adminBody = { username, fullname, email: email, phone, password: hash }
+        console.log(adminBody)
         let newAdmin = new AdminModel(adminBody)
         let savedAdmin = await newAdmin.save()
+        console.log(savedAdmin)
 
         if (!savedAdmin) return response.resBadRequest(res, "There is some error on save Customer");
 
-        let refrashToken = jwt.sign({
-            id: savedAdmin._id,
+        const transporter = nodemailer.createTransport({
+            host: process.env.mailerHost,
+            port: process.env.mailerPort,
+            auth: {
+                user: process.env.mailerEmail,
+                pass: process.env.mailerPassword,
+            },
+        });
+        let OTP = generate4DigitCode()
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: email,
+            subject: "Verification",
+            html: Mail,
+        });
+        if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+        let Otp = await new OtpModel({
+            otp: OTP,
             email: savedAdmin.email,
-            username: savedAdmin.username
-        }, process.env.adminToken, { expiresIn: '30 days' })
-
-        await SignupFunctions.updateRefreshToken(req, refrashToken, "admin")
-        let token = jwt.sign({
-            id: savedAdmin.id,
-            email: savedAdmin.email,
-            username: savedAdmin.username
-        }, process.env.adminToken, { expiresIn: '7d' })
+            For: "registration"
+        }).save();
 
         return response.resSuccessData(res, {
-            user: {
-                id: savedAdmin.id,
-                username: savedAdmin.username,
-                email: savedAdmin.email,
-                phone: savedAdmin.phone,
-            },
-            accessToken: token, refrashToken
+            email: Otp.email,
+            For: Otp.For,
+            message: "Registration OTP Sended On Your Email"
         });
 
     }
@@ -220,31 +254,55 @@ const AdminlogIn = async (req, res) => {
 
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
+        const transporter = nodemailer.createTransport({
+            host: process.env.mailerHost,
+            port: process.env.mailerPort,
+            auth: {
+                user: process.env.mailerEmail,
+                pass: process.env.mailerPassword,
+            },
+        });
+        let OTP = generate4DigitCode()
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+        if (!admin?._doc.isVerifed) {
+            let transporterRes = await transporter.sendMail({
+                from: process.env.mailerEmail,
+                to: admin._doc.email,
+                subject: "Verification",
+                html: Mail,
+            });
+            if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+            let Otp = await new OtpModel({
+                otp: OTP,
+                email: admin._doc.email,
+                For: "registration"
+            }).save();
 
-        let refrashToken = jwt.sign({
-            id: admin.id,
-            email: admin.email,
-            username: admin.username
-        }, process.env.adminToken, { expiresIn: '30 days' })
-
-        await SignupFunctions.updateRefreshToken(req, refrashToken, "admin")
-
-        let token = jwt.sign({
-            id: admin.id,
-            email: admin.email,
-            username: admin.username
-        }, process.env.adminToken, { expiresIn: '7d' })
-
+            return res.send({
+                status: false,
+                code: 200,
+                message: "Unverified user, please verify your email with the OTP sent to your email again",
+            })
+        }
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: admin._doc.email,
+            subject: "Login",
+            html: Mail,
+        });
+        if (transporterRes.rejected.length >= 1) return response.resBadRequest(res, transporterRes);
+        let Otp = await new OtpModel({
+            otp: OTP,
+            email: admin._doc.email,
+            For: "registration"
+        }).save();
 
         return response.resSuccessData(res, {
-            user: {
-                id: admin.id,
-                name: admin.name,
-                username: admin.username,
-                email: admin.email,
-                profileImage: admin.avatarPath
-            }, accessToken: token, refrashToken
+            email: Otp.email,
+            For: "Login",
+            message: "Login OTP Sended On Your Email"
         });
     }
     catch (error) {

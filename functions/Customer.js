@@ -3,7 +3,10 @@ const bcrypt = require('bcrypt');
 const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
+const ReviewModel = require('../models/Review');
 const OrderModel = require('../models/Order');
+const { getTimeDifferenceFormatted } = require('../helpers/helper');
+const { NotificationOnBooking } = require('../helpers/notification');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -176,6 +179,28 @@ const getShopById = async (req) => {
     return Shops
 }
 
+
+function haversineDistance(coords1, coords2) {
+    const toRad = (x) => (x * Math.PI) / 180;
+
+    const lat1 = coords1[1];
+    const lon1 = coords1[0];
+    const lat2 = coords2[1];
+    const lon2 = coords2[0];
+
+    const R = 6371; // Earth radius in kilometers
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+    return d * 1000; // distance in meters
+}
+
+
 const getShopByLocation = async (req) => {
     console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
     let Shops = await shopModel.find({
@@ -191,7 +216,12 @@ const getShopByLocation = async (req) => {
             }
         }
     })
-    return Shops
+    const userCoordinates = [req.query.long, req.query.lat];
+    const shopsWithDistance = Shops.map(shop => {
+        const distance = haversineDistance(userCoordinates, shop.location.coordinates);
+        return { ...shop.toObject(), distanceInMeter: parseFloat(distance.toFixed(1)), distanceInKiloMeter: parseFloat((distance / 1000).toFixed(1)) };
+    });
+    return shopsWithDistance
 }
 
 // ----------------------------------------------- Bookings -----------------------------------------------------//
@@ -202,19 +232,211 @@ const getMyBookings = async (req) => {
 }
 
 const getMyBookingById = async (req) => {
-    let Bookings = await OrderModel.findById(req.params.id)
+    let Bookings = await OrderModel.findById(req.params.id).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "vehicleId", select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+                vehicleModel: 1,
+            }
+        },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        }
+    ])
+    return Bookings
+}
+
+const cancelBooking = async (req) => {
+    let { cancellationResion } = req.body
+    let date = new Date()
+    let Bookings = await OrderModel.findByIdAndUpdate(req.params.id, { isCancel: true, cancelBy: "customer", cancellationResion: cancellationResion, status: "cancelled", cancellationTime: date }, { new: true })
     return Bookings
 }
 
 const createNewBooking = async (req) => {
+    req.body.location = {
+        ...req.body.location,
+        type: "Point",
+        coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
+    };
     let Bookings = await OrderModel({ ...req.body }).save();
+    if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
 
 const getbookingbyStatus = async (req) => {
-    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] })
+    let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] }).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "vehicleId", select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+                vehicleModel: 1,
+            }
+        },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        }
+    ])
     return Bookings
 }
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+const createShopRating = async (req) => {
+    let { orderId, shopId, rating, comment } = req.body
+    let { id } = req.user
+
+    let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment.text }).save()
+    return Rating
+}
+
+const createSellerReview = async (req) => {
+    let { orderId, sellerId, rating, comment } = req.body
+    let { id } = req.user
+
+    console.log(sellerId)
+    let Rating = await ReviewModel({ orderId, sellerId: sellerId, customerId: id, rating, 'comment.text': comment.text }).save()
+    return Rating
+}
+
+const getMyReviews = async (req) => {
+    let { id } = req.user
+    let { shopId, sellerId } = req.query
+    let poplate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+    if (shopId) {
+        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(poplate)
+        return Rating
+    }
+    if (sellerId) {
+        let Rating = await ReviewModel.find({ customerId: id, sellerId }).populate(poplate)
+        return Rating
+    }
+
+    let Rating = await ReviewModel.find({ customerId: id }).poplate(poplate)
+    return Rating
+}
+
+const updatesShopReview = async (req) => {
+    let { rating, comment } = req.body
+    let { id } = req.params
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    return Rating
+}
+
+
+const getShopReviews = async (req) => {
+    let { shopId, limit } = req.query
+
+    if (!shopId) return null
+    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate([
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ])
+    return Reviews
+
+};
+
+const getSellerReview = async (req) => {
+    let { sellerId, shopId, limit } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                isActive: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                cost: 1,
+            }
+        },
+        {
+            path: "orderId", select: {
+                customerId: 0,
+                vehicleId: 0,
+                shopId: 0,
+                location: 0,
+            }
+        }
+    ]
+
+    if (!sellerId && !shopId) return null
+    if (sellerId) {
+        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+    if (shopId) {
+        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        if(!owner) return null
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        return Reviews
+    }
+
+};
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -243,4 +465,11 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
+    cancelBooking,
+    createShopRating,
+    updatesShopReview,
+    getMyReviews,
+    getShopReviews,
+    createSellerReview,
+    getSellerReview,
 }
