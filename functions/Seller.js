@@ -323,7 +323,27 @@ const getSellerReviews = async (req) => {
 const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
-    let Review = await ReviewModel.findOne({ _id: reviewId });
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    let filter = {
+        $or: [
+            {
+                $and: [
+                    { shopId: { $in: Shops } },
+                    { _id: reviewId }
+                ]
+            },
+            {
+                $and: [
+                    { sellerId: req.user.id },
+                    { _id: reviewId }
+                ]
+            }
+        ]
+    }
+
+    let Review = await ReviewModel.findOne(filter);
     if (!Review) return null
     let body = {
         replyTo,
@@ -333,9 +353,9 @@ const replyToReview = async (req) => {
         },
         comment
     }
-    console.log(body)
+    console.log(Review)
 
-    let reply = ReviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    let reply = ReviewModel.findOneAndUpdate(filter, { $push: { reply: { ...body } } }, { new: true })
     return reply
 };
 
