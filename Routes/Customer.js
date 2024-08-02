@@ -55,7 +55,7 @@ router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getSho
 // ----------------------------------------------- seller Reviews -----------------------------------------------------//
 
 router.post('/sellerReview', middlewares.verifyCustomer, CustomerControllers.createSellerReview)
-// router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
+router.patch('/sellerReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesSellerReview)
 router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
 
 

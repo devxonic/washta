@@ -363,7 +363,7 @@ const updatesShopReview = async (req) => {
     let { rating, comment } = req.body
     let { id } = req.params
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: id, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     return Rating
 }
 
@@ -431,12 +431,22 @@ const getSellerReview = async (req) => {
     }
     if (shopId) {
         let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
-        if(!owner) return null
+        if (!owner) return null
         let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         return Reviews
     }
 
 };
+
+const updatesSellerReview = async (req) => {
+    let { rating, comment } = req.body
+    let { id } = req.params
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: id, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    return Rating
+}
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -472,4 +482,5 @@ module.exports = {
     getShopReviews,
     createSellerReview,
     getSellerReview,
+    updatesSellerReview
 }
