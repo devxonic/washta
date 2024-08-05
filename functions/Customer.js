@@ -324,7 +324,7 @@ const createSellerReview = async (req) => {
 const getMyReviews = async (req) => {
     let { id } = req.user
     let { shopId, sellerId } = req.query
-    let poplate = [
+    let populate = [
         { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
@@ -347,15 +347,15 @@ const getMyReviews = async (req) => {
         }
     ]
     if (shopId) {
-        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(poplate)
+        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(populate)
         return Rating
     }
     if (sellerId) {
-        let Rating = await ReviewModel.find({ customerId: id, sellerId }).populate(poplate)
+        let Rating = await ReviewModel.find({ customerId: id, sellerId }).populate(populate)
         return Rating
     }
 
-    let Rating = await ReviewModel.find({ customerId: id }).poplate(poplate)
+    let Rating = await ReviewModel.find({ customerId: id }).populate(populate)
     return Rating
 }
 
