@@ -46,6 +46,7 @@ router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCus
 
 router.get('/vehicles', middlewares.verifyAdmin, AdminController.getVehicles)
 router.get('/vehicles/:id', middlewares.verifyAdmin, AdminController.getvehiclesById)
+router.get('/vehiclesByCustomer', middlewares.verifyAdmin, AdminController.getVehiclesByCustomerId)
 router.patch('/vehicles/:id', middlewares.verifyAdmin, AdminController.updateVehicles)
 
 // ----------------------------------------------- Service fee  -----------------------------------------------------//

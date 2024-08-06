@@ -250,6 +250,17 @@ const getvehiclesById = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+const getVehiclesByCustomerId = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getVehiclesByCustomerId(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 const updateVehicles = async (req, res) => {
     try {
         let shop = await AdminFunctions.updateVehicles(req)
@@ -492,4 +503,5 @@ module.exports = {
     getSellerReviews,
     getOrderReviews,
     getCustomerReviews,
+    getVehiclesByCustomerId
 }
