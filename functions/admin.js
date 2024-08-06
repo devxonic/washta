@@ -258,6 +258,13 @@ const getvehiclesById = async (req) => {
 }
 
 
+const getVehiclesByCustomerId = async (req) => {
+    let { customerId } = req.query
+    let Vehicles = await VehiclesModel.find({Owner : customerId})
+    return Vehicles
+}
+
+
 const updateVehicles = async (req) => {
     let id = req.params.id
     let { vehicleManufacturer, vehiclePlateNumber, vehicleName, vehicleType } = req.body
@@ -573,5 +580,6 @@ module.exports = {
     getSellerReviews,
     getOrderReviews,
     getCustomerReviews,
+    getVehiclesByCustomerId
 
 }
