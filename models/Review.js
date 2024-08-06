@@ -6,7 +6,7 @@ const commnetSchema = new mongoose.Schema({
 const ReviewSchema = new mongoose.Schema({
     comment: commnetSchema,
     rating: {
-        type: Number,
+        type: mongoose.Types.Decimal128,
         required: true,
         validate: {
             validator: function (v) {

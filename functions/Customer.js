@@ -5,7 +5,7 @@ const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const ReviewModel = require('../models/Review');
 const OrderModel = require('../models/Order');
-const { getTimeDifferenceFormatted } = require('../helpers/helper');
+const { getTimeDifferenceFormatted, formateReviewsRatings, getRatingStatistics } = require('../helpers/helper');
 const { NotificationOnBooking } = require('../helpers/notification');
 
 const signUp = async (req) => {
@@ -370,9 +370,7 @@ const updatesShopReview = async (req) => {
 
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
-
-    if (!shopId) return null
-    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate([
+    let populate = [
         { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
@@ -393,9 +391,15 @@ const getShopReviews = async (req) => {
                 location: 0,
             }
         }
-    ])
-    return Reviews
+    ]
+    if (!shopId) return null
+    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
 
+    let newFormatedReviews = formateReviewsRatings(Reviews)
+    let stats = getRatingStatistics(newFormatedReviews)
+    console.log("Stats ================= ", stats)
+
+    return { reviews: newFormatedReviews, reviewsSummary: stats }
 };
 
 const getSellerReview = async (req) => {
