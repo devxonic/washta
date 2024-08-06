@@ -21,7 +21,7 @@ function getTopCustomersBySpending(ordersList, customerList, limit) {
 
         let SelectedCustomer = customerList.map((x) => {
             console.log("customer --------------- ", x._id.toString() == customerId.toString())
-            console.log("cost  --------------- ",  parseInt(cost))
+            console.log("cost  --------------- ", parseInt(cost))
             if (x._id.toString() == customerId.toString()) {
                 if (!customerOrders[customerId]) {
                     customerOrders[customerId] = {
@@ -33,7 +33,7 @@ function getTopCustomersBySpending(ordersList, customerList, limit) {
                 return customerOrders
             }
         })
-        console.log(" -------------------------------------------------------------------------------------- ",SelectedCustomer)
+        console.log(" -------------------------------------------------------------------------------------- ", SelectedCustomer)
     });
 
 
@@ -72,8 +72,69 @@ function getTimeDifferenceFormatted(startTime, endTime) {
 }
 
 
+let formateReviewsRatings = (Reviews) => {
+
+    let clone = JSON.parse(JSON.stringify(Reviews)) || []
+    return changeRatingFormat = clone?.map((review) => {
+        console.log(review.rating['$numberDecimal'])
+        review.rating = Number(review.rating['$numberDecimal'])
+        return review
+    })
+}
+
+let getRatingStatistics = (reviews) => {
+    const totalReviews = reviews.length;
+
+    if (totalReviews === 0) {
+        return {
+            ratings: {
+                1: "0%",
+                2: "0%",
+                3: "0%",
+                4: "0%",
+                5: "0%"
+            },
+            averageRating: 0,
+            totalReviews: 0,
+            recommendationPercentage: 0.0
+        };
+    }
+
+    const ratingCounts = [0, 0, 0, 0, 0, 0]; // Index 0 is unused
+    let sumOfRatings = 0;
+
+    reviews.forEach(review => {
+        const rating = review.rating;
+        ratingCounts[Math.floor(rating)]++;
+        sumOfRatings += rating;
+    });
+
+    const averageRating = (sumOfRatings / totalReviews).toFixed(1);
+
+    const ratingPercentages = ratingCounts.slice(1).map(
+        count => (count / totalReviews * 100).toFixed(1)
+    );
+
+    const recommendationPercentage = ((ratingCounts[4] + ratingCounts[5]) / totalReviews * 100).toFixed(1);
+
+    return {
+        ratings: {
+            1: `${ratingPercentages[0]}%`,
+            2: `${ratingPercentages[1]}%`,
+            3: `${ratingPercentages[2]}%`,
+            4: `${ratingPercentages[3]}%`,
+            5: `${ratingPercentages[4]}%`
+        },
+        averageRating: parseFloat(averageRating),
+        totalReviews,
+        recommendationPercentage: parseFloat(recommendationPercentage)
+    };
+}
+
 module.exports = {
     generate4DigitCode,
     getTopCustomersBySpending,
     getTimeDifferenceFormatted,
+    formateReviewsRatings,
+    getRatingStatistics
 }
