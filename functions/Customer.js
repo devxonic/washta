@@ -171,12 +171,41 @@ const updateIsSelected = async (req) => {
 
 const getAllShops = async (req) => {
     let Shops = await shopModel.find({})
-    return Shops
+    let updatedShops = [];
+    for (const shop of Shops) {
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+        let formatedReviews = formateReviewsRatings(shopReviews);
+        let stats = getRatingStatistics(formatedReviews);
+        let temp = {
+            ...shop?._doc,
+            reviewsSummary: {
+                averageRating: stats.averageRating || 0,
+                totalReviews: stats.totalReviews || 0,
+            },
+            totalNoOfJobs: shopOrders?.length || 0
+        }
+        updatedShops.push(temp)
+    }
+    return updatedShops
 }
 
 const getShopById = async (req) => {
     let Shops = await shopModel.findById(req.params.id)
-    return Shops
+    let shopReviews = await ReviewModel.find({ shopId: Shops?._id })
+    let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
+    let formatedReviews = formateReviewsRatings(shopReviews);
+    let stats = getRatingStatistics(formatedReviews);
+    let updatedShops = {
+        ...Shops?._doc,
+        reviewsSummary: {
+            averageRating: stats.averageRating || 0,
+            totalReviews: stats.totalReviews || 0,
+        },
+        totalNoOfJobs: shopOrders?.length || 0
+    }
+    return updatedShops
+
 }
 
 
@@ -217,10 +246,34 @@ const getShopByLocation = async (req) => {
         }
     })
     const userCoordinates = [req.query.long, req.query.lat];
-    const shopsWithDistance = Shops.map(shop => {
+    let shopsWithDistance = []
+    for (const shop of Shops) {
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+
+        let formatedReviews = formateReviewsRatings(shopReviews);
+        let stats = getRatingStatistics(formatedReviews);
+
         const distance = haversineDistance(userCoordinates, shop.location.coordinates);
-        return { ...shop.toObject(), distanceInMeter: parseFloat(distance.toFixed(1)), distanceInKiloMeter: parseFloat((distance / 1000).toFixed(1)) };
-    });
+        shopsWithDistance = {
+            ...shop.toObject(),
+            distanceInMeter: parseFloat(distance.toFixed(1)),
+            distanceInKiloMeter: parseFloat((distance / 1000).toFixed(1)),
+            reviewsSummary: {
+                averageRating: stats.averageRating || 0,
+                totalReviews: stats.totalReviews || 0,
+            },
+            totalNoOfJobs: shopOrders?.length || 0
+
+        };
+
+
+    }
+
+    // const shopsWithDistance = Shops.map(shop => {
+    //     const distance = haversineDistance(userCoordinates, shop.location.coordinates);
+    //     return { ...shop.toObject(), distanceInMeter: parseFloat(distance.toFixed(1)), distanceInKiloMeter: parseFloat((distance / 1000).toFixed(1)) };
+    // });
     return shopsWithDistance
 }
 
