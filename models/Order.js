@@ -36,6 +36,12 @@ const OrderSchema = new mongoose.Schema({
     cancellationResion: { type: String },
     cancellationTime: { type: Date },
     paymentId: { type: String },
+    isDeleted: { type: Boolean },
+    deletedAt: { type: Date },
+    deleteBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ["customer", 'seller', 'admin'] }
+    },
     location: {
         type: pointSchema,
         default: {
