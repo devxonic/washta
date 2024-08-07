@@ -215,8 +215,8 @@ const updateShopTiming = async (req) => {
 // ----------------------------------------------- Customer -----------------------------------------------------//
 
 const getCustomer = async (req) => {
-    let Customer = await CustomerModel.find({}, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0
+    let Customer = await CustomerModel.find({ isDeleted: { $ne: true } }, {
+        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
     }).populate([{
         path: "selectedVehicle",
     }])
@@ -225,14 +225,31 @@ const getCustomer = async (req) => {
 
 const getCustomerByid = async (req) => {
     let id = req.params.id
-    let Customer = await CustomerModel.findById(id, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0
+    let Customer = await CustomerModel.findOne({ _id: id }, {
+        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
     }).populate({
         path: "selectedVehicle",
     })
-    return Customer
+    let Bookings = await OrderModel.find({ customerId: id, isDeleted: { $ne: true } })
+    console.log(Bookings)
+    return { ...Customer?._doc, Bookings }
 }
 
+const deleteOrderByCustomerId = async (req) => {
+    let { id } = req.params
+    let date = new Date()
+    let body = {
+        isDeleted: true,
+        deletedAt: date,
+        deleteBy: {
+            role: "admin",
+            id: req.user.id
+        }
+
+    }
+    let orders = await OrderModel.findOneAndUpdate({ _id: id }, { $set: { ...body } }, { new: true })
+    return orders
+}
 
 const updateCustomer = async (req) => {
     let id = req.params.id
@@ -621,6 +638,7 @@ module.exports = {
     getCustomerReviews,
     getVehiclesByCustomerId,
     terminateCustomer,
-    terminateShop
+    terminateShop,
+    deleteOrderByCustomerId
 
 }

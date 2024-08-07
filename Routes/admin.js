@@ -43,6 +43,7 @@ router.get('/customer', middlewares.verifyAdmin, AdminController.getCustomer)
 router.get('/customer/:id', middlewares.verifyAdmin, AdminController.getCustomerByid)
 router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCustomer)
 router.delete('/customer/:id', middlewares.verifyAdmin, AdminController.terminateCustomer)
+router.delete('/bookings', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
 
 // ----------------------------------------------- Customer  -----------------------------------------------------//
 
