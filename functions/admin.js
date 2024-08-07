@@ -50,7 +50,7 @@ const businessApprove = async (req) => {
     let date = new Date()
     let body = {
         "business.isApproved": true,
-        "business.isTernimated": false,
+        "business.isTerminated": false,
         "business.isRejected": false,
         "business.status": "approved",
         "business.approvedAt": date
@@ -118,7 +118,7 @@ const businessReject = async (req) => {
     let body = {
         "business.isApproved": false,
         "business.isRejected": true,
-        "business.isTernimated": false,
+        "business.isTerminated": false,
         "business.status": 'rejected',
         "business.rejectedAt": date
     }
@@ -243,6 +243,45 @@ const updateCustomer = async (req) => {
     return { Customer, Vehicle }
 }
 
+
+const terminateCustomer = async (req) => {
+    let id = req.params.id
+    let date = new Date()
+    let body = {
+        isTerminated: true,
+        terminateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+        terminateAt: date,
+    }
+    let Customer = await CustomerModel.findByIdAndUpdate(id, { ...body }, {
+        new: true, fields: {
+            sessionKey: 0,
+            notification: 0,
+            privacy: 0,
+            security: 0,
+        }
+    })
+    return Customer
+}
+
+
+const terminateShop = async (req) => {
+    let id = req.params.id
+    let date = new Date()
+    let body = {
+        isTerminated: true,
+        terminateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+        terminateAt: date,
+    }
+    let shop = await shopModel.findByIdAndUpdate(id, { ...body }, { new: true })
+    return shop
+}
+
 // ----------------------------------------------- Vehical -----------------------------------------------------//
 
 const getVehicles = async (req) => {
@@ -260,7 +299,7 @@ const getvehiclesById = async (req) => {
 
 const getVehiclesByCustomerId = async (req) => {
     let { customerId } = req.query
-    let Vehicles = await VehiclesModel.find({Owner : customerId})
+    let Vehicles = await VehiclesModel.find({ Owner: customerId })
     return Vehicles
 }
 
@@ -580,6 +619,8 @@ module.exports = {
     getSellerReviews,
     getOrderReviews,
     getCustomerReviews,
-    getVehiclesByCustomerId
+    getVehiclesByCustomerId,
+    terminateCustomer,
+    terminateShop
 
 }

@@ -189,6 +189,19 @@ const updateShopTiming = async (req, res) => {
 }
 
 
+const terminateShop = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateShop(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 // ----------------------------------------------- customer -----------------------------------------------------//
 
@@ -220,6 +233,18 @@ const getCustomerByid = async (req, res) => {
 const updateCustomer = async (req, res) => {
     try {
         let shop = await AdminFunctions.updateCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const terminateCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateCustomer(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, shop);
 
@@ -503,5 +528,7 @@ module.exports = {
     getSellerReviews,
     getOrderReviews,
     getCustomerReviews,
-    getVehiclesByCustomerId
+    getVehiclesByCustomerId,
+    terminateCustomer,
+    terminateShop
 }

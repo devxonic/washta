@@ -14,7 +14,12 @@ const CustomerSchema = new Schema({
         type: String,
     },
     selectedVehicle: { type: mongoose.Types.ObjectId, ref: "vehicle" },
-    isTernimated: { type: Boolean },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    terminateAt: { type: Date },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String
