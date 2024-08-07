@@ -44,7 +44,7 @@ const OrderSchema = new mongoose.Schema({
         },
         index: "2dsphere"
     },
-});
+}, { timestamps: true });
 
 OrderSchema.index({ location: "2dsphere" });
 const OrderModel = mongoose.model('order', OrderSchema);

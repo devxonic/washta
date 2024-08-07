@@ -241,8 +241,17 @@ const getpastorder = async (req) => {
 const getActiveOrder = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
+    let newDate = new Date()
+    newDate.setHours(0, 0, 0, 0);
+    let endOfDay = new Date(newDate);
+    endOfDay.setHours(23, 59, 59, 999);
     let Order = await OrderModel.find({
-        $and: [{ shopId: { $in: Shops } }, { status: "pending" }],
+        shopId: { $in: Shops },
+        status: "ongoing",
+        date: {
+            $gte: newDate,
+            $lt: endOfDay,
+        }
     });
     return Order;
 };
