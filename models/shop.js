@@ -61,6 +61,12 @@ const shopSchema = new Schema({
         },
 
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    terminateAt: { type: Date },
     location: {
         type: pointSchema,
         default: {
