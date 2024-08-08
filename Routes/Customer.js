@@ -51,12 +51,15 @@ router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.creat
 router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
 router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
 router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getShopReviews)
+router.delete('/shopReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
 
 // ----------------------------------------------- seller Reviews -----------------------------------------------------//
 
 router.post('/sellerReview', middlewares.verifyCustomer, CustomerControllers.createSellerReview)
 router.patch('/sellerReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesSellerReview)
 router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
+router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
 
 
 
