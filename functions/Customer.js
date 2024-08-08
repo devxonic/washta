@@ -55,19 +55,19 @@ const signUpWithGoogle = async (req) => {
 const editProfile = async (req) => {
 
     let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, { new: true });
+        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, {
+        new: true, fields: {
+            notification: 0,
+            privacy: 0,
+            security: 0
+        }
+    });
     let car = await VehiclesModel.findOneAndUpdate({ _id: req.body.car._id },
-        { $set: { ...req.body.car } }, { new: true });
+        { $set: { ...req.body.car } }, {
+        new: true
+    })
 
-    let UpdatedRes = { ...Customer._doc }
-    delete UpdatedRes.notification
-    delete UpdatedRes.privacy
-    delete UpdatedRes.security
-
-    console.log(UpdatedRes, "Updated res")
-    console.log(Customer)
-    console.log(car)
-    return { Customer: UpdatedRes, car };
+    return { Customer: Customer, car };
 }
 
 const getProfile = async (req) => {
@@ -149,7 +149,7 @@ const updateVehicles = async (req) => {
 
 const deleteVehicle = async (req) => {
     let { id } = req.params
-    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id })
+    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id, Owner: req.user.id })
     return vehicle
 }
 
@@ -429,7 +429,7 @@ const updatesShopReview = async (req) => {
 
 const deleteShopReviews = async (req) => {
     let { reviewId } = req.query
-    let Review = await ReviewModel.findOneAndUpdate({ _id: reviewId }, { isDeleted: true, deleteBy: { id: req.user.id, role: 'customer' } }, { new: true });
+    let Review = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { isDeleted: true, deleteBy: { id: req.user.id, role: 'customer' } }, { new: true });
     let FormatedRating = formateReviewsRatings?.(Review)
     return FormatedRating
 }

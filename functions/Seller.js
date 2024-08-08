@@ -178,7 +178,7 @@ const updateShop = async (req) => {
 };
 
 const deleteShop = async (req) => {
-    let Shop = await ShopModel.findByIdAndDelete(req.params.id);
+    let Shop = await ShopModel.findOneAndDelete({ _id: req.params.id, Owner: req.user.id });
     return Shop;
 };
 
