@@ -6,6 +6,7 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
+router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
 router.get('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.getNotificationSetting)
 router.patch('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.updateNotificationSetting)
 router.get('/securitySetting', middlewares.verifyCustomer, CustomerControllers.getSecuritySetting)
