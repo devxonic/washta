@@ -182,6 +182,19 @@ const deleteShop = async (req) => {
     return Shop;
 };
 
+const openAllShops = async (req) => {
+    let { status } = req.body
+    let Shop = await ShopModel.updateMany({ Owner: req.user.id }, { isOpen: status });
+    return Shop;
+};
+
+const openShopByid = async (req) => {
+    let { id } = req.params
+    let { status } = req.body
+    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id }, { isOpen: status }, { new: true });
+    return Shop;
+};
+
 // ----------------------------------------------- order -----------------------------------------------------//
 
 const getAllOrders = async (req) => {
@@ -604,5 +617,7 @@ module.exports = {
     getAllInvoiceById,
     getAllMyNotifications,
     getSellerReviews,
-    getOrderReviews
+    getOrderReviews,
+    openAllShops,
+    openShopByid,
 };

@@ -237,6 +237,29 @@ const deleteShop = async (req, res) => {
     }
 }
 
+const openAllShops = async (req, res) => {
+    try {
+        let shop = await SellerFunctions.openAllShops(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const openShopByid = async (req, res) => {
+    try {
+        let shop = await SellerFunctions.openShopByid(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 // ----------------------------------------------- Shop -----------------------------------------------------//
@@ -435,5 +458,7 @@ module.exports = {
     getAllMyNotifications,
     getSellerReviews,
     getOrderReviews,
-    updatePassword
+    updatePassword,
+    openAllShops,
+    openShopByid,
 }
