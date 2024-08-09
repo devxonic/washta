@@ -9,6 +9,7 @@ const middlewares = require('../middlewares');
 
 router.post('/Signup', AuthController.AdminSignUp)
 router.post('/login', AuthController.AdminlogIn)
+router.patch('/updatePassword', middlewares.verifyAdmin, AdminController.updatePassword)
 // router.post('/logOut' , AuthController.logOut)
 
 // ----------------------------------------------- Business -----------------------------------------------------//

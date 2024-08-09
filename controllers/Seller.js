@@ -4,6 +4,7 @@ const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const SellerModel = require('../models/seller');
 require('dotenv').config()
 
 
@@ -29,6 +30,32 @@ const editProfile = async (req, res) => {
 }
 
 
+
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getSeller = await SellerModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getSeller) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getSeller.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let Seller = await SellerModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, Seller);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 // ----------------------------------------------- Seller settings -----------------------------------------------------//
 
@@ -408,4 +435,5 @@ module.exports = {
     getAllMyNotifications,
     getSellerReviews,
     getOrderReviews,
+    updatePassword
 }

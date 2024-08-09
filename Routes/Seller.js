@@ -7,6 +7,7 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifySeller, SellerControllers.getProfile)
 router.patch('/Profile', middlewares.verifySeller, SellerControllers.editProfile)
+router.patch('/updatePassword', middlewares.verifySeller, SellerControllers.updatePassword)
 
 // ----------------------------------------------- Settings -----------------------------------------------------//
 
