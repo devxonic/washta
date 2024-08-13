@@ -55,19 +55,19 @@ const signUpWithGoogle = async (req) => {
 const editProfile = async (req) => {
 
     let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
-        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, { new: true });
+        { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, {
+        new: true, fields: {
+            notification: 0,
+            privacy: 0,
+            security: 0
+        }
+    });
     let car = await VehiclesModel.findOneAndUpdate({ _id: req.body.car._id },
-        { $set: { ...req.body.car } }, { new: true });
+        { $set: { ...req.body.car } }, {
+        new: true
+    })
 
-    let UpdatedRes = { ...Customer._doc }
-    delete UpdatedRes.notification
-    delete UpdatedRes.privacy
-    delete UpdatedRes.security
-
-    console.log(UpdatedRes, "Updated res")
-    console.log(Customer)
-    console.log(car)
-    return { Customer: UpdatedRes, car };
+    return { Customer: Customer, car };
 }
 
 const getProfile = async (req) => {
@@ -149,7 +149,7 @@ const updateVehicles = async (req) => {
 
 const deleteVehicle = async (req) => {
     let { id } = req.params
-    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id })
+    let vehicle = await VehiclesModel.findByIdAndDelete({ _id: id, Owner: req.user.id })
     return vehicle
 }
 
@@ -362,7 +362,8 @@ const createShopRating = async (req) => {
     let { id } = req.user
 
     let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment.text }).save()
-    return Rating
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
 }
 
 const createSellerReview = async (req) => {
@@ -371,7 +372,8 @@ const createSellerReview = async (req) => {
 
     console.log(sellerId)
     let Rating = await ReviewModel({ orderId, sellerId: sellerId, customerId: id, rating, 'comment.text': comment.text }).save()
-    return Rating
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
 }
 
 const getMyReviews = async (req) => {
@@ -401,15 +403,18 @@ const getMyReviews = async (req) => {
     ]
     if (shopId) {
         let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(populate)
-        return Rating
+        let FormatedRating = formateReviewsRatings?.(Rating)
+        return FormatedRating
     }
     if (sellerId) {
         let Rating = await ReviewModel.find({ customerId: id, sellerId }).populate(populate)
-        return Rating
+        let FormatedRating = formateReviewsRatings?.(Rating)
+        return FormatedRating
     }
 
     let Rating = await ReviewModel.find({ customerId: id }).populate(populate)
-    return Rating
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
 }
 
 const updatesShopReview = async (req) => {
@@ -417,7 +422,16 @@ const updatesShopReview = async (req) => {
     let { reviewId } = req.query
 
     let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
-    return Rating
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
+}
+
+
+const deleteShopReviews = async (req) => {
+    let { reviewId } = req.query
+    let Review = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { isDeleted: true, deleteBy: { id: req.user.id, role: 'customer' } }, { new: true });
+    let FormatedRating = formateReviewsRatings?.(Review)
+    return FormatedRating
 }
 
 
@@ -484,13 +498,15 @@ const getSellerReview = async (req) => {
     if (!sellerId && !shopId) return null
     if (sellerId) {
         let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        return Reviews
+        let FormatedRating = formateReviewsRatings?.(Reviews)
+        return FormatedRating
     }
     if (shopId) {
         let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
         if (!owner) return null
         let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        return Reviews
+        let FormatedRating = formateReviewsRatings?.(Reviews)
+        return FormatedRating
     }
 
 };
@@ -500,7 +516,8 @@ const updatesSellerReview = async (req) => {
     let { reviewId } = req.query
 
     let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
-    return Rating
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
 }
 
 
@@ -539,5 +556,6 @@ module.exports = {
     getShopReviews,
     createSellerReview,
     getSellerReview,
+    deleteShopReviews,
     updatesSellerReview
 }

@@ -7,6 +7,7 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifySeller, SellerControllers.getProfile)
 router.patch('/Profile', middlewares.verifySeller, SellerControllers.editProfile)
+router.patch('/updatePassword', middlewares.verifySeller, SellerControllers.updatePassword)
 
 // ----------------------------------------------- Settings -----------------------------------------------------//
 
@@ -27,6 +28,8 @@ router.patch('/Business', middlewares.verifySeller, SellerControllers.updateBusi
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
 router.get('/shop', middlewares.verifySeller, SellerControllers.getAllShop)
+router.patch('/openShop', middlewares.verifySeller, SellerControllers.openAllShops)
+router.patch('/openShop/:id', middlewares.verifySeller, SellerControllers.openShopByid)
 router.get('/shop/:id', middlewares.verifySeller, SellerControllers.getShopById)
 router.post('/shop', middlewares.verifySeller, SellerControllers.addShop)
 router.patch('/shop/:id', middlewares.verifySeller, SellerControllers.updateShop)

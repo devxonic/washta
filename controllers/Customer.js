@@ -1,9 +1,12 @@
 
 const CustomerFunctions = require('../functions/Customer');
 const response = require('../helpers/response');
+const authFunctions = require('../functions/auth');
+
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const CustomerModel = require('../models/Customer');
 require('dotenv').config()
 
 
@@ -29,6 +32,31 @@ const editProfile = async (req, res) => {
 }
 
 
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getCustomer = await CustomerModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getCustomer) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getCustomer.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let Customer = await CustomerModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, Customer);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 // ----------------------------------------------- Customer settings -----------------------------------------------------//
 
@@ -333,6 +361,18 @@ const getShopReviews = async (req, res) => {
     }
 }
 
+const deleteShopReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.deleteShopReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const updatesShopReview = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.updatesShopReview(req)
@@ -440,5 +480,7 @@ module.exports = {
     getShopReviews,
     createSellerReview,
     getSellerReview,
-    updatesSellerReview
+    updatesSellerReview,
+    deleteShopReviews,
+    updatePassword,
 }

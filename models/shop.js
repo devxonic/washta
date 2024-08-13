@@ -23,6 +23,7 @@ const shopSchema = new Schema({
     isActive: { type: Boolean },
     shopDetails: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
+    isOpen: { type: Boolean },
     timing: {
         monday: {
             open: { type: Boolean },
@@ -61,6 +62,12 @@ const shopSchema = new Schema({
         },
 
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    terminateAt: { type: Date },
     location: {
         type: pointSchema,
         default: {

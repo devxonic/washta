@@ -6,6 +6,7 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
+router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
 router.get('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.getNotificationSetting)
 router.patch('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.updateNotificationSetting)
 router.get('/securitySetting', middlewares.verifyCustomer, CustomerControllers.getSecuritySetting)
@@ -51,12 +52,15 @@ router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.creat
 router.patch('/shopReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
 router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
 router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getShopReviews)
+router.delete('/shopReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
 
 // ----------------------------------------------- seller Reviews -----------------------------------------------------//
 
 router.post('/sellerReview', middlewares.verifyCustomer, CustomerControllers.createSellerReview)
 router.patch('/sellerReview/:id', middlewares.verifyCustomer, CustomerControllers.updatesSellerReview)
 router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
+router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
 
 
 

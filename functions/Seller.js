@@ -178,7 +178,20 @@ const updateShop = async (req) => {
 };
 
 const deleteShop = async (req) => {
-    let Shop = await ShopModel.findByIdAndDelete(req.params.id);
+    let Shop = await ShopModel.findOneAndDelete({ _id: req.params.id, Owner: req.user.id });
+    return Shop;
+};
+
+const openAllShops = async (req) => {
+    let { status } = req.body
+    let Shop = await ShopModel.updateMany({ Owner: req.user.id }, { isOpen: status });
+    return Shop;
+};
+
+const openShopByid = async (req) => {
+    let { id } = req.params
+    let { status } = req.body
+    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id }, { isOpen: status }, { new: true });
     return Shop;
 };
 
@@ -241,8 +254,17 @@ const getpastorder = async (req) => {
 const getActiveOrder = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
+    let newDate = new Date()
+    newDate.setHours(0, 0, 0, 0);
+    let endOfDay = new Date(newDate);
+    endOfDay.setHours(23, 59, 59, 999);
     let Order = await OrderModel.find({
-        $and: [{ shopId: { $in: Shops } }, { status: "pending" }],
+        shopId: { $in: Shops },
+        status: "ongoing",
+        date: {
+            $gte: newDate,
+            $lt: endOfDay,
+        }
     });
     return Order;
 };
@@ -279,12 +301,14 @@ const getMyShopReviews = async (req) => {
     if (shopId) {
         if (!Shops.includes(shopId)) return null
         let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        return Reviews
+        let FormatedRating = formateReviewsRatings?.(Reviews)
+        return FormatedRating
     }
     let Reviews = await ReviewModel.find({
         $and: { shopId: { $in: Shops } },
     }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    return Reviews
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
 };
 
 const getSellerReviews = async (req) => {
@@ -315,10 +339,12 @@ const getSellerReviews = async (req) => {
         let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
         if (!owner) return null
         let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        return Reviews
+        let FormatedRating = formateReviewsRatings?.(Reviews)
+        return FormatedRating
     }
     let Reviews = await ReviewModel.find({ sellerId: req.user.id }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    return Reviews
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
 };
 
 
@@ -348,7 +374,8 @@ const getOrderReviews = async (req) => {
         }
     ]
     let Reviews = await ReviewModel.find({ orderId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    return Reviews
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
 };
 
 
@@ -388,7 +415,8 @@ const replyToReview = async (req) => {
     console.log(Review)
 
     let reply = ReviewModel.findOneAndUpdate(filter, { $push: { reply: { ...body } } }, { new: true })
-    return reply
+    let FormatedRating = formateReviewsRatings?.(reply)
+    return FormatedRating
 };
 
 const editMyReplys = async (req) => {
@@ -420,13 +448,16 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            return reply
+            let FormatedRating = formateReviewsRatings?.(reply)
+            return FormatedRating
         }
-        return reply
+        let FormatedRating = formateReviewsRatings?.(reply)
+        return FormatedRating
     })
 
     let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
-    return reply
+    let FormatedRating = formateReviewsRatings?.(reply)
+    return FormatedRating
 }
 // ----------------------------------------------- Invoice -----------------------------------------------------//
 
@@ -586,5 +617,7 @@ module.exports = {
     getAllInvoiceById,
     getAllMyNotifications,
     getSellerReviews,
-    getOrderReviews
+    getOrderReviews,
+    openAllShops,
+    openShopByid,
 };

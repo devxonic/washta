@@ -9,6 +9,7 @@ const middlewares = require('../middlewares');
 
 router.post('/Signup', AuthController.AdminSignUp)
 router.post('/login', AuthController.AdminlogIn)
+router.patch('/updatePassword', middlewares.verifyAdmin, AdminController.updatePassword)
 // router.post('/logOut' , AuthController.logOut)
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -35,12 +36,14 @@ router.get('/shop', middlewares.verifyAdmin, AdminController.getShop)
 router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
 router.patch('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)
 router.patch('/shop', middlewares.verifyAdmin, AdminController.updateShopTiming)
+router.delete('/shop/:id', middlewares.verifyAdmin, AdminController.terminateShop)
 
 // ----------------------------------------------- Customer  -----------------------------------------------------//
 
 router.get('/customer', middlewares.verifyAdmin, AdminController.getCustomer)
 router.get('/customer/:id', middlewares.verifyAdmin, AdminController.getCustomerByid)
 router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCustomer)
+router.delete('/customer/:id', middlewares.verifyAdmin, AdminController.terminateCustomer)
 router.delete('/bookings', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
 
 // ----------------------------------------------- vehicles  -----------------------------------------------------//

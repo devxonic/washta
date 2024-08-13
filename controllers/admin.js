@@ -4,8 +4,38 @@ const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const AdminModel = require('../models/admin');
 require('dotenv').config()
 
+
+
+
+
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getAdmin = await AdminModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getAdmin) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getAdmin.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let admin = await AdminModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, admin);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 const getBusinessbyStatus = async (req, res) => {
     try {
@@ -189,6 +219,19 @@ const updateShopTiming = async (req, res) => {
 }
 
 
+const terminateShop = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateShop(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 // ----------------------------------------------- customer -----------------------------------------------------//
 
@@ -220,6 +263,18 @@ const getCustomerByid = async (req, res) => {
 const updateCustomer = async (req, res) => {
     try {
         let shop = await AdminFunctions.updateCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const terminateCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateCustomer(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, shop);
 
@@ -516,5 +571,8 @@ module.exports = {
     getOrderReviews,
     getCustomerReviews,
     getVehiclesByCustomerId,
-    deleteOrderByCustomerId
+    terminateCustomer,
+    terminateShop,
+    deleteOrderByCustomerId,
+    updatePassword,
 }
