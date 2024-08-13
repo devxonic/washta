@@ -323,16 +323,16 @@ const getCustomer = async (req) => {
     }).populate([{
         path: "selectedVehicle",
     }])
-    let updatedCustomers = [];
-    for (const customer of Customer) {
-        let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
-        let totalSpents = 0
-        orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
+    // let updatedCustomers = [];
+    // for (const customer of Customer) {
+    //     let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
+    //     let totalSpents = 0
+    //     orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
 
-        console.log("totalSpents -------------------- ", totalSpents)
+    //     console.log("totalSpents -------------------- ", totalSpents)
 
 
-    }
+    // }
     return Customer
 }
 
