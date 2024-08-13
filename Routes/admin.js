@@ -27,8 +27,9 @@ router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 
 // ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
 
-// router.get('/TopCustomers', AdminController.getTopCustomer)
-// router.get('/TopCustomers', AdminController.getTopCompanies)
+router.get('/TopCustomers', AdminController.getTopCustomer)
+router.get('/TopCompanies', AdminController.getTopCompanies)
+router.get('/TopSellers', AdminController.getTopSellers)
 
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
