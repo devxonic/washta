@@ -8,7 +8,7 @@ const multerS3 = require('multer-s3');
 aws.config.update({
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
     accessKeyId: process.env.S3_ACCESS_KEY_ID,
-    region: process.env.S3_REGION 
+    region: process.env.S3_REGION
 })
 
 const s3 = new aws.S3();
@@ -34,7 +34,22 @@ const awsUpload = new multer({
 });
 
 
+let memoryStorage = multer.memoryStorage();
+let uploadbuffer = multer({ storage: memoryStorage });
 
+const s3UploadObject = async (buffer, filename, mimetype) => {
+    let dateparam = new Date();
+    let path = `files/${dateparam.getTime()}_${filename}`
+    let putObject = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Body: buffer,
+        Key: path,
+        contentType: mimetype
+    }
+    awslink = await s3.upload(putObject).promise()
+    console.log("S3 middleware ------------------------------------ ", awslink)
+    return awslink
+}
 
 
 const verifyCustomer = (req, res, next) => {
@@ -100,5 +115,7 @@ module.exports = {
     verifyCustomer,
     verifySeller,
     verifyAdmin,
-    awsUpload
+    awsUpload,
+    uploadbuffer,
+    s3UploadObject
 }

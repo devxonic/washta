@@ -11,6 +11,12 @@ const AdminSchema = new Schema({
     },
     email: { type: String },
     phone: { type: String },
+    avatar: {
+        type: String
+    },
+    resizedAvatar: {
+        type: String
+    },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String

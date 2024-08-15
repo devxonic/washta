@@ -10,6 +10,7 @@ const middlewares = require('../middlewares');
 router.post('/Signup', AuthController.AdminSignUp)
 router.post('/login', AuthController.AdminlogIn)
 router.patch('/updatePassword', middlewares.verifyAdmin, AdminController.updatePassword)
+router.post('/uplaodAvatar', middlewares.verifyAdmin, middlewares.uploadbuffer.single('Avatar'), AdminController.uplaodAvatar)
 // router.post('/logOut' , AuthController.logOut)
 
 // ----------------------------------------------- Business -----------------------------------------------------//

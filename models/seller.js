@@ -11,6 +11,12 @@ const SellerSchema = new Schema({
     },
     email: { type: String },
     phone: { type: String },
+    avatar: {
+        type: String
+    },
+    resizedAvatar: {
+        type: String
+    },
     business: {
         uploadDocument: { type: String },
         companyName: { type: String },
