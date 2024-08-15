@@ -14,6 +14,7 @@ const nodemailer = require('nodemailer');
 const path = require('path')
 const ejs = require('ejs');
 const AdminModel = require('../models/admin');
+// const AdminModel = require('../Mails/verification/index.ejs');
 
 
 require('dotenv').config();
@@ -70,7 +71,7 @@ const signUp = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
         let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.mailerEmail,
@@ -119,7 +120,7 @@ const logIn = async (req, res) => {
                 },
             });
             let OTP = generate4DigitCode()
-            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
             let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
             let transporterRes = await transporter.sendMail({
                 from: process.env.mailerEmail,
@@ -220,7 +221,7 @@ const AdminSignUp = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
         let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.mailerEmail,
@@ -263,7 +264,7 @@ const AdminlogIn = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
         let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!admin?._doc.isVerifed) {

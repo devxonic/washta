@@ -4,21 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset password</title>
+    <title>waiting for Approval</title>
 </head>
 
 <body style="font-family: Arial, sans-serif; background-color: #ddd; margin: 0;padding: 0;display: flex;justify-content: center;align-items: center;height: 100vh;flex-direction: column;">
     <div
-        style="width: 600px; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        style="width: 600px; height: 29rem; background-color: #fff; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); overflow: hidden;">
         <header style="background-color: #f7f7f7; text-align: center; border-bottom: 1px solid #ddd;">
             <img src="images/gWXokU.svg" style="width: 12rem; height: 5rem;" alt="washta">
         </header>
         <div style="padding: 20px;">
-            <h3 style="margin: 1rem 0;">Dear <%= data.name %></h3>
-            <p style="margin: 10px 0; line-height : 1.5rem;">We received a request to reset your password for your <b>Washta</b> account. To proceed with this request, please use the following OTP </p>
-                <h3 style=" margin: 1rem 0;"><%= data.Code %></h3>
-            <p style="margin: 10px 0; line-height : 1.5rem;">This OTP is valid for 10 minutes
-                If you did not request a password reset, please ignore this</p>
+            <h1 style="margin: 1rem 0;font-size: 24px;">Dear [Recipient's Name],</h1>
+            <p style="margin: 10px 0; line-height : 1.5rem;">We have received a request to initiate an approval process for your <b>Washta</b> account. 
+                To continue with this process, please use the following One-Time Password (OTP):</p>
+                <h2 style=" margin: 1rem 0; font-size: 24px;">&lt;%= data.Code %&gt;</h2>
+            <p style="margin: 10px 0; line-height : 1.5rem;">Please enter this code on the verification page to confirm your email address.<br>
+                This code will expire in 2 minutes for security reasons.</p>
                 <p>Thank you</p>
             <section>
                 <!-- content here -->
