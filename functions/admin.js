@@ -12,6 +12,7 @@ const ServiceFeeModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
 const { default: mongoose } = require('mongoose');
+const AdminModel = require('../models/admin');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -609,6 +610,22 @@ const deleteReviews = async (req) => {
     return FormatedRating
 }
 
+// ----------------------------------------------- profile -----------------------------------------------------//
+
+const updateImage = async (req, resizedAvatar, originalAvatar) => {
+    let Admin = await AdminModel.findByIdAndUpdate(
+        { _id: req.user.id },
+        { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
+        {
+            new: true, fields: {
+                avatar: 1,
+                resizedAvatar: 1
+            }
+        }
+    );
+    return Admin;
+};
+
 
 module.exports = {
     getBusinessbyStatus,
@@ -652,6 +669,7 @@ module.exports = {
     getVehiclesByCustomerId,
     terminateCustomer,
     terminateShop,
-    deleteOrderByCustomerId
+    deleteOrderByCustomerId,
+    updateImage
 
 }
