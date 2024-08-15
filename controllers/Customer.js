@@ -7,6 +7,8 @@ const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const CustomerModel = require('../models/Customer');
+const { s3UploadObject } = require('../middlewares');
+const sharp = require('sharp');
 require('dotenv').config()
 
 
@@ -53,6 +55,39 @@ const updatePassword = async (req, res) => {
         return response.resSuccessData(res, Customer);
     }
     catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await CustomerFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
         console.log(error);
         return response.resInternalError(res, error);
     }
@@ -483,4 +518,5 @@ module.exports = {
     updatesSellerReview,
     deleteShopReviews,
     updatePassword,
+    uplaodAvatar,
 }

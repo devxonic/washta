@@ -4,6 +4,7 @@ const CustomerControllers = require('../controllers/Customer');
 const middlewares = require('../middlewares');
 
 
+router.post('/uplaodAvatar', middlewares.verifyCustomer , middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
 router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
