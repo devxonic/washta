@@ -17,6 +17,7 @@ app.use('/api/customer', require('./Routes/Customer'));
 app.use('/api/otp', require('./Routes/Otp'));
 app.use('/api/seller', require('./Routes/Seller'));
 app.use('/api/admin', require('./Routes/admin'));
+app.use('/api/subscription', require('./Routes/subscription'));
 
 mongoose
     .connect(process.env.dburi)
