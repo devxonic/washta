@@ -64,6 +64,23 @@ const signUpWithGoogle = async (req) => {
     return result;
 };
 
+
+
+const updateImage = async (req, resizedAvatar, originalAvatar) => {
+    let Seller = await SellerModel.findByIdAndUpdate(
+        { _id: req.user.id },
+        { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
+        {
+            new: true, fields: {
+                avatar: 1,
+                resizedAvatar: 1
+            }
+        }
+    );
+    return Seller;
+};
+
+
 const editProfile = async (req) => {
     const { name, phone } = req.body;
     let Seller = await SellerModel.findOneAndUpdate(
@@ -620,4 +637,5 @@ module.exports = {
     getOrderReviews,
     openAllShops,
     openShopByid,
+    updateImage
 };
