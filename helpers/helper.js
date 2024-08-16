@@ -30,6 +30,10 @@ let formateReviewsRatings = (Reviews) => {
     })
 }
 
+let formateReviewsRatingsSingle = (review) => {
+    review.rating = Number(review.rating['$numberDecimal'])
+    return review
+}
 let getRatingStatistics = (reviews) => {
     const totalReviews = reviews.length;
 
@@ -83,5 +87,6 @@ module.exports = {
     generate4DigitCode,
     getTimeDifferenceFormatted,
     formateReviewsRatings,
-    getRatingStatistics
+    getRatingStatistics,
+    formateReviewsRatingsSingle
 }
