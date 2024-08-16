@@ -120,6 +120,13 @@ const limiter = rateLimiter({
 });
 
 
+const limiterForFile = rateLimiter({
+    windowMs: 2 * 60 * 1000,
+    max: 1,
+    message: { status: false, code: 429, message: 'Too many requests, please try again later.' },
+});
+
+
 module.exports = {
     verifyCustomer,
     verifySeller,
@@ -127,5 +134,6 @@ module.exports = {
     awsUpload,
     limiter,
     uploadbuffer,
+    limiterForFile,
     s3UploadObject
 }
