@@ -10,7 +10,6 @@ aws.config.update({
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
     accessKeyId: process.env.S3_ACCESS_KEY_ID,
     region: process.env.S3_REGION
-    region: process.env.S3_REGION
 })
 
 const s3 = new aws.S3();
