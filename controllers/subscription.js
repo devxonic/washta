@@ -8,8 +8,10 @@ const ejs = require("ejs");
 const subscibe = async (req, res) => {
     try {
         let { name, email, phone, companyName, registerOnwashta, acceptOnlinePayment, additionalText } = req.body
+        let exits = await subscriptionModel.findOne({ email })
+        if (exits) return response.resBadRequest(res, `you Already subscribe with this ${email} Email`)
         let subs = await subscriptionModel({ name, email, phone, companyName, registerOnwashta, acceptOnlinePayment, additionalText }).save()
-        if (!subs) response.resBadRequest(res, "couldn't Found")
+        if (!subs) return response.resBadRequest(res, "couldn't Found")
         const transporter = nodemailer.createTransport({
             host: process.env.mailerHost,
             port: process.env.mailerPort,
