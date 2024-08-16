@@ -431,7 +431,7 @@ const getInvoiceById = async (req) => {
     if (orders?._doc?.orderAcceptedAt && orders?._doc?.orderCompleteAt) {
         orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
     }
-    return orders._doc;
+    return orders?._doc;
 };
 
 
