@@ -31,7 +31,7 @@ let formateReviewsRatings = (Reviews) => {
 }
 
 let formateReviewsRatingsSingle = (review) => {
-    review.rating = Number(review.rating['$numberDecimal'])
+    review.rating = Number(review?.rating['$numberDecimal'])
     return review
 }
 let getRatingStatistics = (reviews) => {

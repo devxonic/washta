@@ -442,6 +442,7 @@ const createShopRating = async (req) => {
     let { id } = req.user
 
     let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment.text }).save()
+    if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
 }
@@ -452,6 +453,7 @@ const createSellerReview = async (req) => {
 
     console.log(sellerId)
     let Rating = await ReviewModel({ orderId, sellerId: sellerId, customerId: id, rating, 'comment.text': comment.text }).save()
+    if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
 }
@@ -502,6 +504,7 @@ const updatesShopReview = async (req) => {
     let { reviewId } = req.query
 
     let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
 }
@@ -510,6 +513,7 @@ const updatesShopReview = async (req) => {
 const deleteShopReviews = async (req) => {
     let { reviewId } = req.query
     let Review = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { isDeleted: true, deleteBy: { id: req.user.id, role: 'customer' } }, { new: true });
+    if (!Review) return Review
     let FormatedRating = formateReviewsRatingsSingle?.(Review)
     return FormatedRating
 }
@@ -596,6 +600,7 @@ const updatesSellerReview = async (req) => {
     let { reviewId } = req.query
 
     let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
 }

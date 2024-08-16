@@ -375,7 +375,7 @@ const createShopRating = async (req, res) => {
 const getMyReviews = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getMyReviews(req)
-        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
         return response.resSuccessData(res, Booking);
 
     } catch (error) {
@@ -387,7 +387,7 @@ const getMyReviews = async (req, res) => {
 const getShopReviews = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getShopReviews(req)
-        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
         return response.resSuccessData(res, Booking);
 
     } catch (error) {
@@ -399,7 +399,7 @@ const getShopReviews = async (req, res) => {
 const deleteShopReviews = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.deleteShopReviews(req)
-        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
         return response.resSuccessData(res, Booking);
 
     } catch (error) {
@@ -423,7 +423,7 @@ const updatesShopReview = async (req, res) => {
 const createSellerReview = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createSellerReview(req)
-        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
         return response.resSuccessData(res, Booking);
 
     } catch (error) {
@@ -436,7 +436,7 @@ const createSellerReview = async (req, res) => {
 const getSellerReview = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getSellerReview(req)
-        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
         return response.resSuccessData(res, Booking);
 
     } catch (error) {

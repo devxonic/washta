@@ -691,6 +691,7 @@ const replyToReview = async (req) => {
     console.log(body)
 
     let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
@@ -703,14 +704,17 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
+            if (!reply) return reply
             let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
             return FormatedRating
         }
+        if (!reply) return reply
         let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
         return FormatedRating
     })
 
     let reply = reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
@@ -719,6 +723,7 @@ const editMyReplys = async (req) => {
 const deleteReviews = async (req) => {
     let { reviewId } = req.query
     let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
+    if (!Review) return Review
     let FormatedRating = helper.formateReviewsRatingsSingle?.(Review)
     return FormatedRating
 }
