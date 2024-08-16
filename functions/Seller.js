@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
-const { getTimeDifferenceFormatted } = require("../helpers/helper");
+const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle } = require("../helpers/helper");
 const shopModel = require("../models/shop");
 
 const signUp = async (req) => {
@@ -318,6 +318,7 @@ const getMyShopReviews = async (req) => {
     if (shopId) {
         if (!Shops.includes(shopId)) return null
         let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        if (!Reviews) return Reviews
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
@@ -432,7 +433,8 @@ const replyToReview = async (req) => {
     console.log(Review)
 
     let reply = ReviewModel.findOneAndUpdate(filter, { $push: { reply: { ...body } } }, { new: true })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    if (!reply) return reply
+    let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 };
 
@@ -465,15 +467,18 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            let FormatedRating = formateReviewsRatings?.(reply)
+            if (!reply) return reply
+            let FormatedRating = formateReviewsRatingsSingle?.(reply)
             return FormatedRating
         }
-        let FormatedRating = formateReviewsRatings?.(reply)
+        if (!reply) return reply
+        let FormatedRating = formateReviewsRatingsSingle?.(reply)
         return FormatedRating
     })
 
     let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    if(!reply) return reply
+    let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
 // ----------------------------------------------- Invoice -----------------------------------------------------//
