@@ -60,7 +60,7 @@ const VerifyCode = async (req, res) => {
         let Passwordtoken = jwt.sign(
             { ...OTP._doc },
             process.env.OTPPasswordToken,
-            { expiresIn: 60 * 5 }
+            { expiresIn: 60 * 10 }
         );
         response.resSuccessData(res, { token: Passwordtoken })
     } catch (error) {

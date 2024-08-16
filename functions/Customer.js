@@ -83,6 +83,20 @@ const getProfile = async (req) => {
 }
 
 
+const updateImage = async (req, resizedAvatar, originalAvatar) => {
+    let customer = await CustomerModel.findByIdAndUpdate(
+        { _id: req.user.id },
+        { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
+        {
+            new: true, fields: {
+                avatar: 1,
+                resizedAvatar: 1
+            }
+        }
+    );
+    return customer;
+};
+
 const updateNotification = async (req) => {
     let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { notification: req.body } })
     return player
@@ -557,5 +571,6 @@ module.exports = {
     createSellerReview,
     getSellerReview,
     deleteShopReviews,
-    updatesSellerReview
+    updatesSellerReview,
+    updateImage
 }

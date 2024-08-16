@@ -9,6 +9,12 @@ const CustomerSchema = new Schema({
         type: String,
         required: true,
     },
+    avatar: {
+        type: String
+    },
+    resizedAvatar: {
+        type: String
+    },
     email: { type: String },
     phone: {
         type: String,
