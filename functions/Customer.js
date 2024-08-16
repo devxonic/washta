@@ -369,6 +369,72 @@ const getbookingbyStatus = async (req) => {
     ])
     return Bookings
 }
+
+
+const getAllInvoice = async (req) => {
+    let orders = await OrderModel.find({ customerId: req.user.id, status: "completed" }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
+
+    let updatedOrder = orders.map(order => {
+        if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
+            return order._doc = {
+                ...order._doc, duration: getTimeDifferenceFormatted(order._doc.orderAcceptedAt, order._doc.orderCompleteAt)
+            }
+        }
+        return order._doc
+    })
+    return updatedOrder;
+};
+
+const getInvoiceById = async (req) => {
+    let { id } = req.params
+    let orders = await OrderModel.findOne({ _id: id, customerId: req.user.id, status: "completed" }).populate([
+        {
+            path: "customerId",
+            select: {
+                email: 1,
+                phone: 1,
+                profile: 1,
+                username: 1,
+                fullName: 1,
+                selectedVehicle: 1,
+            }
+        },
+        {
+            path: "vehicleId",
+            select: {
+                vehicleManufacturer: 1,
+                vehiclePlateNumber: 1,
+                vehicleName: 1,
+                vehicleType: 1,
+            }
+        }]);
+    if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
+        orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
+    }
+    return orders._doc;
+};
+
+
 // ----------------------------------------------- Ratings -----------------------------------------------------//
 
 const createShopRating = async (req) => {
@@ -568,6 +634,8 @@ module.exports = {
     updatesShopReview,
     getMyReviews,
     getShopReviews,
+    getAllInvoice,
+    getInvoiceById,
     createSellerReview,
     getSellerReview,
     deleteShopReviews,
