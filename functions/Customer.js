@@ -395,7 +395,7 @@ const getAllInvoice = async (req) => {
         }]);
 
     let updatedOrder = orders.map(order => {
-        if (order._doc.orderCompleteAt && order._doc.orderAcceptedAt) {
+        if (order?._doc?.orderCompleteAt && order?._doc?.orderAcceptedAt) {
             return order._doc = {
                 ...order._doc, duration: getTimeDifferenceFormatted(order._doc.orderAcceptedAt, order._doc.orderCompleteAt)
             }
@@ -428,7 +428,7 @@ const getInvoiceById = async (req) => {
                 vehicleType: 1,
             }
         }]);
-    if (orders._doc?.orderAcceptedAt && orders._doc?.orderCompleteAt) {
+    if (orders?._doc?.orderAcceptedAt && orders?._doc?.orderCompleteAt) {
         orders._doc = { ...orders._doc, duration: getTimeDifferenceFormatted(orders._doc.orderAcceptedAt, orders._doc.orderCompleteAt) }
     }
     return orders._doc;
