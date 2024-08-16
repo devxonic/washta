@@ -161,23 +161,126 @@ const JobHistory = async (req) => {
 // ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
 
 const getTopCustomer = async (req) => {
-    let Order = await OrderModel.find({})
-    let Customer = await CustomerModel.find({})
-    // console.log(Order)
-    // console.log("query ------------", req.query.limit)
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let customerFilter = {
+        username: 1,
+        fullName: 1,
+        email: 1,
+        phone: 1,
+        selectedVehicle: 1,
+        isTerminated: 1,
+        isVerifed: 1,
+    }
+    let customerData = {}
+    for (const singleOrder of orders) {
+        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId }, customerFilter)
+        if (customer) {
+            if (!customerData[singleOrder?.customerId]) {
+                customerData[singleOrder?.customerId] = { ...customer?._doc, totalSpents: 0, totalOrders: 0 }
+            }
+            customerData[singleOrder?.customerId].totalOrders++
+            customerData[singleOrder?.customerId].totalSpents += parseFloat(singleOrder.cost)
+        }
+    }
 
-    let sortedData = helper.getTopCustomersBySpending(Order, Customer, req.query.limit)
-    return sortedData
+    let customerArray = Object.values(customerData)
+    customerArray.sort((a, b) => {
+        if (b.totalSpents === a.totalSpents) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalSpents - a.totalSpents;
+    });
+    if (limit) {
+        const topCustomers = customerArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCustomers
+    }
+    return customerArray
 }
 
 
-const getTopCompanies = async (req) => {
-    let Order = await OrderModel.find({})
-    console.log(Order)
-    console.log("query ------------", req.query.limit)
+const getTopSellers = async (req) => {
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let sellerFilter = {
+        username: 1,
+        fullName: 1,
+        email: 1,
+        phone: 1,
+        status: 1,
+        shops: 1,
+        isVerifed: 1,
+        'business.companyName': 1,
+        'business.location': 1,
+    }
+    let companiesData = {}
+    for (const singleOrder of orders) {
+        let seller = await shopModel.findOne({ _id: singleOrder?.shopId }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
+        if (seller) {
+            if (!companiesData[singleOrder?.shopId]) {
+                companiesData[singleOrder?.shopId] = { ...seller?.Owner?._doc, totalRevenue: 0, totalOrders: 0 }
+            }
+            companiesData[singleOrder?.shopId].totalOrders++
+            companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+        }
+    }
 
-    let sortedData = helper.getTopCustomersBySpending(Order, req.query.limit)
-    return sortedData
+    let companiesArray = Object.values(companiesData)
+    companiesArray.sort((a, b) => {
+        if (b.totalRevenue === a.totalRevenue) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalRevenue - a.totalRevenue;
+    });
+    if (limit) {
+        const topCompanies = companiesArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCompanies
+    }
+    return companiesArray
+}
+
+const getTopCompanies = async (req) => {
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let shopFilter = {
+        Owner: 1,
+        shopName: 1,
+        coverImage: 1,
+        sliderImage: 1,
+        isActive: 1,
+        shopDetails: 1,
+        estimatedServiceTime: 1,
+        isTerminated: 1,
+        location: 1,
+        cost: 1,
+    }
+    let companiesData = {}
+    for (const singleOrder of orders) {
+        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId }, shopFilter)
+        if (Shop) {
+            if (!companiesData[singleOrder?.shopId]) {
+                companiesData[singleOrder?.shopId] = { ...Shop?._doc, totalRevenue: 0, totalOrders: 0 }
+            }
+            companiesData[singleOrder?.shopId].totalOrders++
+            companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+        }
+    }
+
+    let companiesArray = Object.values(companiesData)
+    companiesArray.sort((a, b) => {
+        if (b.totalRevenue === a.totalRevenue) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalRevenue - a.totalRevenue;
+    });
+    if (limit) {
+        const topCompanies = companiesArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCompanies
+    }
+    return companiesArray
 }
 
 
@@ -221,6 +324,16 @@ const getCustomer = async (req) => {
     }).populate([{
         path: "selectedVehicle",
     }])
+    // let updatedCustomers = [];
+    // for (const customer of Customer) {
+    //     let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
+    //     let totalSpents = 0
+    //     orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
+
+    //     console.log("totalSpents -------------------- ", totalSpents)
+
+
+    // }
     return Customer
 }
 
@@ -634,6 +747,7 @@ module.exports = {
     JobHistory,
     getTopCustomer,
     getTopCompanies,
+    getTopSellers,
     UpdateShopbyAmdin,
     getShop,
     getShopbyid,

@@ -28,8 +28,9 @@ router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 
 // ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
 
-// router.get('/TopCustomers', AdminController.getTopCustomer)
-// router.get('/TopCustomers', AdminController.getTopCompanies)
+router.get('/TopCustomers', AdminController.getTopCustomer)
+router.get('/TopCompanies', AdminController.getTopCompanies)
+router.get('/TopSellers', AdminController.getTopSellers)
 
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
@@ -47,7 +48,7 @@ router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCus
 router.delete('/customer/:id', middlewares.verifyAdmin, AdminController.terminateCustomer)
 router.delete('/bookings', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
 
-// ----------------------------------------------- Customer  -----------------------------------------------------//
+// ----------------------------------------------- vehicles  -----------------------------------------------------//
 
 router.get('/vehicles', middlewares.verifyAdmin, AdminController.getVehicles)
 router.get('/vehicles/:id', middlewares.verifyAdmin, AdminController.getvehiclesById)

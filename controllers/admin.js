@@ -200,6 +200,18 @@ const getTopCompanies = async (req, res) => {
     }
 }
 
+const getTopSellers = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getTopSellers(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 // ----------------------------------------------- shop -----------------------------------------------------//
 
@@ -575,6 +587,7 @@ module.exports = {
     JobHistory,
     getTopCustomer,
     getTopCompanies,
+    getTopSellers,
     getShopbyid,
     getShop,
     UpdateShopbyAmdin,
