@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
-const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle } = require("../helpers/helper");
+const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
 const shopModel = require("../models/shop");
 
 const signUp = async (req) => {
@@ -604,6 +604,211 @@ const getAllMyNotifications = async (req) => {
     return UpdatedNotification;
 };
 
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+const getAllTimeStats = async (req) => {
+    let newDate = new Date();
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+    let filter = {
+        shopId: { $in: Shops },
+    };
+
+    const year = newDate.getFullYear();
+    const daysInYear = getDaysInYear(year);
+
+    let currentMonth;
+    let { monthData, monthNames } = generateMonthOfYear();
+
+
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentMonth = monthNames[orderDate.getMonth()];
+        if (singleOrder.status == "completed") {
+            monthData[currentMonth].totalOrders++
+            monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+        monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
+        totalOrders,
+        acceptedOrders,
+        cancelledOrders,
+        graphData: Object.values(monthData),
+    }
+    return response
+};
+
+const getstatsbyMonth = async (req) => {
+    let { startDate } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+
+    let startOfmonth = startDate ? new Date(startDate) : new Date();
+    startOfmonth.setDate(1);
+    startOfmonth.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfmonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
+    endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    let filter = {
+        shopId: { $in: Shops },
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+        ]
+    }
+
+    let year = startOfmonth.getFullYear()
+    let month = startOfmonth.getMonth()
+    let monthDays = generateDaysOfMonth(year, month);
+    let nameOfdays = [
+        '01', '02', '03',
+        '04', '05', '06', '07', '08',
+        '09', '10', '11', '12', '13',
+        '14', '15', '16', '17', '18',
+        '19', '20', '21', '22', '23',
+        '24', '25', '26', '27', '28',
+        '29', '30', '31',
+    ]
+    let currentDay;
+    console.log(filter)
+    console.log(nameOfdays)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = nameOfdays[orderDate.getDate() - 1];
+        if (singleOrder.status == "completed") {
+            monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            monthDays[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
+        graphData: Object.values(monthDays)
+    }
+    return response
+};
+
+const getStatsByWeek = async (req) => {
+    let { startDate } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+
+    let startOfmonth = startDate ? new Date(startDate) : new Date();
+    startOfmonth.setDate(1);
+    startOfmonth.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfmonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
+    endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    let filter = {
+        shopId: { $in: Shops },
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+        ]
+    }
+
+    let year = startOfmonth.getFullYear()
+    let month = startOfmonth.getMonth()
+    let { weekData, daysOfWeek } = generateDaysOfWeek();
+    let currentDay;
+    console.log(filter)
+    console.log(weekData, daysOfWeek)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = daysOfWeek[orderDate.getDay()];
+        if (singleOrder.status == "completed") {
+            weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            weekData[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        null: null,
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
+        graphData: Object.values(weekData)
+    }
+    return response
+};
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -642,5 +847,8 @@ module.exports = {
     getOrderReviews,
     openAllShops,
     openShopByid,
-    updateImage
+    updateImage,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
 };

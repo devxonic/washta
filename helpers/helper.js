@@ -83,10 +83,90 @@ let getRatingStatistics = (reviews) => {
     };
 }
 
+
+function getDaysInMonth(month, year) {
+    return new Date(year, month, 0).getDate();
+}
+
+function getDaysInYear(year) {
+    const daysInMonths = [];
+    for (let month = 1; month <= 12; month++) {
+        daysInMonths.push(getDaysInMonth(month, year));
+    }
+    return daysInMonths;
+}
+
+function generateDaysOfMonth(year, month) {
+    let daysInMonth = new Date(year, month + 1, 0).getDate(); // Get number of days in the month
+    let daysData = {};
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        let dateKey = `${day < 10 ? '0' : ''}${day}`; // Format day as '01', '02', etc.
+        daysData[dateKey] = {
+            dayOfMonth: dateKey,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    }
+
+    return daysData;
+}
+
+
+function generateMonthOfYear() {
+    const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    let monthData = {};
+
+    monthNames.forEach(month => {
+        monthData[month] = {
+            monthName: month,
+            averageDailySales: 0,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    });
+
+    return { monthData, monthNames };
+}
+
+function generateDaysOfWeek() {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    let weekData = {};
+
+    daysOfWeek.forEach(day => {
+        weekData[day] = {
+            dayOfWeek: day,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    });
+
+    return { weekData, daysOfWeek };
+}
+
+
 module.exports = {
     generate4DigitCode,
     getTimeDifferenceFormatted,
     formateReviewsRatings,
     getRatingStatistics,
-    formateReviewsRatingsSingle
+    formateReviewsRatingsSingle,
+    getDaysInYear,
+    getDaysInMonth,
+    generateDaysOfMonth,
+    generateDaysOfWeek,
+    generateMonthOfYear
 }
