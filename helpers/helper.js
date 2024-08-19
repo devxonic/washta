@@ -1,3 +1,5 @@
+const { name } = require("ejs");
+
 function generate4DigitCode() {
     const code = Math.floor(Math.random() * 9000) + 1000;
     return code.toString();
@@ -103,7 +105,7 @@ function generateDaysOfMonth(year, month) {
     for (let day = 1; day <= daysInMonth; day++) {
         let dateKey = `${day < 10 ? '0' : ''}${day}`; // Format day as '01', '02', etc.
         daysData[dateKey] = {
-            dayOfMonth: dateKey,
+            name: dateKey,
             totalOrders: 0,
             totalRevenue: 0,
         };
@@ -132,7 +134,7 @@ function generateMonthOfYear() {
 
     monthNames.forEach(month => {
         monthData[month] = {
-            monthName: month,
+            name: month,
             averageDailySales: 0,
             totalOrders: 0,
             totalRevenue: 0,
@@ -148,7 +150,7 @@ function generateDaysOfWeek() {
 
     daysOfWeek.forEach(day => {
         weekData[day] = {
-            dayOfWeek: day,
+            name: day,
             totalOrders: 0,
             totalRevenue: 0,
         };
