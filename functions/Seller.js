@@ -217,13 +217,13 @@ const openShopByid = async (req) => {
 const getAllOrders = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    let Order = await OrderModel.find({ shopId: { $in: Shops } });
+    let Order = await OrderModel.find({ shopId: { $in: Shops } }).sort({ createdAt: 1, date: 1 })
     console.log(Order);
     return Order;
 };
 
 const getOrderById = async (req) => {
-    let Order = await OrderModel.findById(req.params.id);
+    let Order = await OrderModel.findById(req.params.id).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -245,7 +245,7 @@ const orderStatus = async (req, res) => {
         { _id: id },
         { $set: OBJ },
         { new: true },
-    ).populate({ path: 'vehicleId' })
+    ).populate({ path: 'vehicleId' }).sort({ createdAt: 1, date: 1 })
 
     return response.resSuccessData(res, Order);
     ;
@@ -256,7 +256,7 @@ const getorderbyStatus = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: req.query.status }],
-    });
+    }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -265,7 +265,7 @@ const getpastorder = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
-    }).populate({ path: "vehicleId" });
+    }).populate({ path: "vehicleId" }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 const getActiveOrder = async (req) => {
@@ -282,7 +282,7 @@ const getActiveOrder = async (req) => {
             $gte: newDate,
             $lt: endOfDay,
         }
-    });
+    }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -477,7 +477,7 @@ const editMyReplys = async (req) => {
     })
 
     let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
-    if(!reply) return reply
+    if (!reply) return reply
     let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
