@@ -81,5 +81,13 @@ router.patch('/editReply', middlewares.verifySeller, AdminController.editMyReply
 router.delete('/deleteReview', middlewares.verifySeller, AdminController.deleteReviews) // ...
 
 
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+router.get('/stats', middlewares.verifySeller, AdminController.getAllTimeStats)
+router.get('/monthStats', middlewares.verifySeller, AdminController.getstatsbyMonth)
+router.get('/weekStats', middlewares.verifySeller, AdminController.getStatsByWeek)
+
+
+
 
 module.exports = router 
