@@ -577,42 +577,7 @@ const deleteReviews = async (req, res) => {
     }
 }
 
-// ----------------------------------------------- stats -----------------------------------------------------//
 
-
-const getAllTimeStats = async (req, res) => {
-    try {
-        let Stats = await AdminFunctions.getAllTimeStats(req)
-        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
-        return response.resSuccessData(res, Stats);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
-
-const getstatsbyMonth = async (req, res) => {
-    try {
-        let Stats = await AdminFunctions.getstatsbyMonth(req)
-        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
-        return response.resSuccessData(res, Stats);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
-
-
-const getStatsByWeek = async (req, res) => {
-    try {
-        let Stats = await AdminFunctions.getStatsByWeek(req)
-        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
-        return response.resSuccessData(res, Stats);
-    } catch (error) {
-        console.log(error);
-        return response.resInternalError(res, error)
-    }
-}
 
 
 module.exports = {
@@ -657,8 +622,5 @@ module.exports = {
     terminateShop,
     deleteOrderByCustomerId,
     updatePassword,
-    uplaodAvatar,
-    getAllTimeStats,
-    getstatsbyMonth,
-    getStatsByWeek,
+    uplaodAvatar
 }
