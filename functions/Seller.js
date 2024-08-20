@@ -750,33 +750,31 @@ const getStatsByWeek = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
 
 
-    let startOfmonth = startDate ? new Date(startDate) : new Date();
-    startOfmonth.setDate(1);
-    startOfmonth.setHours(0, 0, 0, 0);
-    let endOfMonth = new Date(startOfmonth);
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
-    endOfMonth.setDate(0);
-    endOfMonth.setHours(23, 59, 59, 999);
+    let startOfWeek = startDate ? new Date(startDate) : new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    let endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7) 
+    endOfWeek.setHours(0, 0, 0, 0);
+
     let filter = {
         shopId: { $in: Shops },
         $or: [
             {
                 'creacreatedAt': {
-                    $gte: startOfmonth,
-                    $lt: endOfMonth,
+                    $gte: startOfWeek,
+                    $lt: endOfWeek,
                 }
             },
             {
                 'date': {
-                    $gte: startOfmonth,
-                    $lt: endOfMonth,
+                    $gte: startOfWeek,
+                    $lt: endOfWeek,
                 }
             },
         ]
     }
 
-    let year = startOfmonth.getFullYear()
-    let month = startOfmonth.getMonth()
     let { weekData, daysOfWeek } = generateDaysOfWeek();
     let currentDay;
     console.log(filter)
@@ -798,7 +796,6 @@ const getStatsByWeek = async (req) => {
     }
 
     let response = {
-        null: null,
         totalRevenue: totalAmount,
         totalOrders,
         cancelledOrders,
