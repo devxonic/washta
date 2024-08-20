@@ -429,6 +429,17 @@ const editMyReplys = async (req, res) => {
     }
 }
 
+const deleteMyReplys = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.deleteMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Reply")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 const replyToReview = async (req, res) => {
     try {
@@ -529,6 +540,7 @@ module.exports = {
     getActiveOrder,
     getMyShopReviews,
     replyToReview,
+    deleteMyReplys,
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
