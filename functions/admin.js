@@ -690,8 +690,9 @@ const replyToReview = async (req) => {
     }
     console.log(body)
 
-    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
     if (!reply) return reply
+    console.log(reply)
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
@@ -704,19 +705,29 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            if (!reply) return reply
-            let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
-            return FormatedRating
+            return reply
         }
-        if (!reply) return reply
-        let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
-        return FormatedRating
+        return reply
     })
 
-    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating : 1 } })
     if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
+}
+
+const deleteMyReplys = async (req) => {
+    let { reviewId, commentId } = req.query
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.find(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            return reply._id
+        }
+    })
+    if (!myReply) return myReply
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
 }
 
 
@@ -874,7 +885,7 @@ const getStatsByWeek = async (req) => {
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfWeek);
-    endOfMonth.setDate(startOfWeek.getDate() + 7) 
+    endOfMonth.setDate(startOfWeek.getDate() + 7)
     endOfMonth.setHours(0, 0, 0, 0);
 
     let filter = {
@@ -962,6 +973,7 @@ module.exports = {
     getShopReviews,
     replyToReview,
     editMyReplys,
+    deleteMyReplys,
     deleteReviews,
     getSellerReviews,
     getOrderReviews,

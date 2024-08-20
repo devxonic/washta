@@ -467,13 +467,9 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            if (!reply) return reply
-            let FormatedRating = formateReviewsRatingsSingle?.(reply)
-            return FormatedRating
+            return reply
         }
-        if (!reply) return reply
-        let FormatedRating = formateReviewsRatingsSingle?.(reply)
-        return FormatedRating
+        return reply
     })
 
     let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
@@ -754,7 +750,7 @@ const getStatsByWeek = async (req) => {
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     let endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7) 
+    endOfWeek.setDate(startOfWeek.getDate() + 7)
     endOfWeek.setHours(0, 0, 0, 0);
 
     let filter = {
