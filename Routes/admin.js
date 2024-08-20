@@ -88,6 +88,13 @@ router.get('/monthStats', middlewares.verifyAdmin, AdminController.getstatsbyMon
 router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek)
 
 
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
+// router.get('/SalesMonthStats', middlewares.verifyAdmin, AdminController.getstatsbyMonth)
+// router.get('/SalesWeekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek)
+
+
 
 
 module.exports = router 

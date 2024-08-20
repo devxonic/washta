@@ -747,6 +747,7 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
+    let { shopId } = req.query
     let newDate = new Date();
     let totalOrders = 0;
     let totalAmount = 0;
@@ -759,8 +760,9 @@ const getAllTimeStats = async (req) => {
     let currentMonth;
     let { monthData, monthNames } = helper.generateMonthOfYear();
 
+    let filter = shopId ? ({ shopId }) : {}
 
-    let orders = await OrderModel.find({})
+    let orders = await OrderModel.find(filter)
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
@@ -789,7 +791,7 @@ const getAllTimeStats = async (req) => {
 };
 
 const getstatsbyMonth = async (req) => {
-    let { startDate } = req.query
+    let { startDate, shopId } = req.query
 
     let totalOrders = 0;
     let totalAmount = 0;
@@ -803,7 +805,9 @@ const getstatsbyMonth = async (req) => {
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
+    let isShop = shopId ? { shopId } : {}
     let filter = {
+        ...isShop,
         $or: [
             {
                 'creacreatedAt': {
@@ -820,6 +824,7 @@ const getstatsbyMonth = async (req) => {
         ]
     }
 
+    console.log(filter)
     let year = startOfmonth.getFullYear()
     let month = startOfmonth.getMonth()
     let monthDays = helper.generateDaysOfMonth(year, month);
@@ -874,7 +879,7 @@ const getStatsByWeek = async (req) => {
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfWeek);
-    endOfMonth.setDate(startOfWeek.getDate() + 7) 
+    endOfMonth.setDate(startOfWeek.getDate() + 7)
     endOfMonth.setHours(0, 0, 0, 0);
 
     let filter = {
@@ -926,6 +931,42 @@ const getStatsByWeek = async (req) => {
 };
 
 
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+const getSalesSingleShop = async (req) => {
+    let { shopId, graph } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "shopId", select: {
+                Owner: 1,
+                shopName: 1,
+                coverImage: 1,
+                sliderImage: 1,
+                isActive: 1,
+                service: 1,
+                shopDetails: 1,
+                estimatedServiceTime: 1,
+                isOpen: 1,
+                isTerminated: 1,
+                cost: 1,
+            }
+        },
+        { path: "vehicleId" },
+    ]
+
+
+    let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
+    let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
+    
+    let response = {
+        graphData,
+        orders
+    }
+    return response
+};
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -974,4 +1015,5 @@ module.exports = {
     getAllTimeStats,
     getstatsbyMonth,
     getStatsByWeek,
+    getSalesSingleShop,
 }
