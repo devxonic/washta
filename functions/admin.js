@@ -954,30 +954,17 @@ const getSalesSingleShop = async (req) => {
 
     let populate = [
         { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        {
-            path: "shopId", select: {
-                Owner: 1,
-                shopName: 1,
-                coverImage: 1,
-                sliderImage: 1,
-                isActive: 1,
-                service: 1,
-                shopDetails: 1,
-                estimatedServiceTime: 1,
-                isOpen: 1,
-                isTerminated: 1,
-                cost: 1,
-            }
-        },
         { path: "vehicleId" },
     ]
 
 
+    let shop = await shopModel.findOne({ _id : shopId }, { location: 0 , __v : 0 })
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
     let response = {
         graphData,
+        shop,
         orders
     }
     return response
