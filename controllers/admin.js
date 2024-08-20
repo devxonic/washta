@@ -555,7 +555,19 @@ const replyToReview = async (req, res) => {
 
 const editMyReplys = async (req, res) => {
     try {
-        let shop = await AdminFunctions.replyToReview(req)
+        let shop = await AdminFunctions.editMyReplys(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteMyReplys = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteMyReplys(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
         return response.resSuccessData(res, shop);
 
@@ -648,6 +660,7 @@ module.exports = {
     getShopReviews,
     replyToReview,
     editMyReplys,
+    deleteMyReplys,
     deleteReviews,
     getSellerReviews,
     getOrderReviews,
