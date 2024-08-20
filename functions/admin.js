@@ -796,11 +796,6 @@ const getstatsbyMonth = async (req) => {
     let cancelledOrders = 0;
     let acceptedOrders = 0;
 
-
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
-
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
     startOfmonth.setHours(0, 0, 0, 0);
@@ -809,7 +804,6 @@ const getstatsbyMonth = async (req) => {
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
     let filter = {
-        shopId: { $in: Shops },
         $or: [
             {
                 'creacreatedAt': {
@@ -828,7 +822,7 @@ const getstatsbyMonth = async (req) => {
 
     let year = startOfmonth.getFullYear()
     let month = startOfmonth.getMonth()
-    let monthDays = generateDaysOfMonth(year, month);
+    let monthDays = helper.generateDaysOfMonth(year, month);
     let nameOfdays = [
         '01', '02', '03',
         '04', '05', '06', '07', '08',
@@ -876,39 +870,31 @@ const getStatsByWeek = async (req) => {
     let cancelledOrders = 0;
     let acceptedOrders = 0;
 
+    let startOfWeek = startDate ? new Date(startDate) : new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfWeek);
+    endOfMonth.setDate(startOfWeek.getDate() + 7) 
+    endOfMonth.setHours(0, 0, 0, 0);
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
-
-    let startOfmonth = startDate ? new Date(startDate) : new Date();
-    startOfmonth.setDate(1);
-    startOfmonth.setHours(0, 0, 0, 0);
-    let endOfMonth = new Date(startOfmonth);
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
-    endOfMonth.setDate(0);
-    endOfMonth.setHours(23, 59, 59, 999);
     let filter = {
-        shopId: { $in: Shops },
         $or: [
             {
                 'creacreatedAt': {
-                    $gte: startOfmonth,
+                    $gte: startOfWeek,
                     $lt: endOfMonth,
                 }
             },
             {
                 'date': {
-                    $gte: startOfmonth,
+                    $gte: startOfWeek,
                     $lt: endOfMonth,
                 }
             },
         ]
     }
 
-    let year = startOfmonth.getFullYear()
-    let month = startOfmonth.getMonth()
-    let { weekData, daysOfWeek } = generateDaysOfWeek();
+    let { weekData, daysOfWeek } = helper.generateDaysOfWeek();
     let currentDay;
     console.log(filter)
     console.log(weekData, daysOfWeek)
@@ -929,7 +915,6 @@ const getStatsByWeek = async (req) => {
     }
 
     let response = {
-        null: null,
         totalRevenue: totalAmount,
         totalOrders,
         cancelledOrders,
