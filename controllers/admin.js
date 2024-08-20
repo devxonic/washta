@@ -627,6 +627,31 @@ const getStatsByWeek = async (req, res) => {
 }
 
 
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+const getShopForSales = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getShopForSales(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSalesSingleShop = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getSalesSingleShop(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 module.exports = {
     updateStatus,
     businessApprove,
@@ -674,4 +699,6 @@ module.exports = {
     getAllTimeStats,
     getstatsbyMonth,
     getStatsByWeek,
+    getSalesSingleShop,
+    getShopForSales,
 }

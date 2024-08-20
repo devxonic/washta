@@ -77,7 +77,7 @@ const shopSchema = new Schema({
         index: "2dsphere"
     },
     cost: { type: Number }
-})
+}, { timestamps: true })
 shopSchema.index({ location: "2dsphere" });
 
 const shopModel = mongoose.model('shop', shopSchema);
