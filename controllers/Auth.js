@@ -44,7 +44,7 @@ const signUp = async (req, res) => {
             }
         }
         if (role == "seller") {
-            let SellerExists = await SignupFunctions.getUser(req, role)
+            let SellerExists = await SignupFunctions.getUserByEmail(req, role)
             if (SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let SellerBody = { username, fullname, email, phone, password: hash }
