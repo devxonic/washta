@@ -184,7 +184,7 @@ const updateIsSelected = async (req) => {
 
 
 const getAllShops = async (req) => {
-    let Shops = await shopModel.find({})
+    let Shops = await shopModel.find({ isOpen: true })
     let updatedShops = [];
     for (const shop of Shops) {
         let shopReviews = await ReviewModel.find({ shopId: shop?._id })
@@ -205,7 +205,7 @@ const getAllShops = async (req) => {
 }
 
 const getShopById = async (req) => {
-    let Shops = await shopModel.findById(req.params.id)
+    let Shops = await shopModel.findOne({ _id: req.params.id })
     let shopReviews = await ReviewModel.find({ shopId: Shops?._id })
     let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
     let formatedReviews = formateReviewsRatings(shopReviews);
@@ -257,7 +257,8 @@ const getShopByLocation = async (req) => {
                 $minDistance: 0,
                 $maxDistance: parseFloat(req.query.radius ? req.query.radius : 1000)
             }
-        }
+        },
+        isOpen: true
     })
     const userCoordinates = [req.query.long, req.query.lat];
     let shopsWithDistance = []
