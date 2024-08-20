@@ -543,7 +543,7 @@ const getCustomerReviews = async (req, res) => {
 
 const replyToReview = async (req, res) => {
     try {
-        let shop = await AdminFunctions.replyToReview(req)
+        let shop = await AdminFunctions.editMyReplys(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
         return response.resSuccessData(res, shop);
 
