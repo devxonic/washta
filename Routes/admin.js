@@ -90,10 +90,8 @@ router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek
 
 // ----------------------------------------------- sales -----------------------------------------------------//
 
+router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSales)
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
-// router.get('/SalesMonthStats', middlewares.verifyAdmin, AdminController.getstatsbyMonth)
-// router.get('/SalesWeekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek)
-
 
 
 

@@ -933,6 +933,11 @@ const getStatsByWeek = async (req) => {
 
 // ----------------------------------------------- sales -----------------------------------------------------//
 
+const getShopForSales = async (req) => {
+    let Shops = await shopModel.find().sort({ createdAt: 1, updatedAt: 1 })
+    return Shops
+};
+
 const getSalesSingleShop = async (req) => {
     let { shopId, graph } = req.query
 
@@ -959,7 +964,7 @@ const getSalesSingleShop = async (req) => {
 
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
-    
+
     let response = {
         graphData,
         orders
@@ -1016,4 +1021,5 @@ module.exports = {
     getstatsbyMonth,
     getStatsByWeek,
     getSalesSingleShop,
+    getShopForSales,
 }
