@@ -72,20 +72,20 @@ router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePr
 
 // ----------------------------------------------- Review -----------------------------------------------------//
 
-router.get('/shopReview', middlewares.verifySeller, AdminController.getShopReviews)
-router.get('/sellerReview', middlewares.verifySeller, AdminController.getSellerReviews)
-router.get('/orderReview', middlewares.verifySeller, AdminController.getOrderReviews)
-router.get('/customerReview', middlewares.verifySeller, AdminController.getCustomerReviews)
-router.post('/replyReview', middlewares.verifySeller, AdminController.replyToReview) // ...
-router.patch('/editReply', middlewares.verifySeller, AdminController.editMyReplys) // ...
-router.delete('/deleteReview', middlewares.verifySeller, AdminController.deleteReviews) // ...
+router.get('/shopReview', middlewares.verifyAdmin, AdminController.getShopReviews)
+router.get('/sellerReview', middlewares.verifyAdmin, AdminController.getSellerReviews)
+router.get('/orderReview', middlewares.verifyAdmin, AdminController.getOrderReviews)
+router.get('/customerReview', middlewares.verifyAdmin, AdminController.getCustomerReviews)
+router.post('/replyReview', middlewares.verifyAdmin, AdminController.replyToReview) // ...
+router.patch('/editReply', middlewares.verifyAdmin, AdminController.editMyReplys) // ...
+router.delete('/deleteReview', middlewares.verifyAdmin, AdminController.deleteReviews) // ...
 
 
 // ----------------------------------------------- stats -----------------------------------------------------//
 
-router.get('/stats', middlewares.verifySeller, AdminController.getAllTimeStats)
-router.get('/monthStats', middlewares.verifySeller, AdminController.getstatsbyMonth)
-router.get('/weekStats', middlewares.verifySeller, AdminController.getStatsByWeek)
+router.get('/stats', middlewares.verifyAdmin, AdminController.getAllTimeStats)
+router.get('/monthStats', middlewares.verifyAdmin, AdminController.getstatsbyMonth)
+router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek)
 
 
 
