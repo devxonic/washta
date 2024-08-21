@@ -334,6 +334,7 @@ const cancelBooking = async (req) => {
 }
 
 const createNewBooking = async (req) => {
+    req.body.customerId = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",

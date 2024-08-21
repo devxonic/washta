@@ -175,6 +175,7 @@ const getShopById = async (req) => {
 };
 
 const addShop = async (req) => {
+    req.body.Owner = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",
