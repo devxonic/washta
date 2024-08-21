@@ -23,7 +23,7 @@ const shopSchema = new Schema({
     isActive: { type: Boolean },
     shopDetails: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
-    isOpen: { type: Boolean },
+    isOpen: { type: Boolean , default : true },
     timing: {
         monday: {
             open: { type: Boolean },
