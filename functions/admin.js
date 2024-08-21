@@ -552,12 +552,12 @@ const getShopReviews = async (req) => {
     ]
 
     if (!shopId) {
-        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -590,12 +590,12 @@ const getSellerReviews = async (req) => {
     ]
 
     if (!sellerId) {
-        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -627,12 +627,12 @@ const getOrderReviews = async (req) => {
     ]
 
     if (!orderId) {
-        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -664,12 +664,12 @@ const getCustomerReviews = async (req) => {
     ]
 
     if (!customerId) {
-        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
