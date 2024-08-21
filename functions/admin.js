@@ -56,27 +56,28 @@ const businessApprove = async (req) => {
         "business.status": "approved",
         "business.approvedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
 
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: "Approved" } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -90,26 +91,26 @@ const businessTerminate = async (req) => {
         "business.status": 'terminated',
         "business.terminatedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    console.log("mails -------------",)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
-    // if (Business.email) {
-    //     let transporterRes = transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Terminated " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -123,28 +124,27 @@ const businessReject = async (req) => {
         "business.status": 'rejected',
         "business.rejectedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // console.log(id)
-    // console.log(Business)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Rejected " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -710,7 +710,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating : 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
     if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
@@ -958,7 +958,7 @@ const getSalesSingleShop = async (req) => {
     ]
 
 
-    let shop = await shopModel.findOne({ _id : shopId }, { location: 0 , __v : 0 })
+    let shop = await shopModel.findOne({ _id: shopId }, { location: 0, __v: 0 })
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
