@@ -155,7 +155,7 @@ const logout = async (req) => {
 // ----------------------------------------------- Business -----------------------------------------------------//
 
 const addBusiness = async (req) => {
-    req.body.status = "pending"
+    req.body.status = "ongoing"
     let date = new Date()
     req.body.cratedAt = date
     let Seller = await SellerModel.findByIdAndUpdate({ _id: req.params.id }, { $set: { business: req.body } }, { new: true })
