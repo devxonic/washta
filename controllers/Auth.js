@@ -142,8 +142,9 @@ const logIn = async (req, res) => {
         }
         if (role == "seller" && !User._doc.business.isApproved) return res.status(400).send({
             status: false,
-            code: 200,
+            code: 400,
             message: "Account is Not Approved by Admin Please contact to Admin",
+            data: { _id: User?._doc?._id },
         })
 
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
