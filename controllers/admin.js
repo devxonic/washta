@@ -5,6 +5,8 @@ const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const AdminModel = require('../models/admin');
+const sharp = require('sharp');
+const { s3UploadObject } = require('../middlewares');
 require('dotenv').config()
 
 
@@ -32,6 +34,38 @@ const updatePassword = async (req, res) => {
         return response.resSuccessData(res, admin);
     }
     catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await AdminFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
         console.log(error);
         return response.resInternalError(res, error);
     }
@@ -157,6 +191,18 @@ const getTopCustomer = async (req, res) => {
 const getTopCompanies = async (req, res) => {
     try {
         let business = await AdminFunctions.getTopCompanies(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getTopSellers = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getTopSellers(req)
         if (!business) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, business);
 
@@ -509,7 +555,19 @@ const replyToReview = async (req, res) => {
 
 const editMyReplys = async (req, res) => {
     try {
-        let shop = await AdminFunctions.replyToReview(req)
+        let shop = await AdminFunctions.editMyReplys(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteMyReplys = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteMyReplys(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
         return response.resSuccessData(res, shop);
 
@@ -531,7 +589,67 @@ const deleteReviews = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- stats -----------------------------------------------------//
 
+
+const getAllTimeStats = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getAllTimeStats(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getstatsbyMonth = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getstatsbyMonth(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getStatsByWeek = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getStatsByWeek(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+const getShopForSales = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getShopForSales(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSalesSingleShop = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getSalesSingleShop(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 
 module.exports = {
@@ -541,6 +659,7 @@ module.exports = {
     JobHistory,
     getTopCustomer,
     getTopCompanies,
+    getTopSellers,
     getShopbyid,
     getShop,
     UpdateShopbyAmdin,
@@ -566,6 +685,7 @@ module.exports = {
     getShopReviews,
     replyToReview,
     editMyReplys,
+    deleteMyReplys,
     deleteReviews,
     getSellerReviews,
     getOrderReviews,
@@ -575,4 +695,10 @@ module.exports = {
     terminateShop,
     deleteOrderByCustomerId,
     updatePassword,
+    uplaodAvatar,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
+    getSalesSingleShop,
+    getShopForSales,
 }

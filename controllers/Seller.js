@@ -5,6 +5,8 @@ const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const SellerModel = require('../models/seller');
+const { s3UploadObject } = require('../middlewares');
+const sharp = require('sharp');
 require('dotenv').config()
 
 
@@ -56,6 +58,40 @@ const updatePassword = async (req, res) => {
         return response.resInternalError(res, error);
     }
 }
+
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await SellerFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
 
 // ----------------------------------------------- Seller settings -----------------------------------------------------//
 
@@ -393,6 +429,17 @@ const editMyReplys = async (req, res) => {
     }
 }
 
+const deleteMyReplys = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.deleteMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Reply")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 const replyToReview = async (req, res) => {
     try {
@@ -427,6 +474,47 @@ const getOrderReviews = async (req, res) => {
     }
 }
 
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+
+
+const getAllTimeStats = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getAllTimeStats(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getstatsbyMonth = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getstatsbyMonth(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getStatsByWeek = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getStatsByWeek(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
 module.exports = {
     getProfile,
     editProfile,
@@ -452,6 +540,7 @@ module.exports = {
     getActiveOrder,
     getMyShopReviews,
     replyToReview,
+    deleteMyReplys,
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
@@ -461,4 +550,8 @@ module.exports = {
     updatePassword,
     openAllShops,
     openShopByid,
+    uplaodAvatar,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
 }

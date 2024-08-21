@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
-const { getTimeDifferenceFormatted } = require("../helpers/helper");
+const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
 const shopModel = require("../models/shop");
 
 const signUp = async (req) => {
@@ -63,6 +63,23 @@ const signUpWithGoogle = async (req) => {
     let result = await newSeller.save();
     return result;
 };
+
+
+
+const updateImage = async (req, resizedAvatar, originalAvatar) => {
+    let Seller = await SellerModel.findByIdAndUpdate(
+        { _id: req.user.id },
+        { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
+        {
+            new: true, fields: {
+                avatar: 1,
+                resizedAvatar: 1
+            }
+        }
+    );
+    return Seller;
+};
+
 
 const editProfile = async (req) => {
     const { name, phone } = req.body;
@@ -200,13 +217,13 @@ const openShopByid = async (req) => {
 const getAllOrders = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    let Order = await OrderModel.find({ shopId: { $in: Shops } });
+    let Order = await OrderModel.find({ shopId: { $in: Shops } }).sort({ createdAt: 1, date: 1 })
     console.log(Order);
     return Order;
 };
 
 const getOrderById = async (req) => {
-    let Order = await OrderModel.findById(req.params.id);
+    let Order = await OrderModel.findById(req.params.id).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -228,7 +245,7 @@ const orderStatus = async (req, res) => {
         { _id: id },
         { $set: OBJ },
         { new: true },
-    ).populate({ path: 'vehicleId' })
+    ).populate({ path: 'vehicleId' }).sort({ createdAt: 1, date: 1 })
 
     return response.resSuccessData(res, Order);
     ;
@@ -239,7 +256,7 @@ const getorderbyStatus = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: req.query.status }],
-    });
+    }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -248,7 +265,7 @@ const getpastorder = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
-    }).populate({ path: "vehicleId" });
+    }).populate({ path: "vehicleId" }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 const getActiveOrder = async (req) => {
@@ -265,7 +282,7 @@ const getActiveOrder = async (req) => {
             $gte: newDate,
             $lt: endOfDay,
         }
-    });
+    }).sort({ createdAt: 1, date: 1 })
     return Order;
 };
 
@@ -301,6 +318,7 @@ const getMyShopReviews = async (req) => {
     if (shopId) {
         if (!Shops.includes(shopId)) return null
         let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        if (!Reviews) return Reviews
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
@@ -414,8 +432,9 @@ const replyToReview = async (req) => {
     }
     console.log(Review)
 
-    let reply = ReviewModel.findOneAndUpdate(filter, { $push: { reply: { ...body } } }, { new: true })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    let reply = await ReviewModel.findOneAndUpdate(filter, { $push: { reply: { ...body } } }, { new: true })
+    if (!reply) return reply
+    let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 };
 
@@ -448,17 +467,32 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            let FormatedRating = formateReviewsRatings?.(reply)
-            return FormatedRating
+            return reply
         }
-        let FormatedRating = formateReviewsRatings?.(reply)
-        return FormatedRating
+        return reply
     })
 
-    let reply = ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    let reply = await ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    if (!reply) return reply
+    let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
+
+
+const deleteMyReplys = async (req) => {
+    let { reviewId, commentId } = req.query
+    let Review = await ReviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.find(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            return reply._id
+        }
+    })
+    if (!myReply) return myReply
+    let reply = await ReviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
+}
+
 // ----------------------------------------------- Invoice -----------------------------------------------------//
 
 const getAllInvoice = async (req) => {
@@ -582,6 +616,208 @@ const getAllMyNotifications = async (req) => {
     return UpdatedNotification;
 };
 
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+const getAllTimeStats = async (req) => {
+    let newDate = new Date();
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+    let filter = {
+        shopId: { $in: Shops },
+    };
+
+    const year = newDate.getFullYear();
+    const daysInYear = getDaysInYear(year);
+
+    let currentMonth;
+    let { monthData, monthNames } = generateMonthOfYear();
+
+
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentMonth = monthNames[orderDate.getMonth()];
+        if (singleOrder.status == "completed") {
+            monthData[currentMonth].totalOrders++
+            monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+        monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
+        totalOrders,
+        acceptedOrders,
+        cancelledOrders,
+        graphData: Object.values(monthData),
+    }
+    return response
+};
+
+const getstatsbyMonth = async (req) => {
+    let { startDate } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+
+    let startOfmonth = startDate ? new Date(startDate) : new Date();
+    startOfmonth.setDate(1);
+    startOfmonth.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfmonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
+    endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    let filter = {
+        shopId: { $in: Shops },
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+        ]
+    }
+
+    let year = startOfmonth.getFullYear()
+    let month = startOfmonth.getMonth()
+    let monthDays = generateDaysOfMonth(year, month);
+    let nameOfdays = [
+        '01', '02', '03',
+        '04', '05', '06', '07', '08',
+        '09', '10', '11', '12', '13',
+        '14', '15', '16', '17', '18',
+        '19', '20', '21', '22', '23',
+        '24', '25', '26', '27', '28',
+        '29', '30', '31',
+    ]
+    let currentDay;
+    console.log(filter)
+    console.log(nameOfdays)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = nameOfdays[orderDate.getDate() - 1];
+        if (singleOrder.status == "completed") {
+            monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            monthDays[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
+        graphData: Object.values(monthDays)
+    }
+    return response
+};
+
+const getStatsByWeek = async (req) => {
+    let { startDate } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+
+
+    let startOfWeek = startDate ? new Date(startDate) : new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    let endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7)
+    endOfWeek.setHours(0, 0, 0, 0);
+
+    let filter = {
+        shopId: { $in: Shops },
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfWeek,
+                    $lt: endOfWeek,
+                }
+            },
+        ]
+    }
+
+    let { weekData, daysOfWeek } = generateDaysOfWeek();
+    let currentDay;
+    console.log(filter)
+    console.log(weekData, daysOfWeek)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = daysOfWeek[orderDate.getDay()];
+        if (singleOrder.status == "completed") {
+            weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            weekData[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
+        graphData: Object.values(weekData)
+    }
+    return response
+};
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -612,6 +848,7 @@ module.exports = {
     getActiveOrder,
     getMyShopReviews,
     replyToReview,
+    deleteMyReplys,
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
@@ -620,4 +857,8 @@ module.exports = {
     getOrderReviews,
     openAllShops,
     openShopByid,
+    updateImage,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
 };

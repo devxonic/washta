@@ -3,14 +3,20 @@ const Schema = mongoose.Schema;
 
 
 const SellerSchema = new Schema({
-    username: { type: String, unique: true },
+    username: { type: String, },
     fullName: { type: String },
     password: {
         type: String,
         required: true,
     },
-    email: { type: String },
+    email: { type: String, unique: true },
     phone: { type: String },
+    avatar: {
+        type: String
+    },
+    resizedAvatar: {
+        type: String
+    },
     business: {
         uploadDocument: { type: String },
         companyName: { type: String },

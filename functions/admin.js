@@ -12,6 +12,7 @@ const ServiceFeeModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
 const { default: mongoose } = require('mongoose');
+const AdminModel = require('../models/admin');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -160,23 +161,126 @@ const JobHistory = async (req) => {
 // ----------------------------------------------- Top Comp / Cust -----------------------------------------------------//
 
 const getTopCustomer = async (req) => {
-    let Order = await OrderModel.find({})
-    let Customer = await CustomerModel.find({})
-    // console.log(Order)
-    // console.log("query ------------", req.query.limit)
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let customerFilter = {
+        username: 1,
+        fullName: 1,
+        email: 1,
+        phone: 1,
+        selectedVehicle: 1,
+        isTerminated: 1,
+        isVerifed: 1,
+    }
+    let customerData = {}
+    for (const singleOrder of orders) {
+        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId }, customerFilter)
+        if (customer) {
+            if (!customerData[singleOrder?.customerId]) {
+                customerData[singleOrder?.customerId] = { ...customer?._doc, totalSpents: 0, totalOrders: 0 }
+            }
+            customerData[singleOrder?.customerId].totalOrders++
+            customerData[singleOrder?.customerId].totalSpents += parseFloat(singleOrder.cost)
+        }
+    }
 
-    let sortedData = helper.getTopCustomersBySpending(Order, Customer, req.query.limit)
-    return sortedData
+    let customerArray = Object.values(customerData)
+    customerArray.sort((a, b) => {
+        if (b.totalSpents === a.totalSpents) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalSpents - a.totalSpents;
+    });
+    if (limit) {
+        const topCustomers = customerArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCustomers
+    }
+    return customerArray
 }
 
 
-const getTopCompanies = async (req) => {
-    let Order = await OrderModel.find({})
-    console.log(Order)
-    console.log("query ------------", req.query.limit)
+const getTopSellers = async (req) => {
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let sellerFilter = {
+        username: 1,
+        fullName: 1,
+        email: 1,
+        phone: 1,
+        status: 1,
+        shops: 1,
+        isVerifed: 1,
+        'business.companyName': 1,
+        'business.location': 1,
+    }
+    let companiesData = {}
+    for (const singleOrder of orders) {
+        let seller = await shopModel.findOne({ _id: singleOrder?.shopId }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
+        if (seller) {
+            if (!companiesData[singleOrder?.shopId]) {
+                companiesData[singleOrder?.shopId] = { ...seller?.Owner?._doc, totalRevenue: 0, totalOrders: 0 }
+            }
+            companiesData[singleOrder?.shopId].totalOrders++
+            companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+        }
+    }
 
-    let sortedData = helper.getTopCustomersBySpending(Order, req.query.limit)
-    return sortedData
+    let companiesArray = Object.values(companiesData)
+    companiesArray.sort((a, b) => {
+        if (b.totalRevenue === a.totalRevenue) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalRevenue - a.totalRevenue;
+    });
+    if (limit) {
+        const topCompanies = companiesArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCompanies
+    }
+    return companiesArray
+}
+
+const getTopCompanies = async (req) => {
+    let { limit } = req.query
+    let orders = await OrderModel.find({})
+    let shopFilter = {
+        Owner: 1,
+        shopName: 1,
+        coverImage: 1,
+        sliderImage: 1,
+        isActive: 1,
+        shopDetails: 1,
+        estimatedServiceTime: 1,
+        isTerminated: 1,
+        location: 1,
+        cost: 1,
+    }
+    let companiesData = {}
+    for (const singleOrder of orders) {
+        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId }, shopFilter)
+        if (Shop) {
+            if (!companiesData[singleOrder?.shopId]) {
+                companiesData[singleOrder?.shopId] = { ...Shop?._doc, totalRevenue: 0, totalOrders: 0 }
+            }
+            companiesData[singleOrder?.shopId].totalOrders++
+            companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+        }
+    }
+
+    let companiesArray = Object.values(companiesData)
+    companiesArray.sort((a, b) => {
+        if (b.totalRevenue === a.totalRevenue) {
+            return b.totalOrders - a.totalOrders;
+        }
+        return b.totalRevenue - a.totalRevenue;
+    });
+    if (limit) {
+        const topCompanies = companiesArray.slice(0, limit);
+        console.log("top customers Limited")
+        return topCompanies
+    }
+    return companiesArray
 }
 
 
@@ -220,6 +324,16 @@ const getCustomer = async (req) => {
     }).populate([{
         path: "selectedVehicle",
     }])
+    // let updatedCustomers = [];
+    // for (const customer of Customer) {
+    //     let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
+    //     let totalSpents = 0
+    //     orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
+
+    //     console.log("totalSpents -------------------- ", totalSpents)
+
+
+    // }
     return Customer
 }
 
@@ -439,12 +553,12 @@ const getShopReviews = async (req) => {
 
     if (!shopId) {
         let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        let FormatedRating = formateReviewsRatings?.(Reviews)
+        let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
     let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    let FormatedRating = formateReviewsRatings?.(Reviews)
+    let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
 
@@ -477,12 +591,12 @@ const getSellerReviews = async (req) => {
 
     if (!sellerId) {
         let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        let FormatedRating = formateReviewsRatings?.(Reviews)
+        let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
     let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    let FormatedRating = formateReviewsRatings?.(Reviews)
+    let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
 
@@ -514,12 +628,12 @@ const getOrderReviews = async (req) => {
 
     if (!orderId) {
         let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        let FormatedRating = formateReviewsRatings?.(Reviews)
+        let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
     let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    let FormatedRating = formateReviewsRatings?.(Reviews)
+    let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
 
@@ -551,12 +665,12 @@ const getCustomerReviews = async (req) => {
 
     if (!customerId) {
         let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-        let FormatedRating = formateReviewsRatings?.(Reviews)
+        let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
     let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
-    let FormatedRating = formateReviewsRatings?.(Reviews)
+    let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
 
@@ -576,8 +690,10 @@ const replyToReview = async (req) => {
     }
     console.log(body)
 
-    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    if (!reply) return reply
+    console.log(reply)
+    let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
 }
 
@@ -589,26 +705,270 @@ const editMyReplys = async (req) => {
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
             reply.comment.text = comment.text
-            let FormatedRating = formateReviewsRatings?.(reply)
-            return FormatedRating
+            return reply
         }
-        let FormatedRating = formateReviewsRatings?.(reply)
-        return FormatedRating
+        return reply
     })
 
-    let reply = reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
-    let FormatedRating = formateReviewsRatings?.(reply)
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating : 1 } })
+    if (!reply) return reply
+    let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
+}
+
+const deleteMyReplys = async (req) => {
+    let { reviewId, commentId } = req.query
+    let Review = await reviewModel.findOne({ _id: reviewId });
+    if (!Review) return null
+    let myReply = Review.reply.find(reply => {
+        if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
+            return reply._id
+        }
+    })
+    if (!myReply) return myReply
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    return reply
 }
 
 
 const deleteReviews = async (req) => {
     let { reviewId } = req.query
     let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
-    let FormatedRating = formateReviewsRatings?.(Review)
+    if (!Review) return Review
+    let FormatedRating = helper.formateReviewsRatingsSingle?.(Review)
     return FormatedRating
 }
 
+// ----------------------------------------------- profile -----------------------------------------------------//
+
+const updateImage = async (req, resizedAvatar, originalAvatar) => {
+    let Admin = await AdminModel.findByIdAndUpdate(
+        { _id: req.user.id },
+        { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
+        {
+            new: true, fields: {
+                avatar: 1,
+                resizedAvatar: 1
+            }
+        }
+    );
+    return Admin;
+};
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+const getAllTimeStats = async (req) => {
+    let { shopId } = req.query
+    let newDate = new Date();
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+    const year = newDate.getFullYear();
+    const daysInYear = helper.getDaysInYear(year);
+
+    let currentMonth;
+    let { monthData, monthNames } = helper.generateMonthOfYear();
+
+    let filter = shopId ? ({ shopId }) : {}
+
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentMonth = monthNames[orderDate.getMonth()];
+        if (singleOrder.status == "completed") {
+            monthData[currentMonth].totalOrders++
+            monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+        monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
+        totalOrders,
+        acceptedOrders,
+        cancelledOrders,
+        graphData: Object.values(monthData),
+    }
+    return response
+};
+
+const getstatsbyMonth = async (req) => {
+    let { startDate, shopId } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+    let startOfmonth = startDate ? new Date(startDate) : new Date();
+    startOfmonth.setDate(1);
+    startOfmonth.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfmonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
+    endOfMonth.setDate(0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    let isShop = shopId ? { shopId } : {}
+    let filter = {
+        ...isShop,
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfmonth,
+                    $lt: endOfMonth,
+                }
+            },
+        ]
+    }
+
+    console.log(filter)
+    let year = startOfmonth.getFullYear()
+    let month = startOfmonth.getMonth()
+    let monthDays = helper.generateDaysOfMonth(year, month);
+    let nameOfdays = [
+        '01', '02', '03',
+        '04', '05', '06', '07', '08',
+        '09', '10', '11', '12', '13',
+        '14', '15', '16', '17', '18',
+        '19', '20', '21', '22', '23',
+        '24', '25', '26', '27', '28',
+        '29', '30', '31',
+    ]
+    let currentDay;
+    console.log(filter)
+    console.log(nameOfdays)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = nameOfdays[orderDate.getDate() - 1];
+        if (singleOrder.status == "completed") {
+            monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            monthDays[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
+        graphData: Object.values(monthDays)
+    }
+    return response
+};
+
+const getStatsByWeek = async (req) => {
+    let { startDate } = req.query
+
+    let totalOrders = 0;
+    let totalAmount = 0;
+    let cancelledOrders = 0;
+    let acceptedOrders = 0;
+
+    let startOfWeek = startDate ? new Date(startDate) : new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfWeek);
+    endOfMonth.setDate(startOfWeek.getDate() + 7)
+    endOfMonth.setHours(0, 0, 0, 0);
+
+    let filter = {
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfWeek,
+                    $lt: endOfMonth,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfWeek,
+                    $lt: endOfMonth,
+                }
+            },
+        ]
+    }
+
+    let { weekData, daysOfWeek } = helper.generateDaysOfWeek();
+    let currentDay;
+    console.log(filter)
+    console.log(weekData, daysOfWeek)
+    let orders = await OrderModel.find(filter)
+
+    for (const singleOrder of orders) {
+        // if (singleOrder.billingStatus != "paid") return
+        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        currentDay = daysOfWeek[orderDate.getDay()];
+        if (singleOrder.status == "completed") {
+            weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
+            weekData[currentDay].totalOrders++
+            totalAmount += parseFloat(singleOrder.cost);
+            totalOrders++
+        }
+        if (singleOrder.status == "cancelled") cancelledOrders++
+        if (singleOrder.status == "inprocess") acceptedOrders++
+    }
+
+    let response = {
+        totalRevenue: totalAmount,
+        totalOrders,
+        cancelledOrders,
+        acceptedOrders,
+        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
+        graphData: Object.values(weekData)
+    }
+    return response
+};
+
+
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+const getShopForSales = async (req) => {
+    let Shops = await shopModel.find().sort({ createdAt: 1, updatedAt: 1 })
+    return Shops
+};
+
+const getSalesSingleShop = async (req) => {
+    let { shopId, graph } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "vehicleId" },
+    ]
+
+
+    let shop = await shopModel.findOne({ _id : shopId }, { location: 0 , __v : 0 })
+    let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
+    let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
+
+    let response = {
+        graphData,
+        shop,
+        orders
+    }
+    return response
+};
 
 module.exports = {
     getBusinessbyStatus,
@@ -617,6 +977,7 @@ module.exports = {
     JobHistory,
     getTopCustomer,
     getTopCompanies,
+    getTopSellers,
     UpdateShopbyAmdin,
     getShop,
     getShopbyid,
@@ -645,6 +1006,7 @@ module.exports = {
     getShopReviews,
     replyToReview,
     editMyReplys,
+    deleteMyReplys,
     deleteReviews,
     getSellerReviews,
     getOrderReviews,
@@ -652,6 +1014,11 @@ module.exports = {
     getVehiclesByCustomerId,
     terminateCustomer,
     terminateShop,
-    deleteOrderByCustomerId
-
+    deleteOrderByCustomerId,
+    updateImage,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
+    getSalesSingleShop,
+    getShopForSales,
 }

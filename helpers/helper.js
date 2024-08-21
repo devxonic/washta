@@ -1,58 +1,8 @@
+const { name } = require("ejs");
+
 function generate4DigitCode() {
     const code = Math.floor(Math.random() * 9000) + 1000;
     return code.toString();
-}
-
-function getTopCustomersBySpending(ordersList, customerList, limit) {
-    const customerSpending = {};
-    const customerOrders = {};
-
-    // i have customer Data / Order 
-    // i want to check 1by1 all cus , who complete Order , and how much spent 
-
-
-
-
-
-
-    // console.log("CustomerList ----------------- ", customerList)
-    ordersList.forEach(order => {
-        const { customerId, cost } = order;
-
-        let SelectedCustomer = customerList.map((x) => {
-            console.log("customer --------------- ", x._id.toString() == customerId.toString())
-            console.log("cost  --------------- ", parseInt(cost))
-            if (x._id.toString() == customerId.toString()) {
-                if (!customerOrders[customerId]) {
-                    customerOrders[customerId] = {
-                        ...x._doc,
-                        totalSpent: parseInt(cost)
-                    }
-                }
-                customerOrders[customerId].totalSpent += parseInt(cost);
-                return customerOrders
-            }
-        })
-        console.log(" -------------------------------------------------------------------------------------- ", SelectedCustomer)
-    });
-
-
-    console.log
-
-    const result = Object.values(customerOrders).sort((a, b) => b.totalSpent - a.totalSpent);
-
-    // let result = sortedCustomers.map(customer => {
-    //     console.log("customer ------------- ", customer)
-    //     return {
-    //         ...customer._doc,
-    //         totalSpent: customer.totalSpent.toString()
-    //     };
-    // });
-
-
-
-    if (!limit) return customerOrders
-    return result.slice(0, limit);
 }
 
 function getTimeDifferenceFormatted(startTime, endTime) {
@@ -82,6 +32,10 @@ let formateReviewsRatings = (Reviews) => {
     })
 }
 
+let formateReviewsRatingsSingle = (review) => {
+    review.rating = Number(review?.rating['$numberDecimal'])
+    return review
+}
 let getRatingStatistics = (reviews) => {
     const totalReviews = reviews.length;
 
@@ -131,10 +85,90 @@ let getRatingStatistics = (reviews) => {
     };
 }
 
+
+function getDaysInMonth(month, year) {
+    return new Date(year, month, 0).getDate();
+}
+
+function getDaysInYear(year) {
+    const daysInMonths = [];
+    for (let month = 1; month <= 12; month++) {
+        daysInMonths.push(getDaysInMonth(month, year));
+    }
+    return daysInMonths;
+}
+
+function generateDaysOfMonth(year, month) {
+    let daysInMonth = new Date(year, month + 1, 0).getDate(); // Get number of days in the month
+    let daysData = {};
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        let dateKey = `${day < 10 ? '0' : ''}${day}`; // Format day as '01', '02', etc.
+        daysData[dateKey] = {
+            name: dateKey,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    }
+
+    return daysData;
+}
+
+
+function generateMonthOfYear() {
+    const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    let monthData = {};
+
+    monthNames.forEach(month => {
+        monthData[month] = {
+            name: month,
+            averageDailySales: 0,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    });
+
+    return { monthData, monthNames };
+}
+
+function generateDaysOfWeek() {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    let weekData = {};
+
+    daysOfWeek.forEach(day => {
+        weekData[day] = {
+            name: day,
+            totalOrders: 0,
+            totalRevenue: 0,
+        };
+    });
+
+    return { weekData, daysOfWeek };
+}
+
+
 module.exports = {
     generate4DigitCode,
-    getTopCustomersBySpending,
     getTimeDifferenceFormatted,
     formateReviewsRatings,
-    getRatingStatistics
+    getRatingStatistics,
+    formateReviewsRatingsSingle,
+    getDaysInYear,
+    getDaysInMonth,
+    generateDaysOfMonth,
+    generateDaysOfWeek,
+    generateMonthOfYear
 }

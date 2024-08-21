@@ -10,6 +10,7 @@ const middlewares = require('../middlewares');
 router.post('/Signup', AuthController.AdminSignUp)
 router.post('/login', AuthController.AdminlogIn)
 router.patch('/updatePassword', middlewares.verifyAdmin, AdminController.updatePassword)
+router.post('/uplaodAvatar', middlewares.verifyAdmin, middlewares.uploadbuffer.single('Avatar'), AdminController.uplaodAvatar)
 // router.post('/logOut' , AuthController.logOut)
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -27,8 +28,9 @@ router.get('/JobHistory', middlewares.verifyAdmin, AdminController.JobHistory)
 
 // ----------------------------------------------- Top comp / Cust  -----------------------------------------------------//
 
-// router.get('/TopCustomers', AdminController.getTopCustomer)
-// router.get('/TopCustomers', AdminController.getTopCompanies)
+router.get('/TopCustomers', AdminController.getTopCustomer)
+router.get('/TopCompanies', AdminController.getTopCompanies)
+router.get('/TopSellers', AdminController.getTopSellers)
 
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
@@ -46,7 +48,7 @@ router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCus
 router.delete('/customer/:id', middlewares.verifyAdmin, AdminController.terminateCustomer)
 router.delete('/bookings', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
 
-// ----------------------------------------------- Customer  -----------------------------------------------------//
+// ----------------------------------------------- vehicles  -----------------------------------------------------//
 
 router.get('/vehicles', middlewares.verifyAdmin, AdminController.getVehicles)
 router.get('/vehicles/:id', middlewares.verifyAdmin, AdminController.getvehiclesById)
@@ -70,13 +72,27 @@ router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePr
 
 // ----------------------------------------------- Review -----------------------------------------------------//
 
-router.get('/shopReview', middlewares.verifySeller, AdminController.getShopReviews)
-router.get('/sellerReview', middlewares.verifySeller, AdminController.getSellerReviews)
-router.get('/orderReview', middlewares.verifySeller, AdminController.getOrderReviews)
-router.get('/customerReview', middlewares.verifySeller, AdminController.getCustomerReviews)
-router.post('/replyReview', middlewares.verifySeller, AdminController.replyToReview) // ...
-router.patch('/editReply', middlewares.verifySeller, AdminController.editMyReplys) // ...
-router.delete('/deleteReview', middlewares.verifySeller, AdminController.deleteReviews) // ...
+router.get('/shopReview', middlewares.verifyAdmin, AdminController.getShopReviews)
+router.get('/sellerReview', middlewares.verifyAdmin, AdminController.getSellerReviews)
+router.get('/orderReview', middlewares.verifyAdmin, AdminController.getOrderReviews)
+router.get('/customerReview', middlewares.verifyAdmin, AdminController.getCustomerReviews)
+router.post('/replyReview', middlewares.verifyAdmin, AdminController.replyToReview) // ...
+router.patch('/editReply', middlewares.verifyAdmin, AdminController.editMyReplys) // ...
+router.delete('/deleteReply', middlewares.verifyAdmin, AdminController.deleteMyReplys) // ...
+router.delete('/deleteReview', middlewares.verifyAdmin, AdminController.deleteReviews) // ...
+
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+router.get('/stats', middlewares.verifyAdmin, AdminController.getAllTimeStats)
+router.get('/monthStats', middlewares.verifyAdmin, AdminController.getstatsbyMonth)
+router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek)
+
+
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSales)
+router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
 
 

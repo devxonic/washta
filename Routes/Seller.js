@@ -7,6 +7,7 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifySeller, SellerControllers.getProfile)
 router.patch('/Profile', middlewares.verifySeller, SellerControllers.editProfile)
+router.post('/uplaodAvatar', middlewares.verifySeller, middlewares.uploadbuffer.single('Avatar'), SellerControllers.uplaodAvatar)
 router.patch('/updatePassword', middlewares.verifySeller, SellerControllers.updatePassword)
 
 // ----------------------------------------------- Settings -----------------------------------------------------//
@@ -50,6 +51,7 @@ router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopR
 router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
 router.get('/OrderReview', middlewares.verifySeller, SellerControllers.getOrderReviews)
 router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
+router.delete('/deleteReply', middlewares.verifySeller, SellerControllers.deleteMyReplys) // ...
 router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
 
 
@@ -63,5 +65,10 @@ router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInv
 
 router.get('/Notifications', middlewares.verifySeller, SellerControllers.getAllMyNotifications)
 
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+router.get('/stats', middlewares.verifySeller, SellerControllers.getAllTimeStats)
+router.get('/monthStats', middlewares.verifySeller, SellerControllers.getstatsbyMonth)
+router.get('/weekStats', middlewares.verifySeller, SellerControllers.getStatsByWeek)
 
 module.exports = router 
