@@ -166,6 +166,7 @@ const getTopCustomer = async (req) => {
     let customerFilter = {
         username: 1,
         fullName: 1,
+        avatar: 1,
         email: 1,
         phone: 1,
         selectedVehicle: 1,
@@ -181,6 +182,7 @@ const getTopCustomer = async (req) => {
             }
             customerData[singleOrder?.customerId].totalOrders++
             customerData[singleOrder?.customerId].totalSpents += parseFloat(singleOrder.cost)
+            customerData[singleOrder?.customerId].averageMonthlySpents = parseFloat((customerData[singleOrder?.customerId].totalSpents / 12).toFixed(2))
         }
     }
 
@@ -207,6 +209,7 @@ const getTopSellers = async (req) => {
         username: 1,
         fullName: 1,
         email: 1,
+        avatar: 1,
         phone: 1,
         status: 1,
         shops: 1,
@@ -223,6 +226,8 @@ const getTopSellers = async (req) => {
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
+
         }
     }
 
@@ -265,6 +270,7 @@ const getTopCompanies = async (req) => {
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
         }
     }
 
@@ -758,20 +764,44 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
-    let { shopId } = req.query
-    let newDate = new Date();
+    let { shopId, year } = req.query
+    let newDate = year ? new Date(year) : new Date();
     let totalOrders = 0;
     let totalAmount = 0;
     let cancelledOrders = 0;
     let acceptedOrders = 0;
 
-    const year = newDate.getFullYear();
-    const daysInYear = helper.getDaysInYear(year);
+    const Year = newDate.getFullYear();
+    const daysInYear = helper.getDaysInYear(Year);
 
     let currentMonth;
     let { monthData, monthNames } = helper.generateMonthOfYear();
+    let startOfYear = new Date(newDate.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
 
-    let filter = shopId ? ({ shopId }) : {}
+    // End of the year (December 31st)
+    let endOfYear = new Date(newDate.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
+
+    let isShop = shopId ? { shopId } : {}
+    let filter = {
+        ...isShop,
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+        ]
+    }
+
 
     let orders = await OrderModel.find(filter)
 
@@ -811,11 +841,15 @@ const getstatsbyMonth = async (req) => {
 
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
+    startOfmonth.setMonth(startOfmonth.getMonth() - 1); // Move to the next month
     startOfmonth.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfmonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
+
+    console.log(startDate)
+    console.log(startOfmonth, endOfMonth)
     let isShop = shopId ? { shopId } : {}
     let filter = {
         ...isShop,
