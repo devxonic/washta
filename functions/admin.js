@@ -991,8 +991,8 @@ const getSalesSingleShop = async (req) => {
         { path: "vehicleId" },
     ]
 
-
     let shop = await shopModel.findOne({ _id: shopId }, { location: 0, __v: 0 })
+    if(!shop ) return
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
