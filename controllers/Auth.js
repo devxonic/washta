@@ -21,7 +21,7 @@ require('dotenv').config();
 
 const signUp = async (req, res) => {
     try {
-        let { role, username, email, fullname, phone, password, car } = req.body
+        let { role, username, email, fullName, phone, password, car } = req.body
         console.log('siggning user up');
         let resObj = {};
 
@@ -31,7 +31,7 @@ const signUp = async (req, res) => {
             let customerExists = await SignupFunctions.getUserByEmail(req, role)
             if (customerExists && customerExists?._doc?.isVerifed) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
-            let customerBody = { username, fullname, email, phone, password: hash }
+            let customerBody = { username, fullName, email, phone, password: hash }
             if (customerExists && !customerExists?._doc.isVerifed) {
                 console.log('Update User data', customerExists?._doc)
                 savedCustomer = await CustomerModel.findOneAndReplace({ _id: customerExists?._doc?._id }, customerBody)
@@ -49,14 +49,14 @@ const signUp = async (req, res) => {
                 username: savedCustomer.username,
                 email: savedCustomer.email,
                 phone: savedCustomer.phone,
-                name: savedCustomer.name,
+                name: savedCustomer.fullName,
             }
         }
         if (role == "seller") {
             let savedSeller;
             let SellerExists = await SignupFunctions.getUserByEmail(req, role)
             let hash = await bcrypt.hash(password, 10);
-            let SellerBody = { username, fullname, email, phone, password: hash }
+            let SellerBody = { username, fullName, email, phone, password: hash }
             if (SellerExists && !SellerExists?._doc.isVerifed) savedSeller = await SellerModel.findOneAndReplace({ _id: SellerExists?._doc?._id }, SellerBody)
             if (SellerExists && SellerExists?._doc.isVerifed) return response.resBadRequest(res, "username or email already exists");
             if (!SellerExists) savedSeller = await new SellerModel(SellerBody).save();
@@ -67,7 +67,7 @@ const signUp = async (req, res) => {
                 username: savedSeller.username,
                 email: savedSeller.email,
                 phone: savedSeller.phone,
-                name: savedSeller.name,
+                name: savedSeller.fullName,
             }
         }
 
@@ -80,8 +80,8 @@ const signUp = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { name: fullName ?? username, msg: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.mailerEmail,
             to: email,
@@ -129,8 +129,8 @@ const logIn = async (req, res) => {
                 },
             });
             let OTP = generate4DigitCode()
-            let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
-            let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+            let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+            let Mail = await ejs.renderFile(mailPath, { data: { name: User.fullName ?? User.name, msg: OTP } });
             let transporterRes = await transporter.sendMail({
                 from: process.env.mailerEmail,
                 to: User._doc.email,
@@ -208,13 +208,13 @@ const logOut = async (req, res) => {
 
 const AdminSignUp = async (req, res) => {
     try {
-        let { username, email, fullname, phone, password } = req.body
+        let { username, email, fullName, phone, password } = req.body
         console.log('siggning user up');
         let resObj = {};
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let adminBody = { username, fullname, email: email, phone, password: hash }
+        let adminBody = { username, fullName, email: email, phone, password: hash }
         console.log(adminBody)
         let newAdmin = new AdminModel(adminBody)
         let savedAdmin = await newAdmin.save()
@@ -231,8 +231,8 @@ const AdminSignUp = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { name: savedAdmin.fullName ?? savedAdmin.username, msg: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.mailerEmail,
             to: email,
@@ -274,8 +274,8 @@ const AdminlogIn = async (req, res) => {
             },
         });
         let OTP = generate4DigitCode()
-        let mailPath = path.resolve(__dirname, `../Mails/verification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
+        let Mail = await ejs.renderFile(mailPath, { data: { name: savedAdmin.fullName ?? savedAdmin.username, msg: OTP } });
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!admin?._doc.isVerifed) {
             let transporterRes = await transporter.sendMail({

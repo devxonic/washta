@@ -30,7 +30,7 @@ const sendOTP = async (req, res) => {
         });
         let OTP = generate4DigitCode()
         let mailPath = path.resolve(__dirname, `../Mails/resetPassword/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let Mail = await ejs.renderFile(mailPath, { data: { name: User.fullName ?? User.username, msg: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.EmailFrom,
             to: email,
