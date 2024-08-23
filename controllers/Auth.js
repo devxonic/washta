@@ -26,16 +26,24 @@ const signUp = async (req, res) => {
         let resObj = {};
 
         if (role == "customer") {
+            let savedCustomer;
+            let newVehicle;
             let customerExists = await SignupFunctions.getUserByEmail(req, role)
-            if (customerExists) return response.resBadRequest(res, "username or email already exists");
+            if (customerExists && customerExists?._doc?.isVerifed) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let customerBody = { username, fullname, email, phone, password: hash }
-            let newCustomer = new CustomerModel(customerBody)
-            let savedCustomer = await newCustomer.save()
-
+            if (customerExists && !customerExists?._doc.isVerifed) {
+                console.log('Update User data', customerExists?._doc)
+                savedCustomer = await CustomerModel.findOneAndReplace({ _id: customerExists?._doc?._id }, customerBody)
+                newVehicle = await VehiclesModel.findOne({ Owner: customerExists?._doc?._id, isSelected: true }, { ...car });
+            }
+            if (!customerExists) {
+                savedCustomer = await new CustomerModel(customerBody).save();
+                newVehicle = await new VehiclesModel({ Owner: savedCustomer?._id, isSelected: true, ...car }).save();
+            }
             if (!savedCustomer) return response.resBadRequest(res, "There is some error on save Customer");
-            let newVehicle = await new VehiclesModel({ Owner: savedCustomer._id, isSelected: true, ...car }).save()
             if (!newVehicle) return response.resBadRequest(res, "There is some error on save Car");
+
             resObj = {
                 id: savedCustomer._id,
                 username: savedCustomer.username,
@@ -45,13 +53,14 @@ const signUp = async (req, res) => {
             }
         }
         if (role == "seller") {
+            let savedSeller;
             let SellerExists = await SignupFunctions.getUserByEmail(req, role)
-            if (SellerExists) return response.resBadRequest(res, "username or email already exists");
             let hash = await bcrypt.hash(password, 10);
             let SellerBody = { username, fullname, email, phone, password: hash }
-            let newSeller = new SellerModel(SellerBody)
-            let savedSeller = await newSeller.save()
-            if (!savedSeller) return response.resBadRequest(res, "There is some error on save Customer");
+            if (SellerExists && !SellerExists?._doc.isVerifed) savedSeller = await SellerModel.findOneAndReplace({ _id: SellerExists?._doc?._id }, SellerBody)
+            if (SellerExists && SellerExists?._doc.isVerifed) return response.resBadRequest(res, "username or email already exists");
+            if (!SellerExists) savedSeller = await new SellerModel(SellerBody).save();
+            if (!savedSeller) return response.resBadRequest(res, "There is some error on save Seller");
 
             resObj = {
                 id: savedSeller._id,
