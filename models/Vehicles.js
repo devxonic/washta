@@ -11,6 +11,11 @@ const vehiclesSchema = new Schema({
     vehicleType: { type: String },
     vehicleModel: { type: String },
     isSelected: { type: Boolean, default: false },
+    deleteBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['customer', 'admin'] }
+    },
+    isDeleted: { type: Boolean }
 
 
 }, { timestamps: true })
