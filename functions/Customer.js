@@ -188,7 +188,7 @@ const getAllShops = async (req) => {
     let updatedShops = [];
     for (const shop of Shops) {
         let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
-        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" }).count();
         let formatedReviews = formateReviewsRatings(shopReviews);
         let stats = getRatingStatistics(formatedReviews);
         let temp = {
@@ -207,7 +207,7 @@ const getAllShops = async (req) => {
 const getShopById = async (req) => {
     let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } })
     let shopReviews = await ReviewModel.find({ shopId: Shops?._id, isDeleted: { $ne: true } })
-    let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
+    let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" }).count();
     let formatedReviews = formateReviewsRatings(shopReviews);
     let stats = getRatingStatistics(formatedReviews);
     let updatedShops = {
@@ -264,7 +264,7 @@ const getShopByLocation = async (req) => {
     let shopsWithDistance = []
     for (const shop of Shops) {
         let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
-        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" }).count();
 
         let formatedReviews = formateReviewsRatings(shopReviews);
         let stats = getRatingStatistics(formatedReviews);
