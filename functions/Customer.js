@@ -301,7 +301,7 @@ const getMyBookings = async (req) => {
 
 const getMyBookingById = async (req) => {
     let Bookings = await OrderModel.findById(req.params.id).populate([
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "vehicleId", select: {
                 vehicleManufacturer: 1,
@@ -346,7 +346,7 @@ const createNewBooking = async (req) => {
 
 const getbookingbyStatus = async (req) => {
     let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] }).populate([
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "vehicleId", select: {
                 vehicleManufacturer: 1,
@@ -379,7 +379,8 @@ const getAllInvoice = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -414,7 +415,8 @@ const getInvoiceById = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -463,7 +465,7 @@ const getMyReviews = async (req) => {
     let { id } = req.user
     let { shopId, sellerId } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -523,7 +525,7 @@ const deleteShopReviews = async (req) => {
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,

@@ -210,6 +210,7 @@ const getTopSellers = async (req) => {
         fullName: 1,
         email: 1,
         avatar: 1,
+        resizedAvatar: 1,
         phone: 1,
         status: 1,
         shops: 1,
@@ -541,8 +542,18 @@ const updatePromoCode = async (req) => {
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "customerId", select: {
+                username: 1, avatar: 1,
+                resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+            }
+        },
+        {
+            path: "sellerId", select: {
+                username: 1, avatar: 1,
+                resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+            }
+        },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -579,8 +590,8 @@ const getShopReviews = async (req) => {
 const getSellerReviews = async (req) => {
     let { sellerId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -616,8 +627,8 @@ const getSellerReviews = async (req) => {
 const getOrderReviews = async (req) => {
     let { orderId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -653,8 +664,8 @@ const getOrderReviews = async (req) => {
 const getCustomerReviews = async (req) => {
     let { customerId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -1010,7 +1021,7 @@ const getSalesSingleShop = async (req) => {
     let { shopId, graph } = req.query
 
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         { path: "vehicleId" },
     ]
 
