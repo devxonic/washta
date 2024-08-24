@@ -187,7 +187,7 @@ const getAllShops = async (req) => {
     let Shops = await shopModel.find({ isTerminated: { $ne: true } })
     let updatedShops = [];
     for (const shop of Shops) {
-        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
         let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
         let formatedReviews = formateReviewsRatings(shopReviews);
         let stats = getRatingStatistics(formatedReviews);
@@ -206,7 +206,7 @@ const getAllShops = async (req) => {
 
 const getShopById = async (req) => {
     let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } })
-    let shopReviews = await ReviewModel.find({ shopId: Shops?._id })
+    let shopReviews = await ReviewModel.find({ shopId: Shops?._id, isDeleted: { $ne: true } })
     let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
     let formatedReviews = formateReviewsRatings(shopReviews);
     let stats = getRatingStatistics(formatedReviews);
@@ -263,7 +263,7 @@ const getShopByLocation = async (req) => {
     const userCoordinates = [req.query.long, req.query.lat];
     let shopsWithDistance = []
     for (const shop of Shops) {
-        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
         let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
 
         let formatedReviews = formateReviewsRatings(shopReviews);
@@ -485,7 +485,7 @@ const getMyReviews = async (req) => {
         }
     ]
     if (shopId) {
-        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(populate)
+        let Rating = await ReviewModel.find({ customerId: id, shopId, isDeleted: { $ne: true } }).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Rating)
         return FormatedRating
     }
@@ -495,7 +495,7 @@ const getMyReviews = async (req) => {
         return FormatedRating
     }
 
-    let Rating = await ReviewModel.find({ customerId: id }).populate(populate)
+    let Rating = await ReviewModel.find({ customerId: id, isDeleted: { $ne: true } }).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Rating)
     return FormatedRating
 }
@@ -504,7 +504,7 @@ const updatesShopReview = async (req) => {
     let { rating, comment } = req.body
     let { reviewId } = req.query
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
@@ -545,7 +545,7 @@ const getShopReviews = async (req) => {
         }
     ]
     if (!shopId) return null
-    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
 
     let newFormatedReviews = formateReviewsRatings(Reviews)
     let stats = getRatingStatistics(newFormatedReviews)
@@ -582,14 +582,14 @@ const getSellerReview = async (req) => {
 
     if (!sellerId && !shopId) return null
     if (sellerId) {
-        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
     if (shopId) {
         let owner = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { Owner: 1 })
         if (!owner) return null
-        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
@@ -600,7 +600,7 @@ const updatesSellerReview = async (req) => {
     let { rating, comment } = req.body
     let { reviewId } = req.query
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating

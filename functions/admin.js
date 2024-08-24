@@ -304,7 +304,7 @@ const getShopbyid = async (req) => {
     if (!shop) return
     let stats = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
-    let shopReviews = await reviewModel.find({ shopId: shop?._id })
+    let shopReviews = await reviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
     let formatedReviews = helper.formateReviewsRatings(shopReviews);
     let ReviewsStats = helper.getRatingStatistics(formatedReviews);
 
@@ -691,7 +691,7 @@ const getCustomerReviews = async (req) => {
 const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let body = {
         replyTo,
@@ -703,7 +703,7 @@ const replyToReview = async (req) => {
     }
     console.log(body)
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $push: { reply: { ...body } } }, { new: true })
     if (!reply) return reply
     console.log(reply)
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
@@ -713,7 +713,7 @@ const replyToReview = async (req) => {
 const editMyReplys = async (req) => {
     let { reviewId } = req.query
     let { commentId, comment } = req.body
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -723,7 +723,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
     if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
@@ -731,7 +731,7 @@ const editMyReplys = async (req) => {
 
 const deleteMyReplys = async (req) => {
     let { reviewId, commentId } = req.query
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let myReply = Review.reply.find(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -739,14 +739,14 @@ const deleteMyReplys = async (req) => {
         }
     })
     if (!myReply) return myReply
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
 }
 
 
 const deleteReviews = async (req) => {
     let { reviewId } = req.query
-    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
+    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: { $ne: true } }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
     if (!Review) return Review
     let FormatedRating = helper.formateReviewsRatingsSingle?.(Review)
     return FormatedRating
