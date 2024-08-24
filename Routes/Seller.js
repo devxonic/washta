@@ -44,6 +44,7 @@ router.get('/orderbyStatus', middlewares.verifySeller, SellerControllers.getorde
 router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.orderStatus)
 router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
 router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
+router.get('/latestOrders', middlewares.verifySeller, SellerControllers.getLatestOrders)
 
 // ----------------------------------------------- Review -----------------------------------------------------//
 
