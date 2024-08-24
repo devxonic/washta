@@ -56,27 +56,28 @@ const businessApprove = async (req) => {
         "business.status": "approved",
         "business.approvedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
 
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: "Approved" } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -90,26 +91,26 @@ const businessTerminate = async (req) => {
         "business.status": 'terminated',
         "business.terminatedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    console.log("mails -------------",)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
-    // if (Business.email) {
-    //     let transporterRes = transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Terminated " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -123,28 +124,27 @@ const businessReject = async (req) => {
         "business.status": 'rejected',
         "business.rejectedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // console.log(id)
-    // console.log(Business)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Rejected " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -166,6 +166,7 @@ const getTopCustomer = async (req) => {
     let customerFilter = {
         username: 1,
         fullName: 1,
+        avatar: 1,
         email: 1,
         phone: 1,
         selectedVehicle: 1,
@@ -181,6 +182,7 @@ const getTopCustomer = async (req) => {
             }
             customerData[singleOrder?.customerId].totalOrders++
             customerData[singleOrder?.customerId].totalSpents += parseFloat(singleOrder.cost)
+            customerData[singleOrder?.customerId].averageMonthlySpents = parseFloat((customerData[singleOrder?.customerId].totalSpents / 12).toFixed(2))
         }
     }
 
@@ -207,6 +209,7 @@ const getTopSellers = async (req) => {
         username: 1,
         fullName: 1,
         email: 1,
+        avatar: 1,
         phone: 1,
         status: 1,
         shops: 1,
@@ -223,6 +226,8 @@ const getTopSellers = async (req) => {
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
+
         }
     }
 
@@ -265,6 +270,7 @@ const getTopCompanies = async (req) => {
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
         }
     }
 
@@ -552,12 +558,12 @@ const getShopReviews = async (req) => {
     ]
 
     if (!shopId) {
-        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -590,12 +596,12 @@ const getSellerReviews = async (req) => {
     ]
 
     if (!sellerId) {
-        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -627,12 +633,12 @@ const getOrderReviews = async (req) => {
     ]
 
     if (!orderId) {
-        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -664,12 +670,12 @@ const getCustomerReviews = async (req) => {
     ]
 
     if (!customerId) {
-        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -710,7 +716,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating : 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
     if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
@@ -758,20 +764,44 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
-    let { shopId } = req.query
-    let newDate = new Date();
+    let { shopId, year } = req.query
+    let newDate = year ? new Date(year) : new Date();
     let totalOrders = 0;
     let totalAmount = 0;
     let cancelledOrders = 0;
     let acceptedOrders = 0;
 
-    const year = newDate.getFullYear();
-    const daysInYear = helper.getDaysInYear(year);
+    const Year = newDate.getFullYear();
+    const daysInYear = helper.getDaysInYear(Year);
 
     let currentMonth;
     let { monthData, monthNames } = helper.generateMonthOfYear();
+    let startOfYear = new Date(newDate.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
 
-    let filter = shopId ? ({ shopId }) : {}
+    // End of the year (December 31st)
+    let endOfYear = new Date(newDate.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
+
+    let isShop = shopId ? { shopId } : {}
+    let filter = {
+        ...isShop,
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+        ]
+    }
+
 
     let orders = await OrderModel.find(filter)
 
@@ -811,11 +841,15 @@ const getstatsbyMonth = async (req) => {
 
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
+    startOfmonth.setMonth(startOfmonth.getMonth() - 1); // Move to the next month
     startOfmonth.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfmonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
+
+    console.log(startDate)
+    console.log(startOfmonth, endOfMonth)
     let isShop = shopId ? { shopId } : {}
     let filter = {
         ...isShop,
@@ -957,8 +991,8 @@ const getSalesSingleShop = async (req) => {
         { path: "vehicleId" },
     ]
 
-
-    let shop = await shopModel.findOne({ _id : shopId }, { location: 0 , __v : 0 })
+    let shop = await shopModel.findOne({ _id: shopId }, { location: 0, __v: 0 })
+    if(!shop ) return
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 

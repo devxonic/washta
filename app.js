@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const app = express();
+const path = require('path');
 
 //api Middleweres 
+app.use("/mailsAssets", express.static(path.resolve(__dirname, "./Mails")));
 app.use(express.json());
 app.use(cors());
 

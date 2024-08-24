@@ -175,6 +175,7 @@ const getShopById = async (req) => {
 };
 
 const addShop = async (req) => {
+    req.body.Owner = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",
@@ -217,13 +218,13 @@ const openShopByid = async (req) => {
 const getAllOrders = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    let Order = await OrderModel.find({ shopId: { $in: Shops } }).sort({ createdAt: 1, date: 1 })
+    let Order = await OrderModel.find({ shopId: { $in: Shops } }).sort({ createdAt: -1, date: -1 })
     console.log(Order);
     return Order;
 };
 
 const getOrderById = async (req) => {
-    let Order = await OrderModel.findById(req.params.id).sort({ createdAt: 1, date: 1 })
+    let Order = await OrderModel.findById(req.params.id).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 
@@ -245,7 +246,7 @@ const orderStatus = async (req, res) => {
         { _id: id },
         { $set: OBJ },
         { new: true },
-    ).populate({ path: 'vehicleId' }).sort({ createdAt: 1, date: 1 })
+    ).populate({ path: 'vehicleId' }).sort({ createdAt: -1, date: -1 })
 
     return response.resSuccessData(res, Order);
     ;
@@ -256,7 +257,7 @@ const getorderbyStatus = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: req.query.status }],
-    }).sort({ createdAt: 1, date: 1 })
+    }).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 
@@ -265,7 +266,7 @@ const getpastorder = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
-    }).populate({ path: "vehicleId" }).sort({ createdAt: 1, date: 1 })
+    }).populate({ path: "vehicleId" }).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 const getActiveOrder = async (req) => {
@@ -282,7 +283,7 @@ const getActiveOrder = async (req) => {
             $gte: newDate,
             $lt: endOfDay,
         }
-    }).sort({ createdAt: 1, date: 1 })
+    }).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 
@@ -317,14 +318,14 @@ const getMyShopReviews = async (req) => {
     Shops = Shops.map((x) => x._id.toString());
     if (shopId) {
         if (!Shops.includes(shopId)) return null
-        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         if (!Reviews) return Reviews
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
     let Reviews = await ReviewModel.find({
         $and: { shopId: { $in: Shops } },
-    }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
 };
@@ -356,11 +357,11 @@ const getSellerReviews = async (req) => {
     if (shopId) {
         let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
         if (!owner) return null
-        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
-    let Reviews = await ReviewModel.find({ sellerId: req.user.id }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ sellerId: req.user.id }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
 };
@@ -391,7 +392,7 @@ const getOrderReviews = async (req) => {
             }
         }
     ]
-    let Reviews = await ReviewModel.find({ orderId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ orderId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
 };

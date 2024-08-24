@@ -334,6 +334,7 @@ const cancelBooking = async (req) => {
 }
 
 const createNewBooking = async (req) => {
+    req.body.customerId = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",
@@ -545,7 +546,7 @@ const getShopReviews = async (req) => {
         }
     ]
     if (!shopId) return null
-    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
 
     let newFormatedReviews = formateReviewsRatings(Reviews)
     let stats = getRatingStatistics(newFormatedReviews)
@@ -582,14 +583,14 @@ const getSellerReview = async (req) => {
 
     if (!sellerId && !shopId) return null
     if (sellerId) {
-        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
     if (shopId) {
         let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
         if (!owner) return null
-        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
