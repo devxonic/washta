@@ -803,7 +803,7 @@ const getAllTimeStats = async (req) => {
     }
 
 
-    let orders = await OrderModel.find(filter)
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
@@ -848,7 +848,6 @@ const getstatsbyMonth = async (req) => {
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
 
-    console.log(startDate)
     console.log(startOfmonth, endOfMonth)
     let isShop = shopId ? { shopId } : {}
     let filter = {
@@ -885,7 +884,8 @@ const getstatsbyMonth = async (req) => {
     let currentDay;
     console.log(filter)
     console.log(nameOfdays)
-    let orders = await OrderModel.find(filter)
+    console.log(monthDays)
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
@@ -948,7 +948,7 @@ const getStatsByWeek = async (req) => {
     let currentDay;
     console.log(filter)
     console.log(weekData, daysOfWeek)
-    let orders = await OrderModel.find(filter)
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
@@ -992,7 +992,7 @@ const getSalesSingleShop = async (req) => {
     ]
 
     let shop = await shopModel.findOne({ _id: shopId }, { location: 0, __v: 0 })
-    if(!shop ) return
+    if (!shop) return
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 

@@ -102,10 +102,25 @@ function generateDaysOfMonth(year, month) {
     let daysInMonth = new Date(year, month + 1, 0).getDate(); // Get number of days in the month
     let daysData = {};
 
+    const monthNames = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+    ];
+    console.log(monthNames[month])
     for (let day = 1; day <= daysInMonth; day++) {
         let dateKey = `${day < 10 ? '0' : ''}${day}`; // Format day as '01', '02', etc.
         daysData[dateKey] = {
-            name: dateKey,
+            name: `${monthNames[month]}-${dateKey}`,
             totalOrders: 0,
             totalRevenue: 0,
         };
