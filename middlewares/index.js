@@ -111,6 +111,25 @@ const verifyAdmin = (req, res, next) => {
     }
 }
 
+const verifyAgent = (req, res, next) => {
+    const bearerHeader = req.headers["authorization"];
+    if (typeof bearerHeader !== "undefined") {
+        const bearer = bearerHeader.split(" ");
+        const bearertoken = bearer[1];
+        req.token = bearertoken;
+        jwt.verify(req.token, process.env.agentToken, async (err, Authdata) => {
+            if (err) {
+                return response.resUnauthorized(res, "couldn't verify the token!");
+            } else {
+                req.user = Authdata;
+                next();
+            }
+        });
+    } else {
+        return response.resAuthenticate(res, "no token found");
+    }
+}
+
 
 
 const limiter = rateLimiter({
@@ -131,6 +150,7 @@ module.exports = {
     verifyCustomer,
     verifySeller,
     verifyAdmin,
+    verifyAgent,
     awsUpload,
     limiter,
     uploadbuffer,

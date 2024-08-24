@@ -11,6 +11,7 @@ const AdminSchema = new Schema({
     },
     email: { type: String },
     phone: { type: String },
+    role: { type: String, enum: ['admin', 'agent'], default: 'admin' },
     avatar: {
         type: String
     },

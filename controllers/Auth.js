@@ -208,17 +208,17 @@ const logOut = async (req, res) => {
 
 const AdminSignUp = async (req, res) => {
     try {
-        let { username, email, fullName, phone, password } = req.body
+        let { username, email, fullName, phone, password, role } = req.body
         console.log('siggning user up');
         let resObj = {};
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let adminBody = { username, fullName, email: email, phone, password: hash }
-        console.log(adminBody)
+        let adminBody = { username, fullName, email: email, phone, password: hash, role }
+        // console.log(adminBody)
         let newAdmin = new AdminModel(adminBody)
         let savedAdmin = await newAdmin.save()
-        console.log(savedAdmin)
+        // console.log(savedAdmin)
 
         if (!savedAdmin) return response.resBadRequest(res, "There is some error on save Customer");
 
