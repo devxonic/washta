@@ -127,11 +127,11 @@ const getSecurity = async (req) => {
 const logout = async (req) => {
     console.log(req.user)
     if (req.user.role == "customer") {
-        let User = await CustomerModel.findByIdAndUpdate({ _id: req.user.id, isTerminated: { $ne: true } }, { $set: { sessionKey: '' } })
+        let User = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
         return User
     }
     if (req.user.role == "seller") {
-        let User = await SellerModel.findByIdAndUpdate({ _id: req.user.id, isTerminated: { $ne: true } }, { $set: { sessionKey: '' } })
+        let User = await SellerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { sessionKey: '' } })
         return User
     }
 }
@@ -184,7 +184,7 @@ const updateIsSelected = async (req) => {
 
 
 const getAllShops = async (req) => {
-    let Shops = await shopModel.find({})
+    let Shops = await shopModel.find({ isTerminated: { $ne: true } })
     let updatedShops = [];
     for (const shop of Shops) {
         let shopReviews = await ReviewModel.find({ shopId: shop?._id })
@@ -205,7 +205,7 @@ const getAllShops = async (req) => {
 }
 
 const getShopById = async (req) => {
-    let Shops = await shopModel.findById(req.params.id)
+    let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } })
     let shopReviews = await ReviewModel.find({ shopId: Shops?._id })
     let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
     let formatedReviews = formateReviewsRatings(shopReviews);
@@ -247,6 +247,7 @@ function haversineDistance(coords1, coords2) {
 const getShopByLocation = async (req) => {
     console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
     let Shops = await shopModel.find({
+        isTerminated: { $ne: true },
         location: {
             $nearSphere:
             {
@@ -586,7 +587,7 @@ const getSellerReview = async (req) => {
         return FormatedRating
     }
     if (shopId) {
-        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        let owner = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { Owner: 1 })
         if (!owner) return null
         let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)

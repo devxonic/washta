@@ -19,7 +19,7 @@ const AdminModel = require('../models/admin');
 
 const getBusinessbyStatus = async (req) => {
     if (req.query.status) {
-        let Business = await SellerModel.find({ 'business.status': req.query.status }, {
+        let Business = await SellerModel.find({ 'business.status': req.query.status, isTerminated: { $ne: true } }, {
             notification: 0,
             privacy: 0,
             security: 0,
@@ -36,12 +36,12 @@ const getBusinessbyStatus = async (req) => {
 
 const getAllBusniess = async (req) => {
 
-    let Business = await SellerModel.find({}, { business: 1 })
+    let Business = await SellerModel.find({ isTerminated: { $ne: true } }, { business: 1 })
     return Business
 }
 
 const getBusinessById = async (req) => {
-    let Business = await SellerModel.findById(req.params.id, { business: 1 })
+    let Business = await SellerModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } }, { business: 1 })
     return Business
 }
 
@@ -56,7 +56,7 @@ const businessApprove = async (req) => {
         "business.status": "approved",
         "business.approvedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    let Business = await SellerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
 
     const transporter = nodemailer.createTransport({
@@ -91,7 +91,7 @@ const businessTerminate = async (req) => {
         "business.status": 'terminated',
         "business.terminatedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    let Business = await SellerModel.findOneAndUpdate({ _id: id }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     const transporter = nodemailer.createTransport({
         host: process.env.mailerHost,
         port: process.env.mailerPort,
@@ -124,7 +124,7 @@ const businessReject = async (req) => {
         "business.status": 'rejected',
         "business.rejectedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    let Business = await SellerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
     const transporter = nodemailer.createTransport({
         host: process.env.mailerHost,
@@ -219,7 +219,7 @@ const getTopSellers = async (req) => {
     }
     let companiesData = {}
     for (const singleOrder of orders) {
-        let seller = await shopModel.findOne({ _id: singleOrder?.shopId }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
+        let seller = await shopModel.findOne({ _id: singleOrder?.shopId, isTerminated: { $ne: true } }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
         if (seller) {
             if (!companiesData[singleOrder?.shopId]) {
                 companiesData[singleOrder?.shopId] = { ...seller?.Owner?._doc, totalRevenue: 0, totalOrders: 0 }
@@ -263,7 +263,7 @@ const getTopCompanies = async (req) => {
     }
     let companiesData = {}
     for (const singleOrder of orders) {
-        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId }, shopFilter)
+        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId, isTerminated: { $ne: true } }, shopFilter)
         if (Shop) {
             if (!companiesData[singleOrder?.shopId]) {
                 companiesData[singleOrder?.shopId] = { ...Shop?._doc, totalRevenue: 0, totalOrders: 0 }
@@ -293,14 +293,14 @@ const getTopCompanies = async (req) => {
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
 const getShop = async (req) => {
-    let Shop = await shopModel.find({})
+    let Shop = await shopModel.find({ isTerminated: { $ne: true } })
     return Shop
 }
 
 const getShopbyid = async (req) => {
     let id = req.params.id
     let { shopId, graph } = req.query
-    let shop = await shopModel.findOne({ _id: id }, { __v: 0 })
+    let shop = await shopModel.findOne({ _id: id, isTerminated: { $ne: true } }, { __v: 0 })
     if (!shop) return
     let stats = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
@@ -324,15 +324,15 @@ const getShopbyid = async (req) => {
 const UpdateShopbyAmdin = async (req) => {
     let id = req.params.id
     let { location, coverdAreaRaduis, service, cost } = req.body
-    let Shop = await shopModel.findByIdAndUpdate(id, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
+    let Shop = await shopModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
     return Shop
 }
 
 const updateShopTiming = async (req) => {
     let { shopId, timing } = req.body
-    let Shop = await shopModel.updateMany({ _id: { $in: shopId } }, { timing })
+    let Shop = await shopModel.updateMany({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing })
     if (Shop.modifiedCount > 0) {
-        const updatedShop = await shopModel.find({ _id: { $in: shopId } }, { timing: 1 });
+        const updatedShop = await shopModel.find({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing: 1 });
         return updatedShop
     }
     return Shop
@@ -347,16 +347,6 @@ const getCustomer = async (req) => {
     }).populate([{
         path: "selectedVehicle",
     }])
-    // let updatedCustomers = [];
-    // for (const customer of Customer) {
-    //     let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
-    //     let totalSpents = 0
-    //     orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
-
-    //     console.log("totalSpents -------------------- ", totalSpents)
-
-
-    // }
     return Customer
 }
 
@@ -432,7 +422,7 @@ const terminateShop = async (req) => {
         },
         terminateAt: date,
     }
-    let shop = await shopModel.findByIdAndUpdate(id, { ...body }, { new: true })
+    let shop = await shopModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { ...body }, { new: true })
     return shop
 }
 
@@ -475,7 +465,7 @@ const createServiceFee = async (req) => {
     let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
     let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
-        let shops = await shopModel.find({}, { _id: 1 })
+        let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
         Data.applyAt = Formated
     }
@@ -499,7 +489,7 @@ const updateServiceFee = async (req) => {
     let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
     let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
-        let shops = await shopModel.find({}, { _id: 1 })
+        let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
         Data.applyAt = Formated
     }
@@ -1012,7 +1002,7 @@ const getStatsByWeek = async (req) => {
 // ----------------------------------------------- sales -----------------------------------------------------//
 
 const getShopForSales = async (req) => {
-    let Shops = await shopModel.find().sort({ createdAt: 1, updatedAt: 1 })
+    let Shops = await shopModel.find({ isTerminated: { $ne: true } }).sort({ createdAt: 1, updatedAt: 1 })
     return Shops
 };
 
@@ -1024,7 +1014,7 @@ const getSalesSingleShop = async (req) => {
         { path: "vehicleId" },
     ]
 
-    let shop = await shopModel.findOne({ _id: shopId }, { location: 0, __v: 0 })
+    let shop = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { location: 0, __v: 0 })
     if (!shop) return
     let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
