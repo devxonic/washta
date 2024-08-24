@@ -299,8 +299,25 @@ const getShop = async (req) => {
 
 const getShopbyid = async (req) => {
     let id = req.params.id
-    let Shop = await shopModel.findById(id)
-    return Shop
+    let { shopId, graph } = req.query
+    let shop = await shopModel.findOne({ _id: id }, { __v: 0 })
+    if (!shop) return
+    let stats = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
+
+    let shopReviews = await reviewModel.find({ shopId: shop?._id })
+    let formatedReviews = helper.formateReviewsRatings(shopReviews);
+    let ReviewsStats = helper.getRatingStatistics(formatedReviews);
+
+
+    return {
+        shop,
+        ...stats,
+        reviewsSummary: {
+            averageRating: ReviewsStats.averageRating || 0,
+            totalReviews: ReviewsStats.totalReviews || 0,
+            recommendationPercentage: ReviewsStats.recommendationPercentage || 0,
+        }
+    }
 }
 
 
@@ -766,10 +783,12 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 const getAllTimeStats = async (req) => {
     let { shopId, year } = req.query
     let newDate = year ? new Date(year) : new Date();
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalRevenue = 0;
+    let totalNumberOfOrders = 0;
+    let totalCompletedOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let totalPendingOrders = 0;
 
     const Year = newDate.getFullYear();
     const daysInYear = helper.getDaysInYear(Year);
@@ -809,23 +828,26 @@ const getAllTimeStats = async (req) => {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentMonth = monthNames[orderDate.getMonth()];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             monthData[currentMonth].totalOrders++
             monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
         monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
-        totalOrders,
-        acceptedOrders,
-        cancelledOrders,
+        totalRevenue,
+        averageMonthlySales: parseFloat((totalRevenue / 12).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
         graphData: Object.values(monthData),
     }
     return response
@@ -834,10 +856,13 @@ const getAllTimeStats = async (req) => {
 const getstatsbyMonth = async (req) => {
     let { startDate, shopId } = req.query
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+
 
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
@@ -891,22 +916,25 @@ const getstatsbyMonth = async (req) => {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentDay = nameOfdays[orderDate.getDate() - 1];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
             monthDays[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalCompletedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        averageDailySales: parseFloat((totalRevenue / nameOfdays.length).toFixed(2)),
         graphData: Object.values(monthDays)
     }
     return response
@@ -915,10 +943,12 @@ const getstatsbyMonth = async (req) => {
 const getStatsByWeek = async (req) => {
     let { startDate } = req.query
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
 
     let startOfWeek = startDate ? new Date(startDate) : new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -954,22 +984,25 @@ const getStatsByWeek = async (req) => {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentDay = daysOfWeek[orderDate.getDay()];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
             weekData[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        totalCompletedOrders,
+        averageDailySales: parseFloat((totalRevenue / 7).toFixed(2)),
         graphData: Object.values(weekData)
     }
     return response
