@@ -25,6 +25,7 @@ const CustomerSchema = new Schema({
         id: { type: mongoose.Types.ObjectId },
         role: { type: String, enum: ['admin'] }
     },
+    isActive: { type: Boolean, default: true },
     terminateAt: { type: Date },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {

@@ -20,10 +20,10 @@ const shopSchema = new Schema({
     shopName: { type: String },
     coverImage: { type: String },
     sliderImage: [{ type: String }],
-    isActive: { type: Boolean },
+    isActive: { type: Boolean, default: true },
     shopDetails: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
-    isOpen: { type: Boolean , default : true },
+    isOpen: { type: Boolean, default: true },
     timing: {
         monday: {
             open: { type: Boolean },

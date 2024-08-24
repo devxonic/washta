@@ -13,7 +13,7 @@ const vehiclesSchema = new Schema({
     isSelected: { type: Boolean, default: false },
 
 
-})
+}, { timestamps: true })
 
 
 const VehiclesModel = mongoose.model('vehicle', vehiclesSchema);
