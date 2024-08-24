@@ -9,7 +9,6 @@ const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
-const shopModel = require("../models/shop");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -42,7 +41,7 @@ const findSeller = async (req) => {
 
 const updateRefreshToken = async (req, token) => {
     let Seller = await SellerModel.findOneAndUpdate(
-        { username: req.body.identifier },
+        { username: req.body.identifier, isTerminated: { $ne: true } },
         { $set: { sessionKey: token } },
     );
     return Seller;
@@ -68,7 +67,7 @@ const signUpWithGoogle = async (req) => {
 
 const updateImage = async (req, resizedAvatar, originalAvatar) => {
     let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
         {
             new: true, fields: {
@@ -84,7 +83,7 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 const editProfile = async (req) => {
     const { name, phone } = req.body;
     let Seller = await SellerModel.findOneAndUpdate(
-        { email: req.user.email },
+        { email: req.user.email, isTerminated: { $ne: true } },
         { $set: { name: name, phone: phone } },
         { new: true },
     );
@@ -93,7 +92,7 @@ const editProfile = async (req) => {
 
 const getProfile = async (req) => {
     let Seller = await SellerModel.findOne(
-        { username: req.user.username },
+        { username: req.user.username, isTerminated: { $ne: true } },
         { password: 0, __v: 0 },
     );
     return Seller;
@@ -101,7 +100,7 @@ const getProfile = async (req) => {
 
 const updateNotification = async (req) => {
     let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { notification: req.body } },
     );
     return Seller;
@@ -109,14 +108,14 @@ const updateNotification = async (req) => {
 
 const getNotification = async (req) => {
     let Seller = await SellerModel.findOne(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { password: 0, __v: 0 },
     );
     return Seller.notification;
 };
 const updatePrivacy = async (req) => {
     let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { privacy: req.body } },
     );
     return Seller;
@@ -124,14 +123,14 @@ const updatePrivacy = async (req) => {
 
 const getPrivacy = async (req) => {
     let Seller = await SellerModel.findOne(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { password: 0, __v: 0 },
     );
     return Seller.privacy;
 };
 const updateSecurity = async (req) => {
     let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { security: req.body } },
     );
     return Seller;
@@ -139,14 +138,14 @@ const updateSecurity = async (req) => {
 
 const getSecurity = async (req) => {
     let Seller = await SellerModel.findOne(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { password: 0, __v: 0 },
     );
     return Seller.security;
 };
 const logout = async (req) => {
     let Seller = await SellerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { sessionKey: "" } },
     );
     return Seller;
@@ -158,19 +157,19 @@ const addBusiness = async (req) => {
     req.body.status = "ongoing"
     let date = new Date()
     req.body.cratedAt = date
-    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.params.id }, { $set: { business: req.body } }, { new: true })
+    let Seller = await SellerModel.findByIdAndUpdate({ _id: req.params.id, isTerminated: { $ne: true } }, { $set: { business: req.body } }, { new: true })
     return Seller
 }
 
 // ----------------------------------------------- shops -----------------------------------------------------//
 
 const getAllShop = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } });
     return Shops;
 };
 
 const getShopById = async (req) => {
-    let Shop = await ShopModel.findById(req.params.id);
+    let Shop = await ShopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } });
     return Shop;
 };
 
@@ -188,7 +187,7 @@ const addShop = async (req) => {
 const updateShop = async (req) => {
     let id = req.params.id;
     let Shop = await ShopModel.findOneAndUpdate(
-        { _id: id },
+        { _id: id, isTerminated: { $ne: true } },
         { ...req.body },
         { new: true },
     );
@@ -202,21 +201,21 @@ const deleteShop = async (req) => {
 
 const openAllShops = async (req) => {
     let { status } = req.body
-    let Shop = await ShopModel.updateMany({ Owner: req.user.id }, { isOpen: status });
+    let Shop = await ShopModel.updateMany({ Owner: req.user.id, isTerminated: { $ne: true } }, { isOpen: status });
     return Shop;
 };
 
 const openShopByid = async (req) => {
     let { id } = req.params
     let { status } = req.body
-    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id }, { isOpen: status }, { new: true });
+    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id, isTerminated: { $ne: true } }, { isOpen: status }, { new: true });
     return Shop;
 };
 
 // ----------------------------------------------- order -----------------------------------------------------//
 
 const getAllOrders = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({ shopId: { $in: Shops } }).sort({ createdAt: -1, date: -1 })
     console.log(Order);
@@ -253,7 +252,7 @@ const orderStatus = async (req, res) => {
 };
 
 const getorderbyStatus = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: req.query.status }],
@@ -262,7 +261,7 @@ const getorderbyStatus = async (req) => {
 };
 
 const getpastorder = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let Order = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { $nor: [{ status: "pending" }] }],
@@ -270,7 +269,7 @@ const getpastorder = async (req) => {
     return Order;
 };
 const getActiveOrder = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let newDate = new Date()
     newDate.setHours(0, 0, 0, 0);
@@ -287,9 +286,9 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 const getLatestOrders = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    
+
     let Order = await OrderModel.find({
         shopId: { $in: Shops },
         status: { $in: ["ongoing", "inprocess", "completed"] },
@@ -303,7 +302,7 @@ const getLatestOrders = async (req) => {
 const getMyShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -324,17 +323,17 @@ const getMyShopReviews = async (req) => {
             }
         }
     ]
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     if (shopId) {
         if (!Shops.includes(shopId)) return null
-        let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         if (!Reviews) return Reviews
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
     let Reviews = await ReviewModel.find({
-        $and: { shopId: { $in: Shops } },
+        $and: { shopId: { $in: Shops }, isDeleted: { $ne: true } },
     }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
@@ -343,7 +342,7 @@ const getMyShopReviews = async (req) => {
 const getSellerReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -365,13 +364,13 @@ const getSellerReviews = async (req) => {
         }
     ]
     if (shopId) {
-        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        let owner = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { Owner: 1 })
         if (!owner) return null
-        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
-    let Reviews = await ReviewModel.find({ sellerId: req.user.id }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ sellerId: req.user.id, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
 };
@@ -381,7 +380,7 @@ const getSellerReviews = async (req) => {
 const getOrderReviews = async (req) => {
     let { orderId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -402,7 +401,7 @@ const getOrderReviews = async (req) => {
             }
         }
     ]
-    let Reviews = await ReviewModel.find({ orderId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Reviews)
     return FormatedRating
 };
@@ -412,9 +411,10 @@ const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let filter = {
+        isDeleted: { $ne: true },
         $or: [
             {
                 $and: [
@@ -453,10 +453,11 @@ const editMyReplys = async (req) => {
     let { reviewId } = req.query
     let { commentId, comment } = req.body
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
     let filter = {
+        isDeleted: { $ne: true },
         $or: [
             {
                 $and: [
@@ -492,7 +493,7 @@ const editMyReplys = async (req) => {
 
 const deleteMyReplys = async (req) => {
     let { reviewId, commentId } = req.query
-    let Review = await ReviewModel.findOne({ _id: reviewId });
+    let Review = await ReviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let myReply = Review.reply.find(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -500,14 +501,14 @@ const deleteMyReplys = async (req) => {
         }
     })
     if (!myReply) return myReply
-    let reply = await ReviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    let reply = await ReviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
 }
 
 // ----------------------------------------------- Invoice -----------------------------------------------------//
 
 const getAllInvoice = async (req) => {
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.find({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }],
@@ -517,7 +518,8 @@ const getAllInvoice = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -548,7 +550,7 @@ const getAllInvoice = async (req) => {
 
 const getAllInvoiceById = async (req) => {
     let { id } = req.params
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
     let orders = await OrderModel.findOne({
         $and: [{ shopId: { $in: Shops } }, { status: "completed" }, { _id: id }],
@@ -558,7 +560,8 @@ const getAllInvoiceById = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -591,7 +594,7 @@ const getAllMyNotifications = async (req) => {
     for (let i = 0; i < Notifications.length; i++) {
         UpdatedNotification[i] = Notifications[i]
         if (Notifications[i].sender.role == "customer") {
-            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
+            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
             UpdatedNotification[i].sender = {
                 ...Notifications[i].sender,
                 profile: customer?.profile ?? null,
@@ -599,7 +602,7 @@ const getAllMyNotifications = async (req) => {
             }
         }
         if (Notifications[i].sender.role == "seller") {
-            let seller = await SellerModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
+            let seller = await SellerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
             UpdatedNotification[i].sender = {
                 ...Notifications[i].sender,
                 profile: seller?.profile,
@@ -638,7 +641,7 @@ const getAllTimeStats = async (req) => {
     let acceptedOrders = 0;
 
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
     let filter = {
@@ -689,7 +692,7 @@ const getstatsbyMonth = async (req) => {
     let acceptedOrders = 0;
 
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
 
@@ -769,7 +772,7 @@ const getStatsByWeek = async (req) => {
     let acceptedOrders = 0;
 
 
-    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
 

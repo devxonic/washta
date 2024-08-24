@@ -30,7 +30,7 @@ const findSeller = async (req) => {
 }
 
 const updateRefreshToken = async (req, token) => {
-    let player = await CustomerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
+    let player = await CustomerModel.findOneAndUpdate({ username: req.body.identifier, isTerminated: { $ne: true } }, { $set: { sessionKey: token } })
     return player
 }
 
@@ -54,7 +54,7 @@ const signUpWithGoogle = async (req) => {
 
 const editProfile = async (req) => {
 
-    let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email },
+    let Customer = await CustomerModel.findOneAndUpdate({ email: req.user.email, isTerminated: { $ne: true } },
         { $set: { fullname: req.bodyfullName, phone: req.bodyphone } }, {
         new: true, fields: {
             notification: 0,
@@ -71,7 +71,7 @@ const editProfile = async (req) => {
 }
 
 const getProfile = async (req) => {
-    let Customer = await CustomerModel.findOne({ username: req.user.username }, {
+    let Customer = await CustomerModel.findOne({ username: req.user.username, isTerminated: { $ne: true } }, {
         password: 0, __v: 0, notification: 0,
         privacy: 0,
         security: 0,
@@ -85,7 +85,7 @@ const getProfile = async (req) => {
 
 const updateImage = async (req, resizedAvatar, originalAvatar) => {
     let customer = await CustomerModel.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user.id, isTerminated: { $ne: true } },
         { $set: { avatar: originalAvatar.Location, resizedAvatar: resizedAvatar.Location } },
         {
             new: true, fields: {
@@ -98,30 +98,30 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 };
 
 const updateNotification = async (req) => {
-    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { notification: req.body } })
+    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id, isTerminated: { $ne: true } }, { $set: { notification: req.body } })
     return player
 }
 
 const getNotification = async (req) => {
-    let player = await CustomerModel.findOne({ _id: req.user.id }, { password: 0, __v: 0 });
+    let player = await CustomerModel.findOne({ _id: req.user.id, isTerminated: { $ne: true } }, { password: 0, __v: 0 });
     return player.notification;
 }
 const updatePrivacy = async (req) => {
-    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { privacy: req.body } })
+    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id, isTerminated: { $ne: true } }, { $set: { privacy: req.body } })
     return player
 }
 
 const getPrivacy = async (req) => {
-    let player = await CustomerModel.findOne({ _id: req.user.id }, { password: 0, __v: 0 });
+    let player = await CustomerModel.findOne({ _id: req.user.id, isTerminated: { $ne: true } }, { password: 0, __v: 0 });
     return player.privacy;
 }
 const updateSecurity = async (req) => {
-    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id }, { $set: { security: req.body } })
+    let player = await CustomerModel.findByIdAndUpdate({ _id: req.user.id, isTerminated: { $ne: true } }, { $set: { security: req.body } })
     return player
 }
 
 const getSecurity = async (req) => {
-    let player = await CustomerModel.findOne({ _id: req.user.id }, { password: 0, __v: 0 });
+    let player = await CustomerModel.findOne({ _id: req.user.id, isTerminated: { $ne: true } }, { password: 0, __v: 0 });
     return player.security;
 }
 const logout = async (req) => {
@@ -184,11 +184,11 @@ const updateIsSelected = async (req) => {
 
 
 const getAllShops = async (req) => {
-    let Shops = await shopModel.find({ isOpen: true })
+    let Shops = await shopModel.find({ isTerminated: { $ne: true } })
     let updatedShops = [];
     for (const shop of Shops) {
-        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
-        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" }).count();
         let formatedReviews = formateReviewsRatings(shopReviews);
         let stats = getRatingStatistics(formatedReviews);
         let temp = {
@@ -196,6 +196,7 @@ const getAllShops = async (req) => {
             reviewsSummary: {
                 averageRating: stats.averageRating || 0,
                 totalReviews: stats.totalReviews || 0,
+                recommendationPercentage: stats.recommendationPercentage || 0,
             },
             totalNoOfJobs: shopOrders?.length || 0
         }
@@ -205,9 +206,9 @@ const getAllShops = async (req) => {
 }
 
 const getShopById = async (req) => {
-    let Shops = await shopModel.findOne({ _id: req.params.id })
-    let shopReviews = await ReviewModel.find({ shopId: Shops?._id })
-    let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" })
+    let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } })
+    let shopReviews = await ReviewModel.find({ shopId: Shops?._id, isDeleted: { $ne: true } })
+    let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" }).count();
     let formatedReviews = formateReviewsRatings(shopReviews);
     let stats = getRatingStatistics(formatedReviews);
     let updatedShops = {
@@ -215,6 +216,7 @@ const getShopById = async (req) => {
         reviewsSummary: {
             averageRating: stats.averageRating || 0,
             totalReviews: stats.totalReviews || 0,
+            recommendationPercentage: stats.recommendationPercentage || 0,
         },
         totalNoOfJobs: shopOrders?.length || 0
     }
@@ -247,6 +249,7 @@ function haversineDistance(coords1, coords2) {
 const getShopByLocation = async (req) => {
     console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
     let Shops = await shopModel.find({
+        isTerminated: { $ne: true },
         location: {
             $nearSphere:
             {
@@ -257,14 +260,13 @@ const getShopByLocation = async (req) => {
                 $minDistance: 0,
                 $maxDistance: parseFloat(req.query.radius ? req.query.radius : 1000)
             }
-        },
-        isOpen: true
+        }
     })
     const userCoordinates = [req.query.long, req.query.lat];
     let shopsWithDistance = []
     for (const shop of Shops) {
-        let shopReviews = await ReviewModel.find({ shopId: shop?._id })
-        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" })
+        let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
+        let shopOrders = await OrderModel.find({ shopId: shop?._id, status: "completed" }).count();
 
         let formatedReviews = formateReviewsRatings(shopReviews);
         let stats = getRatingStatistics(formatedReviews);
@@ -277,6 +279,7 @@ const getShopByLocation = async (req) => {
             reviewsSummary: {
                 averageRating: stats.averageRating || 0,
                 totalReviews: stats.totalReviews || 0,
+                recommendationPercentage: stats.recommendationPercentage || 0,
             },
             totalNoOfJobs: shopOrders?.length || 0
 
@@ -301,7 +304,7 @@ const getMyBookings = async (req) => {
 
 const getMyBookingById = async (req) => {
     let Bookings = await OrderModel.findById(req.params.id).populate([
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "vehicleId", select: {
                 vehicleManufacturer: 1,
@@ -334,7 +337,6 @@ const cancelBooking = async (req) => {
 }
 
 const createNewBooking = async (req) => {
-    req.body.customerId = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",
@@ -347,7 +349,7 @@ const createNewBooking = async (req) => {
 
 const getbookingbyStatus = async (req) => {
     let Bookings = await OrderModel.find({ $and: [{ customerId: req.user.id }, { status: req.query.status }] }).populate([
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "vehicleId", select: {
                 vehicleManufacturer: 1,
@@ -380,7 +382,8 @@ const getAllInvoice = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -415,7 +418,8 @@ const getInvoiceById = async (req) => {
             select: {
                 email: 1,
                 phone: 1,
-                profile: 1,
+                avatar: 1,
+                resizedAvatar: 1,
                 username: 1,
                 fullName: 1,
                 selectedVehicle: 1,
@@ -464,7 +468,7 @@ const getMyReviews = async (req) => {
     let { id } = req.user
     let { shopId, sellerId } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -486,7 +490,7 @@ const getMyReviews = async (req) => {
         }
     ]
     if (shopId) {
-        let Rating = await ReviewModel.find({ customerId: id, shopId }).populate(populate)
+        let Rating = await ReviewModel.find({ customerId: id, shopId, isDeleted: { $ne: true } }).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Rating)
         return FormatedRating
     }
@@ -496,7 +500,7 @@ const getMyReviews = async (req) => {
         return FormatedRating
     }
 
-    let Rating = await ReviewModel.find({ customerId: id }).populate(populate)
+    let Rating = await ReviewModel.find({ customerId: id, isDeleted: { $ne: true } }).populate(populate)
     let FormatedRating = formateReviewsRatings?.(Rating)
     return FormatedRating
 }
@@ -505,7 +509,7 @@ const updatesShopReview = async (req) => {
     let { rating, comment } = req.body
     let { reviewId } = req.query
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
@@ -524,7 +528,7 @@ const deleteShopReviews = async (req) => {
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -546,7 +550,7 @@ const getShopReviews = async (req) => {
         }
     ]
     if (!shopId) return null
-    let Reviews = await ReviewModel.find({ shopId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await ReviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
 
     let newFormatedReviews = formateReviewsRatings(Reviews)
     let stats = getRatingStatistics(newFormatedReviews)
@@ -583,14 +587,14 @@ const getSellerReview = async (req) => {
 
     if (!sellerId && !shopId) return null
     if (sellerId) {
-        let Reviews = await ReviewModel.find({ sellerId }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
     if (shopId) {
-        let owner = await shopModel.findOne({ _id: shopId }, { Owner: 1 })
+        let owner = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { Owner: 1 })
         if (!owner) return null
-        let Reviews = await ReviewModel.find({ sellerId: owner.Owner }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await ReviewModel.find({ sellerId: owner.Owner, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
@@ -601,7 +605,7 @@ const updatesSellerReview = async (req) => {
     let { rating, comment } = req.body
     let { reviewId } = req.query
 
-    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
