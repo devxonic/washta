@@ -196,6 +196,7 @@ const getAllShops = async (req) => {
             reviewsSummary: {
                 averageRating: stats.averageRating || 0,
                 totalReviews: stats.totalReviews || 0,
+                recommendationPercentage: stats.recommendationPercentage || 0,
             },
             totalNoOfJobs: shopOrders?.length || 0
         }
@@ -215,6 +216,7 @@ const getShopById = async (req) => {
         reviewsSummary: {
             averageRating: stats.averageRating || 0,
             totalReviews: stats.totalReviews || 0,
+            recommendationPercentage: stats.recommendationPercentage || 0,
         },
         totalNoOfJobs: shopOrders?.length || 0
     }
@@ -277,6 +279,7 @@ const getShopByLocation = async (req) => {
             reviewsSummary: {
                 averageRating: stats.averageRating || 0,
                 totalReviews: stats.totalReviews || 0,
+                recommendationPercentage: stats.recommendationPercentage || 0,
             },
             totalNoOfJobs: shopOrders?.length || 0
 
