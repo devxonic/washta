@@ -232,7 +232,7 @@ const AdminSignUp = async (req, res) => {
         });
         let OTP = generate4DigitCode()
         let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { name: savedAdmin.fullName ?? savedAdmin.username, msg: OTP } });
+        let Mail = await ejs.renderFile(mailPath, { data: { name: fullName ?? username, msg: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.mailerEmail,
             to: email,
@@ -275,7 +275,7 @@ const AdminlogIn = async (req, res) => {
         });
         let OTP = generate4DigitCode()
         let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { name: savedAdmin.fullName ?? savedAdmin.username, msg: OTP } });
+        let Mail = await ejs.renderFile(mailPath, { data: { name: admin?._doc?.fullName ?? admin?._doc?.username, msg: OTP } });
         if (!await validationFunctions.verifyPassword(password, admin.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!admin?._doc.isVerifed) {
             let transporterRes = await transporter.sendMail({
