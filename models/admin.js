@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 
 const AdminSchema = new Schema({
-    username: { type: String, unique: true },
+    username: { type: String },
     fullName: { type: String },
     password: {
         type: String,

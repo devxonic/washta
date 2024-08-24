@@ -83,7 +83,7 @@ const isOTPAlreadySended = async (req) => {
     if (OTP.length < 1) return false;
     let createdAt = new Date(OTP[OTP.length - 1]._doc.createdAt)
     let currentDate = new Date
-    let isExpire = (currentDate - createdAt) > 1000 * 60  * 2
+    let isExpire = (currentDate - createdAt) > 1000 * 60 * 2
     console.log(isExpire)
     return !isExpire;
 
@@ -94,13 +94,13 @@ const isOTPAlreadySended = async (req) => {
 
 const getAdminByEmail = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username, role: req.body.role }, { email: req.body.email }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username, role: req.body.role }, { email: req.body.email, role: req.body.role }] });
     return admin;
 }
 
 const getAdmin = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] });
     return admin;
 }
 
