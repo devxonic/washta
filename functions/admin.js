@@ -175,7 +175,7 @@ const getTopCustomer = async (req) => {
     }
     let customerData = {}
     for (const singleOrder of orders) {
-        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId }, customerFilter)
+        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId, isTerminated: { $ne: true } }, customerFilter)
         if (customer) {
             if (!customerData[singleOrder?.customerId]) {
                 customerData[singleOrder?.customerId] = { ...customer?._doc, totalSpents: 0, totalOrders: 0 }
@@ -342,7 +342,7 @@ const updateShopTiming = async (req) => {
 // ----------------------------------------------- Customer -----------------------------------------------------//
 
 const getCustomer = async (req) => {
-    let Customer = await CustomerModel.find({ isDeleted: { $ne: true } }, {
+    let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, {
         privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
     }).populate([{
         path: "selectedVehicle",
@@ -362,7 +362,7 @@ const getCustomer = async (req) => {
 
 const getCustomerByid = async (req) => {
     let id = req.params.id
-    let Customer = await CustomerModel.findOne({ _id: id }, {
+    let Customer = await CustomerModel.findOne({ _id: id, isTerminated: { $ne: true } }, {
         privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
     }).populate({
         path: "selectedVehicle",
@@ -409,7 +409,7 @@ const terminateCustomer = async (req) => {
         },
         terminateAt: date,
     }
-    let Customer = await CustomerModel.findByIdAndUpdate(id, { ...body }, {
+    let Customer = await CustomerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { ...body }, {
         new: true, fields: {
             sessionKey: 0,
             notification: 0,
@@ -513,7 +513,7 @@ const createPromoCode = async (req) => {
     let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
     let Data = { isActive, promoCode, duration, giveTo, giveToAll }
     if (giveToAll) {
-        let Customer = await CustomerModel.find({}, { _id: 1 })
+        let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = Customer.map((x) => x._id.toString())
         Data.giveTo = Formated
     }
@@ -538,7 +538,7 @@ const updatePromoCode = async (req) => {
     let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
     let Data = { isActive, promoCode, duration, giveTo, giveToAll }
     if (giveToAll) {
-        let Customer = await CustomerModel.find({}, { _id: 1 })
+        let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = Customer.map((x) => x._id.toString())
         Data.giveTo = Formated
     }

@@ -289,7 +289,7 @@ const getActiveOrder = async (req) => {
 const getLatestOrders = async (req) => {
     let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
-    
+
     let Order = await OrderModel.find({
         shopId: { $in: Shops },
         status: { $in: ["ongoing", "inprocess", "completed"] },
@@ -591,7 +591,7 @@ const getAllMyNotifications = async (req) => {
     for (let i = 0; i < Notifications.length; i++) {
         UpdatedNotification[i] = Notifications[i]
         if (Notifications[i].sender.role == "customer") {
-            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
+            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
             UpdatedNotification[i].sender = {
                 ...Notifications[i].sender,
                 profile: customer?.profile ?? null,
