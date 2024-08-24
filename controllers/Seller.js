@@ -366,6 +366,17 @@ const getActiveOrder = async (req, res) => {
     }
 }
 
+const getLatestOrders = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getLatestOrders(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- Reviews -----------------------------------------------------//
 
 
@@ -535,6 +546,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getLatestOrders,
     getorderbyStatus,
     getpastorder,
     getActiveOrder,

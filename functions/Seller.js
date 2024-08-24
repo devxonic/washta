@@ -286,6 +286,16 @@ const getActiveOrder = async (req) => {
     }).sort({ createdAt: -1, date: -1 })
     return Order;
 };
+const getLatestOrders = async (req) => {
+    let Shops = await ShopModel.find({ Owner: req.user.id }, { _id: 1 });
+    Shops = Shops.map((x) => x._id.toString());
+    
+    let Order = await OrderModel.find({
+        shopId: { $in: Shops },
+        status: { $in: ["ongoing", "inprocess", "completed"] },
+    }).sort({ createdAt: -1, date: -1 })
+    return Order;
+};
 
 // ----------------------------------------------- Reviews -----------------------------------------------------//
 
@@ -844,6 +854,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getLatestOrders,
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
