@@ -634,53 +634,89 @@ const getAllMyNotifications = async (req) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
-    let newDate = new Date();
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let { shopId, year } = req.query;
+    let newDate = year ? new Date(year) : new Date();
+    let totalRevenue = 0;
+    let totalNumberOfOrders = 0;
+    let totalCompletedOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let totalPendingOrders = 0;
+    let Shops;
+    if (!shopId) {
+        let shops = await ShopModel.find(
+            { Owner: req.user.id, isTerminated: { $ne: true } },
+            { _id: 1 }
+        );
+        Shops = shops.map((x) => x._id.toString());
+    }
 
-
-    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
-    let filter = {
-        shopId: { $in: Shops },
-    };
-
-    const year = newDate.getFullYear();
-    const daysInYear = getDaysInYear(year);
+    const Year = newDate.getFullYear();
+    const daysInYear = getDaysInYear(Year);
 
     let currentMonth;
     let { monthData, monthNames } = generateMonthOfYear();
+    let startOfYear = new Date(newDate.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
 
+    // End of the year (December 31st)
+    let endOfYear = new Date(newDate.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
 
-    let orders = await OrderModel.find(filter)
+    let isShop = shopId ? shopId : { $in: Shops };
+    let filter = {
+        shopId: isShop,
+        $or: [
+            {
+                creacreatedAt: {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                },
+            },
+            {
+                date: {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                },
+            },
+        ],
+    };
+
+    let orders = await OrderModel.find(filter);
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
-        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        let orderDate = singleOrder.createdAt
+            ? new Date(singleOrder.createdAt)
+            : new Date(singleOrder.date);
         currentMonth = monthNames[orderDate.getMonth()];
+        totalNumberOfOrders++;
         if (singleOrder.status == "completed") {
-            monthData[currentMonth].totalOrders++
+            monthData[currentMonth].totalOrders++;
             monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++;
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
-        monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
+        if (singleOrder.status == "cancelled") totalCancelledOrders++;
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++;
+        if (singleOrder.status == "ongoing") totalPendingOrders++;
+        monthData[currentMonth].averageDailySales = parseFloat(
+            (
+                monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]
+            ).toFixed(2)
+        );
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
-        totalOrders,
-        acceptedOrders,
-        cancelledOrders,
+        totalRevenue,
+        averageMonthlySales: parseFloat((totalRevenue / 12).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
         graphData: Object.values(monthData),
-    }
-    return response
+    };
+    return response;
 };
 
 const getstatsbyMonth = async (req) => {
