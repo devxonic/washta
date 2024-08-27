@@ -186,8 +186,15 @@ const addShop = async (req) => {
 
 const updateShop = async (req) => {
     let id = req.params.id;
+    if (req?.body?.location && req?.body?.location?.coordinates) {
+        req.body.location = {
+            ...req.body.location,
+            type: "Point",
+            coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
+        };
+    }
     let Shop = await ShopModel.findOneAndUpdate(
-        { _id: id, isTerminated: { $ne: true } },
+        { _id: id, Owner: req.user.id, isTerminated: { $ne: true } },
         { ...req.body },
         { new: true },
     );
