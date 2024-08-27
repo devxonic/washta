@@ -491,7 +491,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = await ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating } })
+    let reply = await ReviewModel.findOneAndUpdate(filter, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
     if (!reply) return reply
     let FormatedRating = formateReviewsRatingsSingle?.(reply)
     return FormatedRating
