@@ -184,7 +184,7 @@ const updateIsSelected = async (req) => {
 
 
 const getAllShops = async (req) => {
-    let Shops = await shopModel.find({ isTerminated: { $ne: true } })
+    let Shops = await shopModel.find({ isTerminated: { $ne: true }, isOpen: true, })
     let updatedShops = [];
     for (const shop of Shops) {
         let shopReviews = await ReviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
@@ -206,7 +206,7 @@ const getAllShops = async (req) => {
 }
 
 const getShopById = async (req) => {
-    let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } })
+    let Shops = await shopModel.findOne({ _id: req.params.id, isTerminated: { $ne: true }, })
     let shopReviews = await ReviewModel.find({ shopId: Shops?._id, isDeleted: { $ne: true } })
     let shopOrders = await OrderModel.find({ shopId: Shops?._id, status: "completed" }).count();
     let formatedReviews = formateReviewsRatings(shopReviews);
@@ -250,6 +250,7 @@ const getShopByLocation = async (req) => {
     console.log('req.body.radius', req.query.radius, req.query.lat, req.query.long);
     let Shops = await shopModel.find({
         isTerminated: { $ne: true },
+        isOpen: true,
         location: {
             $nearSphere:
             {
@@ -287,11 +288,6 @@ const getShopByLocation = async (req) => {
 
 
     }
-
-    // const shopsWithDistance = Shops.map(shop => {
-    //     const distance = haversineDistance(userCoordinates, shop.location.coordinates);
-    //     return { ...shop.toObject(), distanceInMeter: parseFloat(distance.toFixed(1)), distanceInKiloMeter: parseFloat((distance / 1000).toFixed(1)) };
-    // });
     return shopsWithDistance
 }
 
