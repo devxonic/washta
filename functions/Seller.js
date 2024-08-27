@@ -634,203 +634,292 @@ const getAllMyNotifications = async (req) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
-    let newDate = new Date();
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let { shopId, year } = req.query;
+    let newDate = year ? new Date(year) : new Date();
+    let totalRevenue = 0;
+    let totalNumberOfOrders = 0;
+    let totalCompletedOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let totalPendingOrders = 0;
+    let Shops;
+    if (!shopId) {
+        let shops = await ShopModel.find(
+            { Owner: req.user.id, isTerminated: { $ne: true } },
+            { _id: 1 }
+        );
+        Shops = shops.map((x) => x._id.toString());
+    }
 
-
-    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
-    let filter = {
-        shopId: { $in: Shops },
-    };
-
-    const year = newDate.getFullYear();
-    const daysInYear = getDaysInYear(year);
+    const Year = newDate.getFullYear();
+    const daysInYear = getDaysInYear(Year);
 
     let currentMonth;
     let { monthData, monthNames } = generateMonthOfYear();
+    let startOfYear = new Date(newDate.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
 
+    // End of the year (December 31st)
+    let endOfYear = new Date(newDate.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
 
-    let orders = await OrderModel.find(filter)
+    let isShop = shopId ? shopId : { $in: Shops };
+    let filter = {
+        shopId: isShop,
+        $or: [
+            {
+                creacreatedAt: {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                },
+            },
+            {
+                date: {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                },
+            },
+        ],
+    };
+
+    let orders = await OrderModel.find(filter);
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
-        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        let orderDate = singleOrder.createdAt
+            ? new Date(singleOrder.createdAt)
+            : new Date(singleOrder.date);
         currentMonth = monthNames[orderDate.getMonth()];
+        totalNumberOfOrders++;
         if (singleOrder.status == "completed") {
-            monthData[currentMonth].totalOrders++
+            monthData[currentMonth].totalOrders++;
             monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++;
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
-        monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
+        if (singleOrder.status == "cancelled") totalCancelledOrders++;
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++;
+        if (singleOrder.status == "ongoing") totalPendingOrders++;
+        monthData[currentMonth].averageDailySales = parseFloat(
+            (
+                monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]
+            ).toFixed(2)
+        );
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
-        totalOrders,
-        acceptedOrders,
-        cancelledOrders,
+        totalRevenue,
+        averageMonthlySales: parseFloat((totalRevenue / 12).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
         graphData: Object.values(monthData),
-    }
-    return response
+    };
+    return response;
 };
 
 const getstatsbyMonth = async (req) => {
-    let { startDate } = req.query
+    let { startDate, shopId } = req.query;
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
 
-
-    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
+    let Shops;
+    if (!shopId) {
+        let shops = await ShopModel.find(
+            { Owner: req.user.id, isTerminated: { $ne: true } },
+            { _id: 1 }
+        );
+        Shops = shops.map((x) => x._id.toString());
+    }
 
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
+    startOfmonth.setMonth(startOfmonth.getMonth() - 1); // Move to the next month
     startOfmonth.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfmonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
+
+    console.log(startOfmonth, endOfMonth);
+
+    let isShop = shopId ? shopId : { $in: Shops };
     let filter = {
-        shopId: { $in: Shops },
+        shopId: isShop,
         $or: [
             {
-                'creacreatedAt': {
+                creacreatedAt: {
                     $gte: startOfmonth,
                     $lt: endOfMonth,
-                }
+                },
             },
             {
-                'date': {
+                date: {
                     $gte: startOfmonth,
                     $lt: endOfMonth,
-                }
+                },
             },
-        ]
-    }
+        ],
+    };
 
-    let year = startOfmonth.getFullYear()
-    let month = startOfmonth.getMonth()
+    let year = startOfmonth.getFullYear();
+    let month = startOfmonth.getMonth();
     let monthDays = generateDaysOfMonth(year, month);
     let nameOfdays = [
-        '01', '02', '03',
-        '04', '05', '06', '07', '08',
-        '09', '10', '11', '12', '13',
-        '14', '15', '16', '17', '18',
-        '19', '20', '21', '22', '23',
-        '24', '25', '26', '27', '28',
-        '29', '30', '31',
-    ]
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+    ];
     let currentDay;
-    console.log(filter)
-    console.log(nameOfdays)
-    let orders = await OrderModel.find(filter)
+    console.log(filter);
+    console.log(nameOfdays);
+    let orders = await OrderModel.find(filter);
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
-        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        let orderDate = singleOrder.createdAt
+            ? new Date(singleOrder.createdAt)
+            : new Date(singleOrder.date);
         currentDay = nameOfdays[orderDate.getDate() - 1];
+        totalNumberOfOrders++;
         if (singleOrder.status == "completed") {
             monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
-            monthDays[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            monthDays[currentDay].totalOrders++;
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++;
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++;
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++;
+        if (singleOrder.status == "ongoing") totalPendingOrders++;
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
-        graphData: Object.values(monthDays)
-    }
-    return response
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalCompletedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        averageDailySales: parseFloat(
+            (totalRevenue / nameOfdays.length).toFixed(2)
+        ),
+        graphData: Object.values(monthDays),
+    };
+    return response;
 };
-
 const getStatsByWeek = async (req) => {
-    let { startDate } = req.query
+    let { startDate, shopId } = req.query;
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
-
-
-    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let Shops;
+    if (!shopId) {
+        let shops = await ShopModel.find(
+            { Owner: req.user.id, isTerminated: { $ne: true } },
+            { _id: 1 }
+        );
+        Shops = shops.map((x) => x._id.toString());
+    }
 
     let startOfWeek = startDate ? new Date(startDate) : new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
-    let endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7)
-    endOfWeek.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfWeek);
+    endOfMonth.setDate(startOfWeek.getDate() + 7);
+    endOfMonth.setHours(0, 0, 0, 0);
 
+    let isShop = shopId ? shopId : { $in: Shops };
     let filter = {
-        shopId: { $in: Shops },
+        shopId: isShop,
         $or: [
             {
-                'creacreatedAt': {
+                creacreatedAt: {
                     $gte: startOfWeek,
-                    $lt: endOfWeek,
-                }
+                    $lt: endOfMonth,
+                },
             },
             {
-                'date': {
+                date: {
                     $gte: startOfWeek,
-                    $lt: endOfWeek,
-                }
+                    $lt: endOfMonth,
+                },
             },
-        ]
-    }
+        ],
+    };
 
     let { weekData, daysOfWeek } = generateDaysOfWeek();
     let currentDay;
-    console.log(filter)
-    console.log(weekData, daysOfWeek)
-    let orders = await OrderModel.find(filter)
+    console.log(filter);
+    console.log(weekData, daysOfWeek);
+    let orders = await OrderModel.find(filter);
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
-        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        let orderDate = singleOrder.createdAt
+            ? new Date(singleOrder.createdAt)
+            : new Date(singleOrder.date);
         currentDay = daysOfWeek[orderDate.getDay()];
+        totalNumberOfOrders++;
         if (singleOrder.status == "completed") {
             weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
-            weekData[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            weekData[currentDay].totalOrders++;
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++;
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++;
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++;
+        if (singleOrder.status == "ongoing") totalPendingOrders++;
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
-        graphData: Object.values(weekData)
-    }
-    return response
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        totalCompletedOrders,
+        averageDailySales: parseFloat((totalRevenue / 7).toFixed(2)),
+        graphData: Object.values(weekData),
+    };
+    return response;
 };
+
 
 module.exports = {
     signUp,
