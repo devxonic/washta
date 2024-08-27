@@ -841,73 +841,85 @@ const getstatsbyMonth = async (req) => {
     return response;
 };
 const getStatsByWeek = async (req) => {
-    let { startDate } = req.query
+    let { startDate, shopId } = req.query;
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
-
-
-    let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
-    Shops = Shops.map((x) => x._id.toString());
-
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let Shops;
+    if (!shopId) {
+        let shops = await ShopModel.find(
+            { Owner: req.user.id, isTerminated: { $ne: true } },
+            { _id: 1 }
+        );
+        Shops = shops.map((x) => x._id.toString());
+    }
 
     let startOfWeek = startDate ? new Date(startDate) : new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
     startOfWeek.setHours(0, 0, 0, 0);
-    let endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 7)
-    endOfWeek.setHours(0, 0, 0, 0);
+    let endOfMonth = new Date(startOfWeek);
+    endOfMonth.setDate(startOfWeek.getDate() + 7);
+    endOfMonth.setHours(0, 0, 0, 0);
 
+    let isShop = shopId ? shopId : { $in: Shops };
     let filter = {
-        shopId: { $in: Shops },
+        shopId: isShop,
         $or: [
             {
-                'creacreatedAt': {
+                creacreatedAt: {
                     $gte: startOfWeek,
-                    $lt: endOfWeek,
-                }
+                    $lt: endOfMonth,
+                },
             },
             {
-                'date': {
+                date: {
                     $gte: startOfWeek,
-                    $lt: endOfWeek,
-                }
+                    $lt: endOfMonth,
+                },
             },
-        ]
-    }
+        ],
+    };
 
     let { weekData, daysOfWeek } = generateDaysOfWeek();
     let currentDay;
-    console.log(filter)
-    console.log(weekData, daysOfWeek)
-    let orders = await OrderModel.find(filter)
+    console.log(filter);
+    console.log(weekData, daysOfWeek);
+    let orders = await OrderModel.find(filter);
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
-        let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
+        let orderDate = singleOrder.createdAt
+            ? new Date(singleOrder.createdAt)
+            : new Date(singleOrder.date);
         currentDay = daysOfWeek[orderDate.getDay()];
+        totalNumberOfOrders++;
         if (singleOrder.status == "completed") {
             weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
-            weekData[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            weekData[currentDay].totalOrders++;
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++;
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++;
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++;
+        if (singleOrder.status == "ongoing") totalPendingOrders++;
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
-        graphData: Object.values(weekData)
-    }
-    return response
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        totalCompletedOrders,
+        averageDailySales: parseFloat((totalRevenue / 7).toFixed(2)),
+        graphData: Object.values(weekData),
+    };
+    return response;
 };
+
 
 module.exports = {
     signUp,
