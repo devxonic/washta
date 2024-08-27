@@ -198,7 +198,7 @@ const getAllShops = async (req) => {
                 totalReviews: stats.totalReviews || 0,
                 recommendationPercentage: stats.recommendationPercentage || 0,
             },
-            totalNoOfJobs: shopOrders?.length || 0
+            totalNoOfJobs: shopOrders || 0
         }
         updatedShops.push(temp)
     }
@@ -218,7 +218,7 @@ const getShopById = async (req) => {
             totalReviews: stats.totalReviews || 0,
             recommendationPercentage: stats.recommendationPercentage || 0,
         },
-        totalNoOfJobs: shopOrders?.length || 0
+        totalNoOfJobs: shopOrders || 0
     }
     return updatedShops
 
@@ -281,7 +281,7 @@ const getShopByLocation = async (req) => {
                 totalReviews: stats.totalReviews || 0,
                 recommendationPercentage: stats.recommendationPercentage || 0,
             },
-            totalNoOfJobs: shopOrders?.length || 0
+            totalNoOfJobs: shopOrders || 0
 
         };
 
