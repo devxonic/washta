@@ -12,12 +12,6 @@ const NotificationSchema = new Schema({
         username: { type: String },
         role: { type: String }
     },
-    multiReceivers: [
-        {
-            id: { type: mongoose.Types.ObjectId },
-            role: { type: String }
-        }
-    ],
     notification: {
         title: { type: String },
         body: { type: String }

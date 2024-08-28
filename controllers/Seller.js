@@ -1,6 +1,5 @@
 
 const SellerFunctions = require('../functions/Seller');
-const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
@@ -421,7 +420,7 @@ const getAllInvoiceById = async (req, res) => {
 
 const getAllMyNotifications = async (req, res) => {
     try {
-        let Notifications = await notification.getAllMyNotifications(req)
+        let Notifications = await SellerFunctions.getAllMyNotifications(req)
         if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
         return response.resSuccessData(res, Notifications);
     } catch (error) {

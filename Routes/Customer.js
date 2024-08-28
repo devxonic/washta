@@ -66,11 +66,5 @@ router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.d
 
 
 
-// ----------------------------------------------- Notification -----------------------------------------------------//
-
-router.get('/Notifications', middlewares.verifyCustomer, CustomerControllers.getAllMyNotifications)
-
-
-
 
 module.exports = router 
