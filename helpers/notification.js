@@ -4,6 +4,7 @@ const shopModel = require("../models/shop");
 const serviceAccount = require("../google-services_v4.json");
 const firebase = require("firebase-admin");
 const SellerModel = require("../models/seller");
+const AdminModel = require("../models/admin");
 
 firebase.initializeApp({
     credential: firebase.credential.cert(serviceAccount)
@@ -91,7 +92,55 @@ const sendNotificationToAllUsers = async (req) => {
 };
 
 
+const getAllMyNotifications = async (req) => {
+    let { id } = req.user
+    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] },)
+    let UpdatedNotification = []
+    for (let i = 0; i < Notifications.length; i++) {
+        UpdatedNotification[i] = Notifications[i]
+        if (Notifications[i].sender.role == "customer") {
+            let customer = await CustomerModel.findOne({ _id: Notifications?.[i].sender.id, isTerminated: { $ne: true } }, { username: 1, resizedAvatar: 1 })
+            UpdatedNotification[i].sender = {
+                ...Notifications[i].sender,
+                profile: customer?.resizedAvatar ?? null,
+                username: customer?.username ?? null
+            }
+            continue;
+        }
+        if (Notifications[i].sender.role == "seller") {
+            let seller = await SellerModel.findOne({ _id: Notifications?.[i].sender.id, isTerminated: { $ne: true } }, { username: 1, resizedAvatar: 1 })
+            UpdatedNotification[i].sender = {
+                ...Notifications[i].sender,
+                profile: seller?.resizedAvatar,
+                username: seller?.username
+            }
+            continue;
+        }
+        if (Notifications[i].sender.role == "admin") {
+            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, resizedAvatar: 1 })
+            UpdatedNotification[i].sender = {
+                ...Notifications[i].sender,
+                profile: seller?.resizedAvatar,
+                username: seller?.username
+            }
+            continue;
+        }
+        // if (Notifications[i].sender.role == "agent") {
+        //     let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
+        //     UpdatedNotification[i].sender = {
+        //         ...Notifications[i].sender,
+        //         profile: seller?.profile,
+        //         username: seller?.username
+        //     }
+        // }
+
+    }
+    return UpdatedNotification;
+};
+
+
 module.exports = {
     NotificationOnBooking,
-    sendNotificationToAllUsers
+    sendNotificationToAllUsers,
+    getAllMyNotifications
 };
