@@ -5,7 +5,7 @@ const ServiceFeeSchema = new mongoose.Schema({
     isAmountTaxable: { type: Boolean },
     ApplicableStatus: { type: Boolean },
     feeType: { type: String, enum: ["fixed", "percentage"] },
-    WashtaFees: { type: Number },
+    WashtaFees: { type: String },
     applyAs: { type: String, enum: ["perService", "perInvoice"] },
     applyAt: [{
         type: mongoose.Types.ObjectId,
