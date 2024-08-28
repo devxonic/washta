@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const app = express();
+const path = require('path');
 
 //api Middleweres 
+app.use("/mailsAssets", express.static(path.resolve(__dirname, "./Mails")));
 app.use(express.json());
 app.use(cors());
 
@@ -17,6 +19,7 @@ app.use('/api/customer', require('./Routes/Customer'));
 app.use('/api/otp', require('./Routes/Otp'));
 app.use('/api/seller', require('./Routes/Seller'));
 app.use('/api/admin', require('./Routes/admin'));
+app.use('/api/subscription', require('./Routes/subscription'));
 
 mongoose
     .connect(process.env.dburi)

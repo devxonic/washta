@@ -4,6 +4,9 @@ const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const SellerModel = require('../models/seller');
+const { s3UploadObject } = require('../middlewares');
+const sharp = require('sharp');
 require('dotenv').config()
 
 
@@ -28,6 +31,66 @@ const editProfile = async (req, res) => {
     }
 }
 
+
+
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getSeller = await SellerModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getSeller) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getSeller.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let Seller = await SellerModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, Seller);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await SellerFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 
 // ----------------------------------------------- Seller settings -----------------------------------------------------//
@@ -210,6 +273,29 @@ const deleteShop = async (req, res) => {
     }
 }
 
+const openAllShops = async (req, res) => {
+    try {
+        let shop = await SellerFunctions.openAllShops(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const openShopByid = async (req, res) => {
+    try {
+        let shop = await SellerFunctions.openShopByid(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 // ----------------------------------------------- Shop -----------------------------------------------------//
@@ -240,9 +326,7 @@ const getOrderById = async (req, res) => {
 
 const orderStatus = async (req, res) => {
     try {
-        let Order = await SellerFunctions.orderStatus(req)
-        if (!Order) return response.resBadRequest(res, "couldn't find Order")
-        return response.resSuccessData(res, Order);
+        let Order = await SellerFunctions.orderStatus(req, res)
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error)
@@ -282,6 +366,30 @@ const getActiveOrder = async (req, res) => {
     }
 }
 
+const getLatestOrders = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getLatestOrders(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+// ----------------------------------------------- Reviews -----------------------------------------------------//
+
+
+const getMyShopReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getMyShopReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 // ----------------------------------------------- invoice -----------------------------------------------------//
 
 
@@ -298,7 +406,7 @@ const getAllInvoice = async (req, res) => {
 
 const getAllInvoiceById = async (req, res) => {
     try {
-        let Order = await SellerFunctions.getAllInvoice(req)
+        let Order = await SellerFunctions.getAllInvoiceById(req)
         if (!Order) return response.resBadRequest(res, "couldn't find invoice")
         return response.resSuccessData(res, Order);
     } catch (error) {
@@ -306,6 +414,118 @@ const getAllInvoiceById = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+
+// ----------------------------------------------- invoice -----------------------------------------------------//
+
+
+const getAllMyNotifications = async (req, res) => {
+    try {
+        let Notifications = await SellerFunctions.getAllMyNotifications(req)
+        if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
+        return response.resSuccessData(res, Notifications);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const editMyReplys = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.editMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteMyReplys = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.deleteMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Reply")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const replyToReview = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.replyToReview(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSellerReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getSellerReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getOrderReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getOrderReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+
+
+const getAllTimeStats = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getAllTimeStats(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getstatsbyMonth = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getstatsbyMonth(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getStatsByWeek = async (req, res) => {
+    try {
+        let Stats = await SellerFunctions.getStatsByWeek(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
 module.exports = {
     getProfile,
     editProfile,
@@ -326,9 +546,24 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getLatestOrders,
     getorderbyStatus,
     getpastorder,
     getActiveOrder,
+    getMyShopReviews,
+    replyToReview,
+    deleteMyReplys,
+    editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
+    getAllMyNotifications,
+    getSellerReviews,
+    getOrderReviews,
+    updatePassword,
+    openAllShops,
+    openShopByid,
+    uplaodAvatar,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
 }

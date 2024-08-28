@@ -20,9 +20,10 @@ const shopSchema = new Schema({
     shopName: { type: String },
     coverImage: { type: String },
     sliderImage: [{ type: String }],
-    isActive: { type: Boolean },
+    isActive: { type: Boolean, default: true },
     shopDetails: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
+    isOpen: { type: Boolean, default: true },
     timing: {
         monday: {
             open: { type: Boolean },
@@ -61,6 +62,12 @@ const shopSchema = new Schema({
         },
 
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    terminateAt: { type: Date },
     location: {
         type: pointSchema,
         default: {
@@ -70,7 +77,7 @@ const shopSchema = new Schema({
         index: "2dsphere"
     },
     cost: { type: Number }
-})
+}, { timestamps: true })
 shopSchema.index({ location: "2dsphere" });
 
 const shopModel = mongoose.model('shop', shopSchema);

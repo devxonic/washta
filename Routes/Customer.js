@@ -4,8 +4,10 @@ const CustomerControllers = require('../controllers/Customer');
 const middlewares = require('../middlewares');
 
 
+router.post('/uplaodAvatar', middlewares.verifyCustomer , middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
+router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
 router.get('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.getNotificationSetting)
 router.patch('/notificationSetting', middlewares.verifyCustomer, CustomerControllers.updateNotificationSetting)
 router.get('/securitySetting', middlewares.verifyCustomer, CustomerControllers.getSecuritySetting)
@@ -36,13 +38,33 @@ router.get('/booking', middlewares.verifyCustomer, CustomerControllers.getMyBook
 router.get('/serviceFee/:id', middlewares.verifyCustomer, CustomerControllers.getShopsServicefee)
 router.get('/promoCode', middlewares.verifyCustomer, CustomerControllers.getShopsPromoCode)
 router.get('/booking/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
+router.patch('/booking/:id', middlewares.verifyCustomer, CustomerControllers.cancelBooking)
 router.post('/booking', middlewares.verifyCustomer, CustomerControllers.createNewBooking)
 router.get('/bookingbyStatus', middlewares.verifyCustomer, CustomerControllers.getbookingbyStatus)
 
 // ----------------------------------------------- incoive -----------------------------------------------------//
 
 
-router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
-router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
+router.get('/invoice', middlewares.verifyCustomer, CustomerControllers.getAllInvoice)
+router.get('/invoice/:id', middlewares.verifyCustomer, CustomerControllers.getInvoiceById)
+
+// ----------------------------------------------- shop Reviews -----------------------------------------------------//
+
+
+router.post('/shopReview', middlewares.verifyCustomer, CustomerControllers.createShopRating)
+router.patch('/shopReview', middlewares.verifyCustomer, CustomerControllers.updatesShopReview)
+router.get('/myReview', middlewares.verifyCustomer, CustomerControllers.getMyReviews)
+router.get('/shopReview', middlewares.verifyCustomer, CustomerControllers.getShopReviews)
+router.delete('/shopReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
+// ----------------------------------------------- seller Reviews -----------------------------------------------------//
+
+router.post('/sellerReview', middlewares.verifyCustomer, CustomerControllers.createSellerReview)
+router.patch('/sellerReview', middlewares.verifyCustomer, CustomerControllers.updatesSellerReview)
+router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
+router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
+
+
 
 module.exports = router 

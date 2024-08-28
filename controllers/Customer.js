@@ -1,9 +1,14 @@
 
 const CustomerFunctions = require('../functions/Customer');
 const response = require('../helpers/response');
+const authFunctions = require('../functions/auth');
+
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const CustomerModel = require('../models/Customer');
+const { s3UploadObject } = require('../middlewares');
+const sharp = require('sharp');
 require('dotenv').config()
 
 
@@ -29,6 +34,64 @@ const editProfile = async (req, res) => {
 }
 
 
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getCustomer = await CustomerModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getCustomer) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getCustomer.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let Customer = await CustomerModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, Customer);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await CustomerFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 // ----------------------------------------------- Customer settings -----------------------------------------------------//
 
@@ -280,6 +343,18 @@ const getShopsPromoCode = async (req, res) => {
     }
 }
 
+const cancelBooking = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.cancelBooking(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const createNewBooking = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createNewBooking(req)
@@ -298,6 +373,131 @@ const createNewBooking = async (req, res) => {
 const getbookingbyStatus = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getbookingbyStatus(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+// ----------------------------------------------- Ratings -----------------------------------------------------//
+
+const createShopRating = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createShopRating(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getMyReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getMyReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getShopReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getShopReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteShopReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.deleteShopReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updatesShopReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesShopReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const createSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updatesSellerReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesSellerReview(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+// ----------------------------------------------- Booking -----------------------------------------------------//
+
+const getAllInvoice = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getAllInvoice(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getInvoiceById = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getInvoiceById(req)
         if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, Booking);
 
@@ -332,4 +532,17 @@ module.exports = {
     getbookingbyStatus,
     getShopsServicefee,
     getShopsPromoCode,
+    createShopRating,
+    getMyReviews,
+    updatesShopReview,
+    getAllInvoice,
+    getInvoiceById,
+    cancelBooking,
+    getShopReviews,
+    createSellerReview,
+    getSellerReview,
+    updatesSellerReview,
+    deleteShopReviews,
+    updatePassword,
+    uplaodAvatar,
 }

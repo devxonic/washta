@@ -39,7 +39,7 @@ const validateEmailUsernameSignUp = async (req, role) => {
         return false;
     }
     if (role == "seller") {
-        let existing = await CustomerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+        let existing = await SellerModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
         if (existing) return true;
         return false;
     }

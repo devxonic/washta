@@ -4,8 +4,72 @@ const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const AdminModel = require('../models/admin');
+const sharp = require('sharp');
+const { s3UploadObject } = require('../middlewares');
 require('dotenv').config()
 
+
+
+
+
+const updatePassword = async (req, res) => {
+    try {
+        let { newPassword, previousPassword } = req.body
+        let getAdmin = await AdminModel.findOne({ _id: req.user.id }, { password: 1 })
+        if (!getAdmin) return response.resBadRequest(res, "User Not Found")
+        let match = await validationFunctions.verifyPassword(previousPassword, getAdmin.password)
+        console.log("match ----------", match)
+        if (!match) return response.resBadRequest(res, "incorrect Previous Password");
+        let hash = await bcrypt.hash(newPassword, 10);
+        // return response.resSuccess(res, User);
+        let admin = await AdminModel.findOneAndUpdate({ _id: req.user.id }, { $set: { password: hash } }, {
+            new: true, fields: {
+                username: 1,
+                email: 1,
+                phone: 1
+            }
+        })
+
+        return response.resSuccessData(res, admin);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const uplaodAvatar = async (req, res) => {
+    try {
+
+        console.log('testing req file', req.file)
+        // console.log('testing req file', req.file)
+        if (!req.file) {
+            console.log(req.files)
+            console.log("No file received");
+            return res.sendStatus(204);
+
+        } else {
+            console.log("file Size", req.file.size)
+            const resizedImageBuffer = await sharp(req.file.buffer)
+                .resize(200, 200) // Example dimensions
+                .jpeg({ quality: 80 })
+                .toBuffer()
+
+            console.log("Buffer resized", resizedImageBuffer)
+            console.log("file Size", resizedImageBuffer)
+            let originalImage = await s3UploadObject(req.file.buffer, req.file.originalname, req.file.mimetype)
+            let resizedImage = await s3UploadObject(resizedImageBuffer, req.file.originalname, req.file.mimetype)
+            let updateImage = await AdminFunctions.updateImage(req, resizedImage, originalImage);
+            console.log('file received', updateImage);
+            return response.resSuccessData(res, updateImage);
+        }
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 const getBusinessbyStatus = async (req, res) => {
     try {
@@ -136,6 +200,18 @@ const getTopCompanies = async (req, res) => {
     }
 }
 
+const getTopSellers = async (req, res) => {
+    try {
+        let business = await AdminFunctions.getTopSellers(req)
+        if (!business) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, business);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 // ----------------------------------------------- shop -----------------------------------------------------//
 
@@ -189,6 +265,19 @@ const updateShopTiming = async (req, res) => {
 }
 
 
+const terminateShop = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateShop(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 
 // ----------------------------------------------- customer -----------------------------------------------------//
 
@@ -228,6 +317,30 @@ const updateCustomer = async (req, res) => {
         return response.resInternalError(res, error)
     }
 }
+
+const terminateCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.terminateCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteOrderByCustomerId = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteOrderByCustomerId(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 const getVehicles = async (req, res) => {
     try {
         let shop = await AdminFunctions.getVehicles(req)
@@ -242,6 +355,17 @@ const getVehicles = async (req, res) => {
 const getvehiclesById = async (req, res) => {
     try {
         let shop = await AdminFunctions.getvehiclesById(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+const getVehiclesByCustomerId = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getVehiclesByCustomerId(req)
         if (!shop) return response.resBadRequest(res, "couldn't find Shop")
         return response.resSuccessData(res, shop);
 
@@ -366,7 +490,166 @@ const updatePromoCode = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Review -----------------------------------------------------//
 
+const getShopReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSellerReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getOrderReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getShopReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getCustomerReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getCustomerReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const replyToReview = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.replyToReview(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const editMyReplys = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.editMyReplys(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteMyReplys = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteMyReplys(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteReviews = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deleteReviews(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Reviews")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+
+const getAllTimeStats = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getAllTimeStats(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getstatsbyMonth = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getstatsbyMonth(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const getStatsByWeek = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getStatsByWeek(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- sales -----------------------------------------------------//
+
+const getShopForSales = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getShopForSales(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSalesSingleShop = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getSalesSingleShop(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 
 module.exports = {
@@ -376,6 +659,7 @@ module.exports = {
     JobHistory,
     getTopCustomer,
     getTopCompanies,
+    getTopSellers,
     getShopbyid,
     getShop,
     UpdateShopbyAmdin,
@@ -397,5 +681,24 @@ module.exports = {
     getAllBusniess,
     getBusinessById,
     businessReject,
-    getBusinessbyStatus
+    getBusinessbyStatus,
+    getShopReviews,
+    replyToReview,
+    editMyReplys,
+    deleteMyReplys,
+    deleteReviews,
+    getSellerReviews,
+    getOrderReviews,
+    getCustomerReviews,
+    getVehiclesByCustomerId,
+    terminateCustomer,
+    terminateShop,
+    deleteOrderByCustomerId,
+    updatePassword,
+    uplaodAvatar,
+    getAllTimeStats,
+    getstatsbyMonth,
+    getStatsByWeek,
+    getSalesSingleShop,
+    getShopForSales,
 }

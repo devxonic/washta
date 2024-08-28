@@ -3,14 +3,27 @@ const Schema = mongoose.Schema;
 
 
 const SellerSchema = new Schema({
-    username: { type: String, unique: true },
+    username: { type: String, },
     fullName: { type: String },
     password: {
         type: String,
         required: true,
     },
-    email: { type: String },
+    email: { type: String, unique: true },
     phone: { type: String },
+    avatar: {
+        type: String
+    },
+    resizedAvatar: {
+        type: String
+    },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    isActive: { type: Boolean, default: true },
+    terminateAt: { type: Date },
     business: {
         uploadDocument: { type: String },
         companyName: { type: String },
@@ -22,6 +35,11 @@ const SellerSchema = new Schema({
         status: { type: String, enum: ["approved", "pending", "rejected", "terminate"], default: "pending" },
         isApproved: { type: Boolean, default: false },
         isTerminated: { type: Boolean, default: false },
+        isRejected: { type: Boolean, default: false },
+        approvedAt: { type: Date },
+        terminatedAt: { type: Date },
+        cratedAt: { type: Date },
+        rejectedAt: { type: Date },
     },
     shops: [{ type: mongoose.Types.ObjectId, ref: 'shop' }],
     isVerifed: { type: Boolean, default: false },

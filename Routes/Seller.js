@@ -7,6 +7,8 @@ const middlewares = require('../middlewares');
 
 router.get('/Profile', middlewares.verifySeller, SellerControllers.getProfile)
 router.patch('/Profile', middlewares.verifySeller, SellerControllers.editProfile)
+router.post('/uplaodAvatar', middlewares.verifySeller, middlewares.uploadbuffer.single('Avatar'), SellerControllers.uplaodAvatar)
+router.patch('/updatePassword', middlewares.verifySeller, SellerControllers.updatePassword)
 
 // ----------------------------------------------- Settings -----------------------------------------------------//
 
@@ -27,6 +29,8 @@ router.patch('/Business', middlewares.verifySeller, SellerControllers.updateBusi
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
 router.get('/shop', middlewares.verifySeller, SellerControllers.getAllShop)
+router.patch('/openShop', middlewares.verifySeller, SellerControllers.openAllShops)
+router.patch('/openShop/:id', middlewares.verifySeller, SellerControllers.openShopByid)
 router.get('/shop/:id', middlewares.verifySeller, SellerControllers.getShopById)
 router.post('/shop', middlewares.verifySeller, SellerControllers.addShop)
 router.patch('/shop/:id', middlewares.verifySeller, SellerControllers.updateShop)
@@ -40,16 +44,32 @@ router.get('/orderbyStatus', middlewares.verifySeller, SellerControllers.getorde
 router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.orderStatus)
 router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
 router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
+router.get('/latestOrders', middlewares.verifySeller, SellerControllers.getLatestOrders)
+
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
+router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
+router.get('/OrderReview', middlewares.verifySeller, SellerControllers.getOrderReviews)
+router.post('/replyReview', middlewares.verifySeller, SellerControllers.replyToReview) // ...
+router.delete('/deleteReply', middlewares.verifySeller, SellerControllers.deleteMyReplys) // ...
+router.patch('/editReply', middlewares.verifySeller, SellerControllers.editMyReplys) // ...
+
+
 
 // ----------------------------------------------- invoice -----------------------------------------------------//
 
 router.get('/invoice', middlewares.verifySeller, SellerControllers.getAllInvoice)
 router.get('/invoice/:id', middlewares.verifySeller, SellerControllers.getAllInvoiceById)
-// router.get('/order/:id', middlewares.verifySeller, SellerControllers.getOrderById)
-// router.get('/orderbyStatus', middlewares.verifySeller, SellerControllers.getorderbyStatus)
-// router.patch('/orderStatus/:id', middlewares.verifySeller, SellerControllers.orderStatus)
-// router.get('/pastorder', middlewares.verifySeller, SellerControllers.getpastorder)
-// router.get('/ActiveOrder', middlewares.verifySeller, SellerControllers.getActiveOrder)
 
+// ----------------------------------------------- Notiification -----------------------------------------------------//
+
+router.get('/Notifications', middlewares.verifySeller, SellerControllers.getAllMyNotifications)
+
+// ----------------------------------------------- stats -----------------------------------------------------//
+
+router.get('/stats', middlewares.verifySeller, SellerControllers.getAllTimeStats)
+router.get('/monthStats', middlewares.verifySeller, SellerControllers.getstatsbyMonth)
+router.get('/weekStats', middlewares.verifySeller, SellerControllers.getStatsByWeek)
 
 module.exports = router 
