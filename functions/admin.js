@@ -246,8 +246,8 @@ const updateVehicles = async (req) => {
 // ----------------------------------------------- Service fee -----------------------------------------------------//
 
 const createServiceFee = async (req) => {
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
         let shops = await shopModel.find({}, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
@@ -284,11 +284,11 @@ const updateServiceFee = async (req) => {
 // ----------------------------------------------- Promo Code -----------------------------------------------------//
 
 const createPromoCode = async (req) => {
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }
     if (giveToAll) {
         let Customer = await CustomerModel.find({}, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
     console.log(giveTo)
@@ -340,7 +340,6 @@ module.exports = {
     createServiceFee,
     getserviceFeeById,
     updateServiceFee,
-    createServiceFee,
     getserviceFee,
     getserviceFeeById,
     updateServiceFee,

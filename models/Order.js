@@ -23,7 +23,19 @@ const OrderSchema = new mongoose.Schema({
     billingStatus: { type: String, enum: ["non-paid", "paid"], default: "non-paid" },
     date: { type: Date, default: Date.now },
     cost: { type: String },
-    discount: { price: { type: Number, default: 0 }, percent: { type: String, default: "0%" } },
+    // discount: { price: { type: Number, default: 0 }, percent: { type: String, default: "0%" }, ref: { type: mongoose.Types.ObjectId } },
+    serviceFee: [
+        {
+            id: { type: mongoose.Types.ObjectId },
+            feeType: { type: String, enum: ["fixed", "percentage"] },
+            WashtaFees: { type: String },
+        }
+    ],
+    promoCode: {
+        id: { type: mongoose.Types.ObjectId },
+        Discounttype: { type: String, enum: ["fixed", "percentage"] },
+        discount: { type: String },
+    },
     // costSummary: { type: String }, // pending
     paymentId: { type: String },
     location: {

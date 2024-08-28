@@ -4,6 +4,8 @@ const VehiclesModel = require('../models/Vehicles');
 const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const OrderModel = require('../models/Order');
+const serviceModel = require('../models/servicefee');
+const PromoCodeModel = require('../models/PromoCode');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -228,6 +230,35 @@ const getMyBookings = async (req) => {
     return Bookings
 }
 
+const getShopsServicefee = async (req) => {
+    let id = req.params.id
+    let ServiceFee = await serviceModel.find({ applyAt: id, ApplicableStatus: { $ne: false } })
+    return ServiceFee
+}
+
+const getShopsPromoCode = async (req) => {
+    let id = req.user.id
+    let { promoCode } = req.query
+    let currentTime = new Date();
+
+    if (promoCode) {
+        console.log(currentTime)
+        let res = await PromoCodeModel.findOne({
+            isActive: { $ne: false },
+            promoCode, 'giveTo.customerId': id,
+            'duration.startTime': { $lte: currentTime },
+            'duration.endTime': { $gte: currentTime }
+        })
+        return res
+    }
+    let res = await PromoCodeModel.find({
+        'giveTo.customerId': id, isActive: { $ne: false },
+        'duration.startTime': { $lte: currentTime },
+        'duration.endTime': { $gte: currentTime }
+    })
+    return res
+}
+
 const getMyBookingById = async (req) => {
     let Bookings = await OrderModel.findById(req.params.id)
     return Bookings
@@ -240,6 +271,7 @@ const createNewBooking = async (req) => {
         coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
     };
     let Bookings = await OrderModel({ ...req.body }).save();
+    if (req.body?.promoCode) await PromoCodeModel.findOneAndUpdate({ _id: req.body?.promoCode?.id, 'giveTo.customerId': req?.user?.id }, { $set: { 'giveTo.$.isUsed': true } })
     return Bookings
 }
 
@@ -275,4 +307,6 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
+    getShopsServicefee,
+    getShopsPromoCode,
 }
