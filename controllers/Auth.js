@@ -372,6 +372,7 @@ const AgentlogIn = async (req, res) => {
         }, process.env.agentToken, { expiresIn: '30 days' })
 
         await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+        await SignupFunctions.setDeviceId(req, role)
 
         let token = jwt.sign({
             id: agent.id,
