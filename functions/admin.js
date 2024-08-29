@@ -1138,6 +1138,20 @@ const deleteAgents = async (req) => {
     return agent
 };
 
+const updateAgents = async (req) => {
+    let { id } = req.params
+    let { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } = req.body
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } }, { new: true, fields })
+    return agent
+};
+
 
 module.exports = {
     getBusinessbyStatus,
@@ -1192,4 +1206,5 @@ module.exports = {
     getOrdersByUserId,
     getAllAgents,
     deleteAgents,
+    updateAgents,
 }

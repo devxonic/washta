@@ -704,6 +704,17 @@ const deleteAgents = async (req, res) => {
     }
 }
 
+const updateAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.updateAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 module.exports = {
     updateStatus,
@@ -758,4 +769,5 @@ module.exports = {
     getOrdersByUserId,
     getAllAgents,
     deleteAgents,
+    updateAgents,
 }

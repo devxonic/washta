@@ -105,10 +105,11 @@ router.get('/orders', middlewares.verifyAdmin, AdminController.getOrdersByUserId
 
 // ----------------------------------------------- agent  -----------------------------------------------------//
 
-router.get('/agent/Signup', middlewares.verifyAdmin, AuthController.AgentSignUp)
+router.post('/agent/Signup', middlewares.verifyAdmin, AuthController.AgentSignUp)
 router.get('/agent', middlewares.verifyAdmin, AdminController.getAllAgents)
 router.get('/agent/:id', middlewares.verifyAdmin, AdminController.getAllAgents)
 router.delete('/agent/:id', middlewares.verifyAdmin, AdminController.deleteAgents)
+router.patch('/agent/:id', middlewares.verifyAdmin, AdminController.updateAgents)
 
 
 module.exports = router 
