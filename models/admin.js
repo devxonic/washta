@@ -18,6 +18,14 @@ const AdminSchema = new Schema({
     resizedAvatar: {
         type: String
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    deviceId: { type: String },
+    isActive: { type: Boolean, default: true },
+    terminateAt: { type: Date },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String

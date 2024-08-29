@@ -24,6 +24,25 @@ const updateRefreshToken = async (req, token, role) => {
     }
 }
 
+const setDeviceId = async (req, role) => {
+    if (role == "customer") {
+        let Customer = await CustomerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        return Customer
+    }
+    if (role == "seller") {
+        let seller = await SellerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        return seller
+    }
+    if (role == "admin") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
+        return admin
+    }
+    if (role == "agent") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
+        return admin
+    }
+}
+
 const getUser = async (req, role) => {
 
     if (role == "customer") {
@@ -112,5 +131,6 @@ module.exports = {
     resetPassword,
     isOTPAlreadySended,
     getAdminByEmail,
-    getAdmin
+    getAdmin,
+    setDeviceId,
 }

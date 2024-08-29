@@ -46,7 +46,7 @@ router.get('/customer', middlewares.verifyAdmin, AdminController.getCustomer)
 router.get('/customer/:id', middlewares.verifyAdmin, AdminController.getCustomerByid)
 router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCustomer)
 router.delete('/customer/:id', middlewares.verifyAdmin, AdminController.terminateCustomer)
-router.delete('/bookings', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
+router.delete('/bookings/:id', middlewares.verifyAdmin, AdminController.deleteOrderByCustomerId)
 
 // ----------------------------------------------- vehicles  -----------------------------------------------------//
 
@@ -93,6 +93,15 @@ router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek
 
 router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSales)
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
+
+// ----------------------------------------------- Notification -----------------------------------------------------//
+
+router.post('/sendNotification', middlewares.verifyAdmin, AdminController.sendNotificationToAllUsers)
+router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
+
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+router.get('/orders', middlewares.verifyAdmin, AdminController.getOrdersByUserId)
 
 
 

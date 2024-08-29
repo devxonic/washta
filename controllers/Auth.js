@@ -118,6 +118,7 @@ const logIn = async (req, res) => {
 
         let User = await SignupFunctions.getUser(req, role);
         if (!User) return response.resBadRequest(res, "couldn't find user");
+        if (User && User?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated")
         if (!await validationFunctions.verifyPassword(password, User.password)) return response.resAuthenticate(res, "one or more details are incorrect");
         if (!User?._doc.isVerifed) {
             const transporter = nodemailer.createTransport({
@@ -156,6 +157,7 @@ const logIn = async (req, res) => {
             data: { _id: User?._doc?._id },
         })
 
+        await SignupFunctions.setDeviceId(req, role)
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
 
@@ -265,6 +267,7 @@ const AdminlogIn = async (req, res) => {
 
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
+        if (admin && admin?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated");
         const transporter = nodemailer.createTransport({
             host: process.env.mailerHost,
             port: process.env.mailerPort,

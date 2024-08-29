@@ -11,9 +11,15 @@ const vehiclesSchema = new Schema({
     vehicleType: { type: String },
     vehicleModel: { type: String },
     isSelected: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
+    deleteBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['customer', 'admin'] }
+    },
+    isDeleted: { type: Boolean }
 
 
-})
+}, { timestamps: true })
 
 
 const VehiclesModel = mongoose.model('vehicle', vehiclesSchema);
