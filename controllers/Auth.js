@@ -157,6 +157,7 @@ const logIn = async (req, res) => {
             data: { _id: User?._doc?._id },
         })
 
+        await SignupFunctions.setDeviceId(req, role)
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
 

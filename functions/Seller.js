@@ -597,49 +597,7 @@ const getAllInvoiceById = async (req) => {
 // ----------------------------------------------- Notification -----------------------------------------------------//
 
 
-const getAllMyNotifications = async (req) => {
-    let { id } = req.params
-    let body = {}
-    let Notifications = await notificationModel.find({ 'receiver.id': req.user.id })
-    let UpdatedNotification = []
-    for (let i = 0; i < Notifications.length; i++) {
-        UpdatedNotification[i] = Notifications[i]
-        if (Notifications[i].sender.role == "customer") {
-            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: customer?.profile ?? null,
-                username: customer?.username ?? null
-            }
-        }
-        if (Notifications[i].sender.role == "seller") {
-            let seller = await SellerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: seller?.profile,
-                username: seller?.username
-            }
-        }
-        if (Notifications[i].sender.role == "admin") {
-            let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: seller?.profile,
-                username: seller?.username
-            }
-        }
-        // if (Notifications[i].sender.role == "agent") {
-        //     let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-        //     UpdatedNotification[i].sender = {
-        //         ...Notifications[i].sender,
-        //         profile: seller?.profile,
-        //         username: seller?.username
-        //     }
-        // }
 
-    }
-    return UpdatedNotification;
-};
 
 
 // ----------------------------------------------- stats -----------------------------------------------------//
@@ -967,7 +925,6 @@ module.exports = {
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
-    getAllMyNotifications,
     getSellerReviews,
     getOrderReviews,
     openAllShops,

@@ -1,6 +1,7 @@
 
 const AdminFunctions = require('../functions/admin');
 const response = require('../helpers/response');
+const notification = require('../helpers/notification');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -651,6 +652,19 @@ const getSalesSingleShop = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Notification  -----------------------------------------------------//
+
+const sendNotificationToAllUsers = async (req, res) => {
+    try {
+        let Stats = await notification.sendNotificationToAllUsers(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 // ----------------------------------------------- orders -----------------------------------------------------//
 
@@ -715,5 +729,6 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    sendNotificationToAllUsers,
     getOrdersByUserId,
 }

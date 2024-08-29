@@ -94,6 +94,10 @@ router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek
 router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSales)
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
+// ----------------------------------------------- Notification -----------------------------------------------------//
+
+router.post('/sendNotification', middlewares.verifyAdmin, AdminController.sendNotificationToAllUsers)
+router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
 // ----------------------------------------------- orders -----------------------------------------------------//
 

@@ -1030,8 +1030,21 @@ const getStatsByWeek = async (req) => {
 // ----------------------------------------------- sales -----------------------------------------------------//
 
 const getShopForSales = async (req) => {
-    let Shops = await shopModel.find({ isTerminated: { $ne: true } }).sort({ createdAt: 1, updatedAt: 1 })
-    return Shops
+    let { limit } = req.query
+
+    let order = await OrderModel.find({}, { _id: 0 }).limit(limit ?? null).sort({ createdAt: -1 }).populate({
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            sliderImage: 1,
+            isOpen: 1,
+            location: 1,
+            cost: 1
+        }
+    })
+    let Order = order.map(e => e.shopId ?? null)
+    return Order
 };
 
 const getSalesSingleShop = async (req) => {
@@ -1054,6 +1067,14 @@ const getSalesSingleShop = async (req) => {
     }
     return response
 };
+
+
+// ----------------------------------------------- Notification  -----------------------------------------------------//
+
+
+
+
+
 
 
 const getOrdersByUserId = async (req) => {
