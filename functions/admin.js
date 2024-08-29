@@ -330,10 +330,22 @@ const UpdateShopbyAmdin = async (req) => {
 }
 
 const updateShopTiming = async (req) => {
-    let { shopId, timing } = req.body
-    let Shop = await shopModel.updateMany({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing })
+    let { shopId, timing, toAll, isTimingLocked } = req.body
+
+    let copy = JSON.stringify(timing)
+    let filter = toAll ? {} : { _id: { $in: shopId } }
+    let body = {
+        isTimingLocked,
+        timing: JSON.parse(copy),
+        lockUpdateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+    }
+
+    let Shop = await shopModel.updateMany(filter, { $set: body })
     if (Shop.modifiedCount > 0) {
-        const updatedShop = await shopModel.find({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing: 1 });
+        const updatedShop = await shopModel.find(filter, { timing: 1 });
         return updatedShop
     }
     return Shop
@@ -560,6 +572,7 @@ const getShopReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -598,6 +611,7 @@ const getSellerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -635,6 +649,7 @@ const getOrderReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -672,6 +687,7 @@ const getCustomerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -1060,6 +1076,35 @@ const getSalesSingleShop = async (req) => {
 
 
 
+
+const getOrdersByUserId = async (req) => {
+    let { limit, customerId, shopId } = req.query
+
+    let populate = [{
+        path: "customerId", select: {
+            username: 1, avatar: 1,
+            resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+        }
+    },
+    {
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            isActive: 1,
+            service: 1,
+            shopDetails: 1,
+            estimatedServiceTime: 1,
+            cost: 1,
+        }
+    },]
+
+    let filter = customerId ? { customerId } : shopId ? { shopId } : {}
+    let order = await OrderModel.find(filter).limit(limit ?? null).sort({ createdAt: -1 }).populate(populate)
+    return order
+};
+
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -1110,4 +1155,5 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    getOrdersByUserId,
 }

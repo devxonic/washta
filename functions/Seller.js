@@ -293,13 +293,14 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 const getLatestOrders = async (req) => {
+    let { limit } = req.query
     let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
     let Order = await OrderModel.find({
         shopId: { $in: Shops },
         status: { $in: ["ongoing", "inprocess", "completed"] },
-    }).sort({ createdAt: -1, date: -1 })
+    }).limit(limit ?? null).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 
@@ -316,6 +317,7 @@ const getMyShopReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -356,6 +358,7 @@ const getSellerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -394,6 +397,7 @@ const getOrderReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,

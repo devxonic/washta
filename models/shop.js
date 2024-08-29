@@ -22,6 +22,7 @@ const shopSchema = new Schema({
     sliderImage: [{ type: String }],
     isActive: { type: Boolean, default: true },
     shopDetails: { type: String }, //services
+    service: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
     isOpen: { type: Boolean, default: true },
     timing: {
@@ -62,10 +63,15 @@ const shopSchema = new Schema({
         },
 
     },
+    isTimingLocked: { type: Boolean, default: true },
+    lockUpdateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'], default: "admin" }
+    },
     isTerminated: { type: Boolean },
     terminateBy: {
         id: { type: mongoose.Types.ObjectId },
-        role: { type: String, enum: ['admin'] }
+        role: { type: String, enum: ['admin'], default: "admin" }
     },
     terminateAt: { type: Date },
     location: {

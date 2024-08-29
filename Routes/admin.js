@@ -99,5 +99,10 @@ router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingl
 router.post('/sendNotification', middlewares.verifyAdmin, AdminController.sendNotificationToAllUsers)
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+router.get('/orders', middlewares.verifyAdmin, AdminController.getOrdersByUserId)
+
+
 
 module.exports = router 

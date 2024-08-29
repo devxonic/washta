@@ -666,6 +666,20 @@ const sendNotificationToAllUsers = async (req, res) => {
 }
 
 
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+const getOrdersByUserId = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getOrdersByUserId(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 module.exports = {
     updateStatus,
     businessApprove,
@@ -716,4 +730,5 @@ module.exports = {
     getSalesSingleShop,
     getShopForSales,
     sendNotificationToAllUsers,
+    getOrdersByUserId,
 }
