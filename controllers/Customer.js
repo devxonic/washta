@@ -1,5 +1,6 @@
 
 const CustomerFunctions = require('../functions/Customer');
+const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const authFunctions = require('../functions/auth');
 
@@ -507,6 +508,18 @@ const getInvoiceById = async (req, res) => {
     }
 }
 
+const getAllMyNotifications = async (req, res) => {
+    try {
+        let Booking = await notification.getAllMyNotifications(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 module.exports = {
     getProfile,
@@ -545,4 +558,5 @@ module.exports = {
     deleteShopReviews,
     updatePassword,
     uplaodAvatar,
+    getAllMyNotifications,
 }
