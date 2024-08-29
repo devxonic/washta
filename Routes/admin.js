@@ -95,5 +95,10 @@ router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSale
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
 
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+router.get('/orders', middlewares.verifyAdmin, AdminController.getOrdersByUserId)
+
+
 
 module.exports = router 

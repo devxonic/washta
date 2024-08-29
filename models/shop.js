@@ -22,6 +22,7 @@ const shopSchema = new Schema({
     sliderImage: [{ type: String }],
     isActive: { type: Boolean, default: true },
     shopDetails: { type: String }, //services
+    service: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
     isOpen: { type: Boolean, default: true },
     timing: {

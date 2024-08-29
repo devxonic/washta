@@ -560,6 +560,7 @@ const getShopReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -598,6 +599,7 @@ const getSellerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -635,6 +637,7 @@ const getOrderReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -672,6 +675,7 @@ const getCustomerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -1039,6 +1043,35 @@ const getSalesSingleShop = async (req) => {
     return response
 };
 
+
+const getOrdersByUserId = async (req) => {
+    let { limit, customerId, shopId } = req.query
+
+    let populate = [{
+        path: "customerId", select: {
+            username: 1, avatar: 1,
+            resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+        }
+    },
+    {
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            isActive: 1,
+            service: 1,
+            shopDetails: 1,
+            estimatedServiceTime: 1,
+            cost: 1,
+        }
+    },]
+
+    let filter = customerId ? { customerId } : shopId ? { shopId } : {}
+    let order = await OrderModel.find(filter).limit(limit ?? null).sort({ createdAt: -1 }).populate(populate)
+    return order
+};
+
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -1089,4 +1122,5 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    getOrdersByUserId,
 }
