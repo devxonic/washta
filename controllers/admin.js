@@ -680,6 +680,31 @@ const getOrdersByUserId = async (req, res) => {
 }
 
 
+// ----------------------------------------------- agent -----------------------------------------------------//
+
+const getAllAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getAllAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getAllAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 module.exports = {
     updateStatus,
     businessApprove,
@@ -731,4 +756,6 @@ module.exports = {
     getShopForSales,
     sendNotificationToAllUsers,
     getOrdersByUserId,
+    getAllAgents,
+    deleteAgents,
 }

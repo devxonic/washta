@@ -1104,6 +1104,40 @@ const getOrdersByUserId = async (req) => {
     return order
 };
 
+// ----------------------------------------------- Agent  -----------------------------------------------------//
+
+
+const getAllAgents = async (req) => {
+    let { id } = req.params
+
+    let filter = id ? { _id: id, role: "agent" } : { role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    if (id) {
+        let agent = await AdminModel.findOne(filter, fields)
+        return agent
+    }
+    let agent = await AdminModel.find(filter, fields)
+    return agent
+};
+
+const deleteAgents = async (req) => {
+    let { id } = req.params
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    let agent = await AdminModel.findOneAndDelete(filter, fields)
+    return agent
+};
+
 
 module.exports = {
     getBusinessbyStatus,
@@ -1156,4 +1190,6 @@ module.exports = {
     getSalesSingleShop,
     getShopForSales,
     getOrdersByUserId,
+    getAllAgents,
+    deleteAgents,
 }
