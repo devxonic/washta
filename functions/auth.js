@@ -113,13 +113,13 @@ const isOTPAlreadySended = async (req) => {
 
 const getAdminByEmail = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username, role: req.body.role }, { email: req.body.email }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username, role: req.body.role }, { email: req.body.email, role: req.body.role }] });
     return admin;
 }
 
 const getAdmin = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] });
     return admin;
 }
 
