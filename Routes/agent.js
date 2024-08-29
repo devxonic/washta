@@ -6,7 +6,7 @@ const middlewares = require('../middlewares');
 
 // ----------------------------------------------- Auth -----------------------------------------------------//
 
-router.post('/Signup', AuthController.AgentSignUp)
+router.post('/Signup', middlewares.verifyAdmin ,  AuthController.AgentSignUp)
 router.post('/login', AuthController.AgentlogIn)
 
 

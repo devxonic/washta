@@ -337,7 +337,7 @@ const AgentSignUp = async (req, res) => {
         let AgnetExists = await SignupFunctions.getAdminByEmail(req)
         if (AgnetExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
-        let AgentBody = { username, fullName, password: hash, role }
+        let AgentBody = { username, fullName, password: hash, role, isVerifed: true }
         let savedAgent = await new AdminModel(AgentBody).save();
         if (!savedAgent) return response.resBadRequest(res, "There is some error on save Agent");
 
@@ -372,6 +372,7 @@ const AgentlogIn = async (req, res) => {
         }, process.env.agentToken, { expiresIn: '30 days' })
 
         await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+        await SignupFunctions.setDeviceId(req, role)
 
         let token = jwt.sign({
             id: agent.id,
