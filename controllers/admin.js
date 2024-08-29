@@ -695,7 +695,7 @@ const getAllAgents = async (req, res) => {
 
 const deleteAgents = async (req, res) => {
     try {
-        let Stats = await AdminFunctions.getAllAgents(req)
+        let Stats = await AdminFunctions.deleteAgents(req)
         if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
         return response.resSuccessData(res, Stats);
     } catch (error) {
