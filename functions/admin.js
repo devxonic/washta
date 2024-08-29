@@ -330,10 +330,22 @@ const UpdateShopbyAmdin = async (req) => {
 }
 
 const updateShopTiming = async (req) => {
-    let { shopId, timing } = req.body
-    let Shop = await shopModel.updateMany({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing })
+    let { shopId, timing, toAll, isTimingLocked } = req.body
+
+    let copy = JSON.stringify(timing)
+    let filter = toAll ? {} : { _id: { $in: shopId } }
+    let body = {
+        isTimingLocked,
+        timing: JSON.parse(copy),
+        lockUpdateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+    }
+
+    let Shop = await shopModel.updateMany(filter, { $set: body })
     if (Shop.modifiedCount > 0) {
-        const updatedShop = await shopModel.find({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing: 1 });
+        const updatedShop = await shopModel.find(filter, { timing: 1 });
         return updatedShop
     }
     return Shop
