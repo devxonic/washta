@@ -25,8 +25,6 @@ const getBusinessbyStatus = async (req) => {
             security: 0,
             password: 0,
             shops: 0,
-            createdAt: 0,
-            updatedAt: 0,
             __v: 0,
         })
         return Business
@@ -344,7 +342,7 @@ const updateShopTiming = async (req) => {
 
 const getCustomer = async (req) => {
     let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
+        privacy: 0, password: 0, sessionKey: 0, notification: 0, security: 0
     }).populate([{
         path: "selectedVehicle",
     }])
@@ -354,7 +352,7 @@ const getCustomer = async (req) => {
 const getCustomerByid = async (req) => {
     let id = req.params.id
     let Customer = await CustomerModel.findOne({ _id: id, isTerminated: { $ne: true } }, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
+        privacy: 0, password: 0, sessionKey: 0, notification: 0, security: 0
     }).populate({
         path: "selectedVehicle",
     })

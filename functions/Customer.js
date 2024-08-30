@@ -75,8 +75,6 @@ const getProfile = async (req) => {
         password: 0, __v: 0, notification: 0,
         privacy: 0,
         security: 0,
-        createdAt: 0,
-        updatedAt: 0,
     });
     let car = await VehiclesModel.findOne({ $and: [{ Owner: Customer._id }, { isSelected: true }] }, { __v: 0 });
     return { Customer, car };
