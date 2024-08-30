@@ -94,6 +94,22 @@ router.get('/weekStats', middlewares.verifyAdmin, AdminController.getStatsByWeek
 router.get('/SalesShop', middlewares.verifyAdmin, AdminController.getShopForSales)
 router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
 
+// ----------------------------------------------- Notification -----------------------------------------------------//
+
+router.post('/sendNotification', middlewares.verifyAdmin, AdminController.sendNotificationToAllUsers)
+router.get('/SalesStats', middlewares.verifyAdmin, AdminController.getSalesSingleShop)
+
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+router.get('/orders', middlewares.verifyAdmin, AdminController.getOrdersByUserId)
+
+// ----------------------------------------------- agent  -----------------------------------------------------//
+
+router.post('/agent/Signup', middlewares.verifyAdmin, AuthController.AgentSignUp)
+router.get('/agent', middlewares.verifyAdmin, AdminController.getAllAgents)
+router.get('/agent/:id', middlewares.verifyAdmin, AdminController.getAllAgents)
+router.delete('/agent/:id', middlewares.verifyAdmin, AdminController.deleteAgents)
+router.patch('/agent/:id', middlewares.verifyAdmin, AdminController.updateAgents)
 
 
 module.exports = router 

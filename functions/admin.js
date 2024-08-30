@@ -328,10 +328,22 @@ const UpdateShopbyAmdin = async (req) => {
 }
 
 const updateShopTiming = async (req) => {
-    let { shopId, timing } = req.body
-    let Shop = await shopModel.updateMany({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing })
+    let { shopId, timing, toAll, isTimingLocked } = req.body
+
+    let copy = JSON.stringify(timing)
+    let filter = toAll ? {} : { _id: { $in: shopId } }
+    let body = {
+        isTimingLocked,
+        timing: JSON.parse(copy),
+        lockUpdateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+    }
+
+    let Shop = await shopModel.updateMany(filter, { $set: body })
     if (Shop.modifiedCount > 0) {
-        const updatedShop = await shopModel.find({ _id: { $in: shopId }, isTerminated: { $ne: true } }, { timing: 1 });
+        const updatedShop = await shopModel.find(filter, { timing: 1 });
         return updatedShop
     }
     return Shop
@@ -558,6 +570,7 @@ const getShopReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -596,6 +609,7 @@ const getSellerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -633,6 +647,7 @@ const getOrderReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -670,6 +685,7 @@ const getCustomerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -1050,6 +1066,91 @@ const getSalesSingleShop = async (req) => {
     return response
 };
 
+
+// ----------------------------------------------- Notification  -----------------------------------------------------//
+
+
+
+
+
+
+
+const getOrdersByUserId = async (req) => {
+    let { limit, customerId, shopId } = req.query
+
+    let populate = [{
+        path: "customerId", select: {
+            username: 1, avatar: 1,
+            resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+        }
+    },
+    {
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            isActive: 1,
+            service: 1,
+            shopDetails: 1,
+            estimatedServiceTime: 1,
+            cost: 1,
+        }
+    },]
+
+    let filter = customerId ? { customerId } : shopId ? { shopId } : {}
+    let order = await OrderModel.find(filter).limit(limit ?? null).sort({ createdAt: -1 }).populate(populate)
+    return order
+};
+
+// ----------------------------------------------- Agent  -----------------------------------------------------//
+
+
+const getAllAgents = async (req) => {
+    let { id } = req.params
+
+    let filter = id ? { _id: id, role: "agent" } : { role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    if (id) {
+        let agent = await AdminModel.findOne(filter, fields)
+        return agent
+    }
+    let agent = await AdminModel.find(filter, fields)
+    return agent
+};
+
+const deleteAgents = async (req) => {
+    let { id } = req.params
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    let agent = await AdminModel.findOneAndDelete(filter, fields)
+    return agent
+};
+
+const updateAgents = async (req) => {
+    let { id } = req.params
+    let { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } = req.body
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1
+    }
+    let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } }, { new: true, fields })
+    return agent
+};
+
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -1100,4 +1201,8 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    getOrdersByUserId,
+    getAllAgents,
+    deleteAgents,
+    updateAgents,
 }

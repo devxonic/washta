@@ -157,6 +157,7 @@ const logIn = async (req, res) => {
             data: { _id: User?._doc?._id },
         })
 
+        await SignupFunctions.setDeviceId(req, role)
         let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
 
@@ -324,11 +325,86 @@ const AdminlogIn = async (req, res) => {
     }
 }
 
+
+
+
+const AgentSignUp = async (req, res) => {
+    try {
+        let { username, fullName, password, role } = req.body
+        role = 'agent'
+        req.body.role = 'agent'
+        let resObj = {};
+        let AgnetExists = await SignupFunctions.getAdminByEmail(req)
+        if (AgnetExists) return response.resBadRequest(res, "username or email already exists");
+        let hash = await bcrypt.hash(password, 10);
+        let AgentBody = { username, fullName, password: hash, role, isVerifed: true }
+        let savedAgent = await new AdminModel(AgentBody).save();
+        if (!savedAgent) return response.resBadRequest(res, "There is some error on save Agent");
+
+        return response.resSuccessData(res, {
+            id: savedAgent._id,
+            username: savedAgent.username,
+        });
+
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const AgentlogIn = async (req, res) => {
+    try {
+        let { password } = req.body
+        req.body.role = 'agent'
+        let role = 'agent'
+        console.log(req.body)
+        let agent = await SignupFunctions.getAdmin(req);
+        if (!agent) return response.resBadRequest(res, "couldn't find user");
+        if (agent && agent?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated");
+
+        if (!await validationFunctions.verifyPassword(password, agent.password)) return response.resAuthenticate(res, "one or more details are incorrect");
+
+        let refrashToken = jwt.sign({
+            id: agent.id,
+            email: agent.email,
+            username: agent.username
+        }, process.env.agentToken, { expiresIn: '30 days' })
+
+        await SignupFunctions.updateRefreshToken(req, refrashToken, role)
+        await SignupFunctions.setDeviceId(req, role)
+
+        let token = jwt.sign({
+            id: agent.id,
+            email: agent.email,
+            username: agent.username
+        }, process.env.agentToken, { expiresIn: '7d' })
+
+
+        return response.resSuccessData(res, {
+            user: {
+                id: agent.id,
+                name: agent.name,
+                username: agent.username,
+                email: agent.email,
+                profileImage: agent.avatarPath
+            }, accessToken: token, refrashToken
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+
 module.exports = {
     signUp,
     logOut,
     logIn,
     AdminSignUp,
     AdminlogIn,
+    AgentSignUp,
+    AgentlogIn,
 
 }

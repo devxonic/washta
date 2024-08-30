@@ -293,13 +293,14 @@ const getActiveOrder = async (req) => {
     return Order;
 };
 const getLatestOrders = async (req) => {
+    let { limit } = req.query
     let Shops = await ShopModel.find({ Owner: req.user.id, isTerminated: { $ne: true } }, { _id: 1 });
     Shops = Shops.map((x) => x._id.toString());
 
     let Order = await OrderModel.find({
         shopId: { $in: Shops },
         status: { $in: ["ongoing", "inprocess", "completed"] },
-    }).sort({ createdAt: -1, date: -1 })
+    }).limit(limit ?? null).sort({ createdAt: -1, date: -1 })
     return Order;
 };
 
@@ -316,6 +317,7 @@ const getMyShopReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -356,6 +358,7 @@ const getSellerReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -394,6 +397,7 @@ const getOrderReviews = async (req) => {
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -593,49 +597,7 @@ const getAllInvoiceById = async (req) => {
 // ----------------------------------------------- Notification -----------------------------------------------------//
 
 
-const getAllMyNotifications = async (req) => {
-    let { id } = req.params
-    let body = {}
-    let Notifications = await notificationModel.find({ 'receiver.id': req.user.id })
-    let UpdatedNotification = []
-    for (let i = 0; i < Notifications.length; i++) {
-        UpdatedNotification[i] = Notifications[i]
-        if (Notifications[i].sender.role == "customer") {
-            let customer = await customerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: customer?.profile ?? null,
-                username: customer?.username ?? null
-            }
-        }
-        if (Notifications[i].sender.role == "seller") {
-            let seller = await SellerModel.findOne({ _id: Notifications[i].sender.id, isTerminated: { $ne: true } }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: seller?.profile,
-                username: seller?.username
-            }
-        }
-        if (Notifications[i].sender.role == "admin") {
-            let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-            UpdatedNotification[i].sender = {
-                ...Notifications[i].sender,
-                profile: seller?.profile,
-                username: seller?.username
-            }
-        }
-        // if (Notifications[i].sender.role == "agent") {
-        //     let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-        //     UpdatedNotification[i].sender = {
-        //         ...Notifications[i].sender,
-        //         profile: seller?.profile,
-        //         username: seller?.username
-        //     }
-        // }
 
-    }
-    return UpdatedNotification;
-};
 
 
 // ----------------------------------------------- stats -----------------------------------------------------//
@@ -963,7 +925,6 @@ module.exports = {
     editMyReplys,
     getAllInvoice,
     getAllInvoiceById,
-    getAllMyNotifications,
     getSellerReviews,
     getOrderReviews,
     openAllShops,
