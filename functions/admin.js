@@ -497,8 +497,8 @@ const getserviceFeeById = async (req) => {
 
 const updateServiceFee = async (req) => {
     let id = req.params.id
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
         let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
@@ -536,14 +536,14 @@ const getPromoCodeById = async (req) => {
 
 const updatePromoCode = async (req) => {
     let id = req.params.id
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = JSON.parse(JSON.stringify({ isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }))
     if (giveToAll) {
         let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
-    let Promocode = await PromoCodeModel.findByIdAndUpdate(id, Data, { new: true })
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id }, { $set: Data }, { new: true })
     return Promocode
 }
 
