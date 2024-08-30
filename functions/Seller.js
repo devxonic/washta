@@ -192,7 +192,7 @@ const updateShop = async (req) => {
     let clone = JSON.stringify(req.body)
     let body = JSON.parse(clone)
     shopData && shopData.isTimingLocked ? delete body['timing'] : null
-    
+
     if (body?.location && body?.location?.coordinates) {
         body.location = {
             ...body.location,
@@ -202,7 +202,7 @@ const updateShop = async (req) => {
     }
     let Shop = await ShopModel.findOneAndUpdate(
         { _id: id, Owner: req.user.id, isTerminated: { $ne: true } },
-        { ...body },
+        { $set: body },
         { new: true },
     );
     return Shop;
