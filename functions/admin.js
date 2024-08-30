@@ -461,8 +461,8 @@ const updateVehicles = async (req) => {
 // ----------------------------------------------- Service fee -----------------------------------------------------//
 
 const createServiceFee = async (req) => {
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
         let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
@@ -499,11 +499,11 @@ const updateServiceFee = async (req) => {
 // ----------------------------------------------- Promo Code -----------------------------------------------------//
 
 const createPromoCode = async (req) => {
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }
     if (giveToAll) {
-        let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Customer = await CustomerModel.find({}, { _id: 1 })
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
     console.log(giveTo)
@@ -1012,8 +1012,21 @@ const getStatsByWeek = async (req) => {
 // ----------------------------------------------- sales -----------------------------------------------------//
 
 const getShopForSales = async (req) => {
-    let Shops = await shopModel.find({ isTerminated: { $ne: true } }).sort({ createdAt: 1, updatedAt: 1 })
-    return Shops
+    let { limit } = req.query
+
+    let order = await OrderModel.find({}, { _id: 0 }).limit(limit ?? null).sort({ createdAt: -1 }).populate({
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            sliderImage: 1,
+            isOpen: 1,
+            location: 1,
+            cost: 1
+        }
+    })
+    let Order = order.map(e => e.shopId ?? null)
+    return Order
 };
 
 const getSalesSingleShop = async (req) => {
@@ -1056,7 +1069,6 @@ module.exports = {
     createServiceFee,
     getserviceFeeById,
     updateServiceFee,
-    createServiceFee,
     getserviceFee,
     getserviceFeeById,
     updateServiceFee,

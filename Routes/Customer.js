@@ -35,6 +35,8 @@ router.get('/Shop/:id', middlewares.verifyCustomer, CustomerControllers.getShopB
 
 
 router.get('/booking', middlewares.verifyCustomer, CustomerControllers.getMyBookings)
+router.get('/serviceFee/:id', middlewares.verifyCustomer, CustomerControllers.getShopsServicefee)
+router.get('/promoCode', middlewares.verifyCustomer, CustomerControllers.getShopsPromoCode)
 router.get('/booking/:id', middlewares.verifyCustomer, CustomerControllers.getMyBookingById)
 router.patch('/booking/:id', middlewares.verifyCustomer, CustomerControllers.cancelBooking)
 router.post('/booking', middlewares.verifyCustomer, CustomerControllers.createNewBooking)

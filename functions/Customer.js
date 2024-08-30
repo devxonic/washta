@@ -5,6 +5,8 @@ const SellerModel = require('../models/seller');
 const shopModel = require('../models/shop');
 const ReviewModel = require('../models/Review');
 const OrderModel = require('../models/Order');
+const serviceModel = require('../models/servicefee');
+const PromoCodeModel = require('../models/PromoCode');
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getRatingStatistics } = require('../helpers/helper');
 const { NotificationOnBooking } = require('../helpers/notification');
 
@@ -296,6 +298,35 @@ const getMyBookings = async (req) => {
     return Bookings
 }
 
+const getShopsServicefee = async (req) => {
+    let id = req.params.id
+    let ServiceFee = await serviceModel.find({ applyAt: id, ApplicableStatus: { $ne: false } })
+    return ServiceFee
+}
+
+const getShopsPromoCode = async (req) => {
+    let id = req.user.id
+    let { promoCode } = req.query
+    let currentTime = new Date();
+
+    if (promoCode) {
+        console.log(currentTime)
+        let res = await PromoCodeModel.findOne({
+            isActive: { $ne: false },
+            promoCode, 'giveTo.customerId': id,
+            'duration.startTime': { $lte: currentTime },
+            'duration.endTime': { $gte: currentTime }
+        })
+        return res
+    }
+    let res = await PromoCodeModel.find({
+        'giveTo.customerId': id, isActive: { $ne: false },
+        'duration.startTime': { $lte: currentTime },
+        'duration.endTime': { $gte: currentTime }
+    })
+    return res
+}
+
 const getMyBookingById = async (req) => {
     let Bookings = await OrderModel.findById(req.params.id).populate([
         { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
@@ -337,6 +368,7 @@ const createNewBooking = async (req) => {
         coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
     };
     let Bookings = await OrderModel({ ...req.body }).save();
+    if (req.body?.promoCode) await PromoCodeModel.findOneAndUpdate({ _id: req.body?.promoCode?.id, 'giveTo.customerId': req?.user?.id }, { $set: { 'giveTo.$.isUsed': true } })
     if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
@@ -634,6 +666,8 @@ module.exports = {
     createNewBooking,
     getShopByLocation,
     getbookingbyStatus,
+    getShopsServicefee,
+    getShopsPromoCode,
     cancelBooking,
     createShopRating,
     updatesShopReview,
