@@ -63,7 +63,7 @@ const shopSchema = new Schema({
         },
 
     },
-    isTimingLocked: { type: Boolean, default: true },
+    isTimingLocked: { type: Boolean, default: false },
     lockUpdateBy: {
         id: { type: mongoose.Types.ObjectId },
         role: { type: String, enum: ['admin'], default: "admin" }

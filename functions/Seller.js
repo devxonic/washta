@@ -186,16 +186,23 @@ const addShop = async (req) => {
 
 const updateShop = async (req) => {
     let id = req.params.id;
-    if (req?.body?.location && req?.body?.location?.coordinates) {
-        req.body.location = {
-            ...req.body.location,
+    let shopData = await ShopModel.findOne({ _id: id }, { isTimingLocked: 1 })
+    console.log(shopData)
+
+    let clone = JSON.stringify(req.body)
+    let body = JSON.parse(clone)
+    shopData && shopData.isTimingLocked ? delete body['timing'] : null
+    
+    if (body?.location && body?.location?.coordinates) {
+        body.location = {
+            ...body.location,
             type: "Point",
             coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
         };
     }
     let Shop = await ShopModel.findOneAndUpdate(
         { _id: id, Owner: req.user.id, isTerminated: { $ne: true } },
-        { ...req.body },
+        { ...body },
         { new: true },
     );
     return Shop;
@@ -208,14 +215,14 @@ const deleteShop = async (req) => {
 
 const openAllShops = async (req) => {
     let { status } = req.body
-    let Shop = await ShopModel.updateMany({ Owner: req.user.id, isTerminated: { $ne: true } }, { isOpen: status });
+    let Shop = await ShopModel.updateMany({ Owner: req.user.id, isTerminated: { $ne: true }, isTimingLocked: { $ne: true } }, { isOpen: status });
     return Shop;
 };
 
 const openShopByid = async (req) => {
     let { id } = req.params
     let { status } = req.body
-    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id, isTerminated: { $ne: true } }, { isOpen: status }, { new: true });
+    let Shop = await ShopModel.findOneAndUpdate({ Owner: req.user.id, _id: id, isTerminated: { $ne: true }, isTimingLocked: { $ne: true } }, { isOpen: status }, { new: true });
     return Shop;
 };
 
