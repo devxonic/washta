@@ -1038,7 +1038,7 @@ const getShopForSales = async (req) => {
             sliderImage: 1,
             isOpen: 1,
             location: 1,
-            cost: 1
+            cost: 1,
         }
     })
     let Order = order.map(e => e.shopId ?? null)
@@ -1055,7 +1055,7 @@ const getSalesSingleShop = async (req) => {
 
     let shop = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { location: 0, __v: 0 })
     if (!shop) return
-    let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
+    let orders = await OrderModel.find({ shopId }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
     let response = {
