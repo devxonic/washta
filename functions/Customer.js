@@ -328,7 +328,7 @@ const getShopsPromoCode = async (req) => {
 }
 
 const getMyBookingById = async (req) => {
-    let Bookings = await OrderModel.findById(req.params.id).populate([
+    let Bookings = await OrderModel.findOne({ customerId: req.user.id, _id: req.params.id }).populate([
         { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "vehicleId", select: {
@@ -363,6 +363,7 @@ const cancelBooking = async (req) => {
 }
 
 const createNewBooking = async (req) => {
+    req.body.customerId = req.user.id
     req.body.location = {
         ...req.body.location,
         type: "Point",
