@@ -562,6 +562,12 @@ const deletePromoCode = async (req) => {
     return Promocode
 }
 
+const deletePromoCodepermanent = async (req) => {
+    let id = req.params.id
+    let Promocode = await PromoCodeModel.findOneAndDelete({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
+    return Promocode
+}
+
 // ----------------------------------------------- Reviews -----------------------------------------------------//
 
 const getShopReviews = async (req) => {
@@ -1193,6 +1199,7 @@ module.exports = {
     getPromoCodeById,
     updatePromoCode,
     deletePromoCode,
+    deletePromoCodepermanent,
     getVehicles,
     getvehiclesById,
     updateVehicles,
