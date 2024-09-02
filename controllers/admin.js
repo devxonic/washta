@@ -491,6 +491,18 @@ const updatePromoCode = async (req, res) => {
     }
 }
 
+const deletePromoCode = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deletePromoCode(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- Review -----------------------------------------------------//
 
 const getShopReviews = async (req, res) => {
@@ -739,6 +751,7 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    deletePromoCode,
     getVehicles,
     getvehiclesById,
     updateVehicles,

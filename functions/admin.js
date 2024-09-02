@@ -524,13 +524,13 @@ const createPromoCode = async (req) => {
 }
 
 const getPromoCode = async (req) => {
-    let PromoCode = await PromoCodeModel.find({})
+    let PromoCode = await PromoCodeModel.find({ isDeleted: { $ne: true } })
     return PromoCode
 }
 
 const getPromoCodeById = async (req) => {
     let id = req.params.id
-    let PromoCode = await PromoCodeModel.findById(id)
+    let PromoCode = await PromoCodeModel.findOne({ _id: id, isDeleted: { $ne: true } })
     return PromoCode
 }
 
@@ -543,7 +543,22 @@ const updatePromoCode = async (req) => {
         let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
-    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id }, { $set: Data }, { new: true })
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: Data }, { new: true })
+    return Promocode
+}
+
+const deletePromoCode = async (req) => {
+    let id = req.params.id
+    let date = new Date();
+    let body = {
+        isDeleted: true,
+        deletedAt: date,
+        deleteBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+    }
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
     return Promocode
 }
 
@@ -1177,6 +1192,7 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    deletePromoCode,
     getVehicles,
     getvehiclesById,
     updateVehicles,
