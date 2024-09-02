@@ -313,11 +313,18 @@ const getShopsPromoCode = async (req) => {
         console.log(currentTime)
         let res = await PromoCodeModel.findOne({
             isActive: { $ne: false },
-            promoCode, 'giveTo.customerId': id,
+            promoCode,
+            'giveTo.customerId': id,
             'duration.startTime': { $lte: currentTime },
             'duration.endTime': { $gte: currentTime }
         })
-        return res
+
+        if (!res) return res
+        let isUsed = res?.giveTo?.find(x => x.customerId == req.user.id).isUsed
+
+        return isUsed ? {
+            error: "you have Already Used this Code"
+        } : res
     }
     let res = await PromoCodeModel.find({
         'giveTo.customerId': id, isActive: { $ne: false },

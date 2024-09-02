@@ -335,6 +335,7 @@ const getShopsServicefee = async (req, res) => {
 const getShopsPromoCode = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getShopsPromoCode(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
         if (!Booking) return response.resBadRequest(res, "couldn't find Promo Code")
         return response.resSuccessData(res, Booking);
 
