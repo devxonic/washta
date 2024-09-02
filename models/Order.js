@@ -33,6 +33,7 @@ const OrderSchema = new mongoose.Schema({
     ],
     promoCode: {
         id: { type: mongoose.Types.ObjectId },
+        promoCode: { type: String },
         Discounttype: { type: String, enum: ["fixed", "percentage"] },
         discount: { type: String },
     },
