@@ -1134,7 +1134,9 @@ const getAllAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     if (id) {
         let agent = await AdminModel.findOne(filter, fields)
@@ -1151,7 +1153,9 @@ const deleteAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     let agent = await AdminModel.findOneAndDelete(filter, fields)
     return agent
@@ -1165,7 +1169,9 @@ const updateAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } }, { new: true, fields })
     return agent
