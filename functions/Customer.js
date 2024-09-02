@@ -312,6 +312,7 @@ const getShopsPromoCode = async (req) => {
     if (promoCode) {
         console.log(currentTime)
         let res = await PromoCodeModel.findOne({
+            isDeleted: { $ne: true },
             isActive: { $ne: false },
             promoCode,
             'giveTo.customerId': id,
@@ -327,6 +328,8 @@ const getShopsPromoCode = async (req) => {
         } : res
     }
     let res = await PromoCodeModel.find({
+        isDeleted: { $ne: true },
+        'giveTo.isUsed': { $ne: true },
         'giveTo.customerId': id, isActive: { $ne: false },
         'duration.startTime': { $lte: currentTime },
         'duration.endTime': { $gte: currentTime }
