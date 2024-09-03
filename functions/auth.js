@@ -117,9 +117,21 @@ const getAdminByEmail = async (req) => {
     return admin;
 }
 
+const getAgentByEmail = async (req) => {
+
+    let admin = await AdminModel.findOne({ username: req.body.username, role: req.body.role });
+    return admin;
+}
+
 const getAdmin = async (req) => {
 
     let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] });
+    return admin;
+}
+
+const getAgent = async (req) => {
+
+    let admin = await AdminModel.findOne({ username: req.body.identifier, role: req.body.role });
     return admin;
 }
 
@@ -131,6 +143,8 @@ module.exports = {
     resetPassword,
     isOTPAlreadySended,
     getAdminByEmail,
+    getAgentByEmail,
+    getAgent,
     getAdmin,
     setDeviceId,
 }
