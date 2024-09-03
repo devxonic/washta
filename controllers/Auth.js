@@ -212,7 +212,8 @@ const AdminSignUp = async (req, res) => {
     try {
         let { username, email, fullName, phone, password, role } = req.body
         console.log('siggning user up');
-        let resObj = {};
+        role = 'admin'
+        req.body.role = 'admin'
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
@@ -264,7 +265,8 @@ const AdminSignUp = async (req, res) => {
 const AdminlogIn = async (req, res) => {
     try {
         let { password } = req.body
-
+        role = 'admin'
+        req.body.role = 'admin'
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
         if (admin && admin?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated");
