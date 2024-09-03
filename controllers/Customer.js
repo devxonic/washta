@@ -360,6 +360,7 @@ const cancelBooking = async (req, res) => {
 const createNewBooking = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createNewBooking(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
         if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, Booking);
 
