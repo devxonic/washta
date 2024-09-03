@@ -11,10 +11,13 @@ const PromoCodeSchema = new mongoose.Schema({
         endTime: { type: Date },
     },
     giveTo: [{
-        customerId: { type: mongoose.Types.ObjectId, ref: "Customer", },
-        isUsed: { type: Boolean, default: false },
-    }
-    ],
+        type: mongoose.Types.ObjectId,
+        ref: "Customer"
+    }],
+    usedBy: [{
+        type: mongoose.Types.ObjectId,
+        ref: "Customer"
+    }],
     giveToAll: { type: Boolean },
     isDeleted: { type: Boolean },
     deletedAt: { type: Date },

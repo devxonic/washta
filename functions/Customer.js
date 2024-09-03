@@ -315,25 +315,31 @@ const getShopsPromoCode = async (req) => {
             isDeleted: { $ne: true },
             isActive: { $ne: false },
             promoCode,
-            'giveTo.customerId': id,
-            'duration.startTime': { $lte: currentTime },
-            'duration.endTime': { $gte: currentTime }
-        })
+            $or: [
+                { giveTo: id, },
+                { giveToAll: { $ne: false } }
+            ],
+            // 'duration.startTime': { $lte: currentTime },
+            // 'duration.endTime': { $gte: currentTime }
+        }, { usedBy: 0 })
 
         if (!res) return res
-        let isUsed = res?.giveTo?.find(x => x.customerId == req.user.id).isUsed
-
+        let isUsed = res?.usedBy?.find(x => x == id)
         return isUsed ? {
             error: "you have Already Used this Code"
         } : res
     }
     let res = await PromoCodeModel.find({
         isDeleted: { $ne: true },
-        'giveTo.isUsed': { $ne: true },
-        'giveTo.customerId': id, isActive: { $ne: false },
+        isActive: { $ne: false },
+        $or: [
+            { giveTo: id, },
+            { giveToAll: { $ne: false } }
+        ],
+        usedBy: { $ne: id },
         'duration.startTime': { $lte: currentTime },
         'duration.endTime': { $gte: currentTime }
-    })
+    }, { usedBy: 0 })
     return res
 }
 
@@ -379,8 +385,27 @@ const createNewBooking = async (req) => {
         type: "Point",
         coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
     };
+
+    let promoCodeFilter = {
+        _id: req.body?.promoCode?.id,
+        $or: [
+            {
+                // 'giveTo': req?.user?.id,
+                usedBy: { $ne: req?.user?.id }
+            },
+            {
+                giveToAll: true,
+                usedBy: { $ne: req?.user?.id }
+            }
+        ]
+    }
+
     let Bookings = await OrderModel({ ...req.body }).save();
-    if (req.body?.promoCode) await PromoCodeModel.findOneAndUpdate({ _id: req.body?.promoCode?.id, 'giveTo.customerId': req?.user?.id }, { $set: { 'giveTo.$.isUsed': true } })
+    if (req.body?.promoCode) {
+        let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, { $push: { 'usedBy': req.user.id } })
+        console.log(promo)
+        if (!promo) return { error: "promo code not Applyed" }
+    }
     if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }

@@ -513,12 +513,8 @@ const updateServiceFee = async (req) => {
 const createPromoCode = async (req) => {
     let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
     let Data = { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }
-    if (giveToAll) {
-        let Customer = await CustomerModel.find({}, { _id: 1 })
-        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
-        Data.giveTo = Formated
-    }
-    console.log(giveTo)
+    if (giveToAll) delete Data.giveTo
+    console.log(Data)
     let upatedPromoCode = await PromoCodeModel(Data).save()
     return upatedPromoCode
 }
