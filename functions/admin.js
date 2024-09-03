@@ -1115,7 +1115,17 @@ const getOrdersByUserId = async (req) => {
             shopDetails: 1,
             estimatedServiceTime: 1,
             cost: 1,
-        }
+        },
+        path: "vehicleId", select: {
+            vehicleManufacturer: 1,
+            vehiclePlateNumber: 1,
+            vehicleName: 1,
+            vehicleType: 1,
+            vehicleModel: 1,
+            isSelected: 1,
+            isActive: 1,
+        },
+        
     },]
 
     let filter = customerId ? { customerId } : shopId ? { shopId } : {}
