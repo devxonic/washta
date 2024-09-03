@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 
 const AdminSchema = new Schema({
-    username: { type: String, unique: true },
+    username: { type: String },
     fullName: { type: String },
     password: {
         type: String,
@@ -11,12 +11,21 @@ const AdminSchema = new Schema({
     },
     email: { type: String },
     phone: { type: String },
+    role: { type: String, enum: ['admin', 'agent'], default: 'admin' },
     avatar: {
         type: String
     },
     resizedAvatar: {
         type: String
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    deviceId: { type: String },
+    isActive: { type: Boolean, default: true },
+    terminateAt: { type: Date },
     isVerifed: { type: Boolean, default: false },
     sessionKey: {
         type: String

@@ -20,10 +20,11 @@ const shopSchema = new Schema({
     shopName: { type: String },
     coverImage: { type: String },
     sliderImage: [{ type: String }],
-    isActive: { type: Boolean },
+    isActive: { type: Boolean, default: true },
     shopDetails: { type: String }, //services
+    service: { type: String }, //services
     estimatedServiceTime: { type: String }, // time Duration
-    isOpen: { type: Boolean },
+    isOpen: { type: Boolean, default: true },
     timing: {
         monday: {
             open: { type: Boolean },
@@ -62,10 +63,15 @@ const shopSchema = new Schema({
         },
 
     },
+    isTimingLocked: { type: Boolean, default: false },
+    lockUpdateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'], default: "admin" }
+    },
     isTerminated: { type: Boolean },
     terminateBy: {
         id: { type: mongoose.Types.ObjectId },
-        role: { type: String, enum: ['admin'] }
+        role: { type: String, enum: ['admin'], default: "admin" }
     },
     terminateAt: { type: Date },
     location: {

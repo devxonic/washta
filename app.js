@@ -5,12 +5,16 @@ const mongoose = require('mongoose');
 const http = require('http');
 const socket = require('./controllers/sockethandler');
 const app = express();
+const path = require('path');
+
 // socket server 
 const server = http.createServer(app)
 socket(server);
 
 
+
 //api Middleweres 
+app.use("/mailsAssets", express.static(path.resolve(__dirname, "./Mails")));
 app.use(express.json());
 app.use(cors());
 
@@ -23,6 +27,7 @@ app.use('/api/customer', require('./Routes/Customer'));
 app.use('/api/otp', require('./Routes/Otp'));
 app.use('/api/seller', require('./Routes/Seller'));
 app.use('/api/admin', require('./Routes/admin'));
+app.use('/api/agent', require('./Routes/agent'));
 app.use('/api/subscription', require('./Routes/subscription'));
 
 mongoose

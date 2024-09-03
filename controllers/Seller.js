@@ -1,5 +1,6 @@
 
 const SellerFunctions = require('../functions/Seller');
+const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
@@ -366,6 +367,17 @@ const getActiveOrder = async (req, res) => {
     }
 }
 
+const getLatestOrders = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getLatestOrders(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Order")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- Reviews -----------------------------------------------------//
 
 
@@ -409,7 +421,7 @@ const getAllInvoiceById = async (req, res) => {
 
 const getAllMyNotifications = async (req, res) => {
     try {
-        let Notifications = await SellerFunctions.getAllMyNotifications(req)
+        let Notifications = await notification.getAllMyNotifications(req)
         if (!Notifications) return response.resBadRequest(res, "couldn't find Notifications")
         return response.resSuccessData(res, Notifications);
     } catch (error) {
@@ -535,6 +547,7 @@ module.exports = {
     getAllOrders,
     getOrderById,
     orderStatus,
+    getLatestOrders,
     getorderbyStatus,
     getpastorder,
     getActiveOrder,

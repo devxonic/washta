@@ -17,6 +17,14 @@ const SellerSchema = new Schema({
     resizedAvatar: {
         type: String
     },
+    isTerminated: { type: Boolean },
+    terminateBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ['admin'] }
+    },
+    deviceId: { type: String },
+    isActive: { type: Boolean, default: true },
+    terminateAt: { type: Date },
     business: {
         uploadDocument: { type: String },
         companyName: { type: String },

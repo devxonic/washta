@@ -19,14 +19,12 @@ const AdminModel = require('../models/admin');
 
 const getBusinessbyStatus = async (req) => {
     if (req.query.status) {
-        let Business = await SellerModel.find({ 'business.status': req.query.status }, {
+        let Business = await SellerModel.find({ 'business.status': req.query.status, isTerminated: { $ne: true } }, {
             notification: 0,
             privacy: 0,
             security: 0,
             password: 0,
             shops: 0,
-            createdAt: 0,
-            updatedAt: 0,
             __v: 0,
         })
         return Business
@@ -36,12 +34,12 @@ const getBusinessbyStatus = async (req) => {
 
 const getAllBusniess = async (req) => {
 
-    let Business = await SellerModel.find({}, { business: 1 })
+    let Business = await SellerModel.find({ isTerminated: { $ne: true } }, { business: 1 })
     return Business
 }
 
 const getBusinessById = async (req) => {
-    let Business = await SellerModel.findById(req.params.id, { business: 1 })
+    let Business = await SellerModel.findOne({ _id: req.params.id, isTerminated: { $ne: true } }, { business: 1 })
     return Business
 }
 
@@ -56,27 +54,28 @@ const businessApprove = async (req) => {
         "business.status": "approved",
         "business.approvedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
 
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Approved" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: "Approved" } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -90,26 +89,26 @@ const businessTerminate = async (req) => {
         "business.status": 'terminated',
         "business.terminatedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    console.log("mails -------------",)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Terminated" } });
-    // if (Business.email) {
-    //     let transporterRes = transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    let Business = await SellerModel.findOneAndUpdate({ _id: id }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Terminated " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -123,28 +122,27 @@ const businessReject = async (req) => {
         "business.status": 'rejected',
         "business.rejectedAt": date
     }
-    let Business = await SellerModel.findByIdAndUpdate(id, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1 } })
+    let Business = await SellerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { $set: { ...body } }, { new: true, fields: { 'business': 1, 'email': 1, fullName: 1, username: 1 } })
     if (!Business) return null
-    // const transporter = nodemailer.createTransport({
-    //     host: process.env.mailerHost,
-    //     port: process.env.mailerPort,
-    //     auth: {
-    //         user: process.env.mailerEmail,
-    //         pass: process.env.mailerPassword,
-    //     },
-    // });
-    // console.log(id)
-    // console.log(Business)
-    // let mailPath = path.resolve(__dirname, `../Mails/EmailVerification/index.ejs`)
-    // let Mail = await ejs.renderFile(mailPath, { data: { Code: "Rejeced" } });
-    // if (Business.email) {
-    //     let transporterRes = await transporter.sendMail({
-    //         from: process.env.mailerEmail,
-    //         to: Business.email,
-    //         subject: "Verification",
-    //         html: Mail,
-    //     })
-    // }
+    const transporter = nodemailer.createTransport({
+        host: process.env.mailerHost,
+        port: process.env.mailerPort,
+        auth: {
+            user: process.env.mailerEmail,
+            pass: process.env.mailerPassword,
+        },
+    });
+    let mailPath = path.resolve(__dirname, `../Mails/BusinessAproval/index.ejs`)
+    let Mail = await ejs.renderFile(mailPath, { data: { name: Business.fullName ?? Business.username, msg: " Rejected " } });
+    if (Business.business.email) {
+        let transporterRes = await transporter.sendMail({
+            from: process.env.mailerEmail,
+            to: Business.business.email,
+            subject: "Business Update",
+            html: Mail,
+        })
+        console.log("mail is Sended to Seller", transporterRes)
+    }
     return Business
 }
 
@@ -166,6 +164,7 @@ const getTopCustomer = async (req) => {
     let customerFilter = {
         username: 1,
         fullName: 1,
+        avatar: 1,
         email: 1,
         phone: 1,
         selectedVehicle: 1,
@@ -174,13 +173,14 @@ const getTopCustomer = async (req) => {
     }
     let customerData = {}
     for (const singleOrder of orders) {
-        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId }, customerFilter)
+        let customer = await CustomerModel.findOne({ _id: singleOrder?.customerId, isTerminated: { $ne: true } }, customerFilter)
         if (customer) {
             if (!customerData[singleOrder?.customerId]) {
                 customerData[singleOrder?.customerId] = { ...customer?._doc, totalSpents: 0, totalOrders: 0 }
             }
             customerData[singleOrder?.customerId].totalOrders++
             customerData[singleOrder?.customerId].totalSpents += parseFloat(singleOrder.cost)
+            customerData[singleOrder?.customerId].averageMonthlySpents = parseFloat((customerData[singleOrder?.customerId].totalSpents / 12).toFixed(2))
         }
     }
 
@@ -207,6 +207,8 @@ const getTopSellers = async (req) => {
         username: 1,
         fullName: 1,
         email: 1,
+        avatar: 1,
+        resizedAvatar: 1,
         phone: 1,
         status: 1,
         shops: 1,
@@ -216,13 +218,15 @@ const getTopSellers = async (req) => {
     }
     let companiesData = {}
     for (const singleOrder of orders) {
-        let seller = await shopModel.findOne({ _id: singleOrder?.shopId }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
+        let seller = await shopModel.findOne({ _id: singleOrder?.shopId, isTerminated: { $ne: true } }, { Owner: 1 }).populate({ path: 'Owner', select: sellerFilter })
         if (seller) {
             if (!companiesData[singleOrder?.shopId]) {
                 companiesData[singleOrder?.shopId] = { ...seller?.Owner?._doc, totalRevenue: 0, totalOrders: 0 }
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
+
         }
     }
 
@@ -258,13 +262,14 @@ const getTopCompanies = async (req) => {
     }
     let companiesData = {}
     for (const singleOrder of orders) {
-        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId }, shopFilter)
+        let Shop = await shopModel.findOne({ _id: singleOrder?.shopId, isTerminated: { $ne: true } }, shopFilter)
         if (Shop) {
             if (!companiesData[singleOrder?.shopId]) {
                 companiesData[singleOrder?.shopId] = { ...Shop?._doc, totalRevenue: 0, totalOrders: 0 }
             }
             companiesData[singleOrder?.shopId].totalOrders++
             companiesData[singleOrder?.shopId].totalRevenue += parseFloat(singleOrder.cost)
+            companiesData[singleOrder?.shopId].averageMonthlySales = parseFloat((companiesData[singleOrder?.shopId].totalRevenue / 12).toFixed(2))
         }
     }
 
@@ -287,29 +292,58 @@ const getTopCompanies = async (req) => {
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
 const getShop = async (req) => {
-    let Shop = await shopModel.find({})
+    let Shop = await shopModel.find({ isTerminated: { $ne: true } })
     return Shop
 }
 
 const getShopbyid = async (req) => {
     let id = req.params.id
-    let Shop = await shopModel.findById(id)
-    return Shop
+    let { shopId, graph } = req.query
+    let shop = await shopModel.findOne({ _id: id, isTerminated: { $ne: true } }, { __v: 0 })
+    if (!shop) return
+    let stats = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
+
+    let shopReviews = await reviewModel.find({ shopId: shop?._id, isDeleted: { $ne: true } })
+    let formatedReviews = helper.formateReviewsRatings(shopReviews);
+    let ReviewsStats = helper.getRatingStatistics(formatedReviews);
+
+
+    return {
+        shop,
+        ...stats,
+        reviewsSummary: {
+            averageRating: ReviewsStats.averageRating || 0,
+            totalReviews: ReviewsStats.totalReviews || 0,
+            recommendationPercentage: ReviewsStats.recommendationPercentage || 0,
+        }
+    }
 }
 
 
 const UpdateShopbyAmdin = async (req) => {
     let id = req.params.id
     let { location, coverdAreaRaduis, service, cost } = req.body
-    let Shop = await shopModel.findByIdAndUpdate(id, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
+    let Shop = await shopModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { "location.String": location, coverdAreaRaduis, service, cost }, { new: true })
     return Shop
 }
 
 const updateShopTiming = async (req) => {
-    let { shopId, timing } = req.body
-    let Shop = await shopModel.updateMany({ _id: { $in: shopId } }, { timing })
+    let { shopId, timing, toAll, isTimingLocked } = req.body
+
+    let copy = JSON.stringify(timing)
+    let filter = toAll ? {} : { _id: { $in: shopId } }
+    let body = {
+        isTimingLocked,
+        timing: JSON.parse(copy),
+        lockUpdateBy: {
+            id: req.user.id,
+            role: "admin"
+        },
+    }
+
+    let Shop = await shopModel.updateMany(filter, { $set: body })
     if (Shop.modifiedCount > 0) {
-        const updatedShop = await shopModel.find({ _id: { $in: shopId } }, { timing: 1 });
+        const updatedShop = await shopModel.find(filter, { timing: 1 });
         return updatedShop
     }
     return Shop
@@ -319,28 +353,18 @@ const updateShopTiming = async (req) => {
 // ----------------------------------------------- Customer -----------------------------------------------------//
 
 const getCustomer = async (req) => {
-    let Customer = await CustomerModel.find({ isDeleted: { $ne: true } }, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
+    let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, {
+        privacy: 0, password: 0, sessionKey: 0, notification: 0, security: 0
     }).populate([{
         path: "selectedVehicle",
     }])
-    // let updatedCustomers = [];
-    // for (const customer of Customer) {
-    //     let orders = await OrderModel.find({ customerId: customer?._id, status: "completed" }) // filter by Status 
-    //     let totalSpents = 0
-    //     orders?.forEach((order) => { totalSpents += parseFloat(order.cost) })
-
-    //     console.log("totalSpents -------------------- ", totalSpents)
-
-
-    // }
     return Customer
 }
 
 const getCustomerByid = async (req) => {
     let id = req.params.id
-    let Customer = await CustomerModel.findOne({ _id: id }, {
-        privacy: 0, password: 0, createdAt: 0, updatedAt: 0, sessionKey: 0, notification: 0, security: 0
+    let Customer = await CustomerModel.findOne({ _id: id, isTerminated: { $ne: true } }, {
+        privacy: 0, password: 0, sessionKey: 0, notification: 0, security: 0
     }).populate({
         path: "selectedVehicle",
     })
@@ -386,7 +410,7 @@ const terminateCustomer = async (req) => {
         },
         terminateAt: date,
     }
-    let Customer = await CustomerModel.findByIdAndUpdate(id, { ...body }, {
+    let Customer = await CustomerModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { ...body }, {
         new: true, fields: {
             sessionKey: 0,
             notification: 0,
@@ -409,7 +433,7 @@ const terminateShop = async (req) => {
         },
         terminateAt: date,
     }
-    let shop = await shopModel.findByIdAndUpdate(id, { ...body }, { new: true })
+    let shop = await shopModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { ...body }, { new: true })
     return shop
 }
 
@@ -449,10 +473,10 @@ const updateVehicles = async (req) => {
 // ----------------------------------------------- Service fee -----------------------------------------------------//
 
 const createServiceFee = async (req) => {
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
-        let shops = await shopModel.find({}, { _id: 1 })
+        let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
         Data.applyAt = Formated
     }
@@ -473,10 +497,10 @@ const getserviceFeeById = async (req) => {
 
 const updateServiceFee = async (req) => {
     let id = req.params.id
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
-        let shops = await shopModel.find({}, { _id: 1 })
+        let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
         Data.applyAt = Formated
     }
@@ -487,11 +511,11 @@ const updateServiceFee = async (req) => {
 // ----------------------------------------------- Promo Code -----------------------------------------------------//
 
 const createPromoCode = async (req) => {
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }
     if (giveToAll) {
         let Customer = await CustomerModel.find({}, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
     console.log(giveTo)
@@ -500,26 +524,47 @@ const createPromoCode = async (req) => {
 }
 
 const getPromoCode = async (req) => {
-    let PromoCode = await PromoCodeModel.find({})
+    let PromoCode = await PromoCodeModel.find({ isDeleted: { $ne: true } })
     return PromoCode
 }
 
 const getPromoCodeById = async (req) => {
     let id = req.params.id
-    let PromoCode = await PromoCodeModel.findById(id)
+    let PromoCode = await PromoCodeModel.findOne({ _id: id, isDeleted: { $ne: true } })
     return PromoCode
 }
 
 const updatePromoCode = async (req) => {
     let id = req.params.id
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = JSON.parse(JSON.stringify({ isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }))
     if (giveToAll) {
-        let Customer = await CustomerModel.find({}, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
-    let Promocode = await PromoCodeModel.findByIdAndUpdate(id, Data, { new: true })
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: Data }, { new: true })
+    return Promocode
+}
+
+const deletePromoCode = async (req) => {
+    let id = req.params.id
+    let date = new Date();
+    let body = {
+        isDeleted: true,
+        deletedAt: date,
+        deleteBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+    }
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
+    return Promocode
+}
+
+const deletePromoCodepermanent = async (req) => {
+    let id = req.params.id
+    let Promocode = await PromoCodeModel.findOneAndDelete({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
     return Promocode
 }
 
@@ -528,14 +573,25 @@ const updatePromoCode = async (req) => {
 const getShopReviews = async (req) => {
     let { shopId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        {
+            path: "customerId", select: {
+                username: 1, avatar: 1,
+                resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+            }
+        },
+        {
+            path: "sellerId", select: {
+                username: 1, avatar: 1,
+                resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+            }
+        },
         {
             path: "shopId", select: {
                 Owner: 1,
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -552,12 +608,12 @@ const getShopReviews = async (req) => {
     ]
 
     if (!shopId) {
-        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ shopId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ shopId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -566,14 +622,15 @@ const getShopReviews = async (req) => {
 const getSellerReviews = async (req) => {
     let { sellerId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -590,12 +647,12 @@ const getSellerReviews = async (req) => {
     ]
 
     if (!sellerId) {
-        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ sellerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ sellerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -603,14 +660,15 @@ const getSellerReviews = async (req) => {
 const getOrderReviews = async (req) => {
     let { orderId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -627,12 +685,12 @@ const getOrderReviews = async (req) => {
     ]
 
     if (!orderId) {
-        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ orderId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ orderId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -640,14 +698,15 @@ const getOrderReviews = async (req) => {
 const getCustomerReviews = async (req) => {
     let { customerId, limit } = req.query
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
-        { path: "sellerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
                 shopName: 1,
                 coverImage: 1,
                 isActive: 1,
+                service: 1,
                 shopDetails: 1,
                 estimatedServiceTime: 1,
                 cost: 1,
@@ -664,12 +723,12 @@ const getCustomerReviews = async (req) => {
     ]
 
     if (!customerId) {
-        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+        let Reviews = await reviewModel.find({ customerId, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
         let FormatedRating = helper.formateReviewsRatings?.(Reviews)
         return FormatedRating
     }
 
-    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let Reviews = await reviewModel.find({ customerId: { $exists: true }, isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(limit ?? null).populate(populate)
     let FormatedRating = helper.formateReviewsRatings?.(Reviews)
     return FormatedRating
 }
@@ -678,7 +737,7 @@ const getCustomerReviews = async (req) => {
 const replyToReview = async (req) => {
     let { reviewId } = req.query
     let { comment, replyTo } = req.body
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let body = {
         replyTo,
@@ -690,7 +749,7 @@ const replyToReview = async (req) => {
     }
     console.log(body)
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $push: { reply: { ...body } } }, { new: true })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $push: { reply: { ...body } } }, { new: true })
     if (!reply) return reply
     console.log(reply)
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
@@ -700,7 +759,7 @@ const replyToReview = async (req) => {
 const editMyReplys = async (req) => {
     let { reviewId } = req.query
     let { commentId, comment } = req.body
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let myReply = Review.reply.map(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -710,7 +769,7 @@ const editMyReplys = async (req) => {
         return reply
     })
 
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating : 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { reply: myReply }, { new: true, fields: { comment: 1, shopId: 1, reply: 1, rating: 1 } })
     if (!reply) return reply
     let FormatedRating = helper.formateReviewsRatingsSingle?.(reply)
     return FormatedRating
@@ -718,7 +777,7 @@ const editMyReplys = async (req) => {
 
 const deleteMyReplys = async (req) => {
     let { reviewId, commentId } = req.query
-    let Review = await reviewModel.findOne({ _id: reviewId });
+    let Review = await reviewModel.findOne({ _id: reviewId, isDeleted: { $ne: true } });
     if (!Review) return null
     let myReply = Review.reply.find(reply => {
         if (reply.replyBy.id.toString() == req.user.id && commentId == reply.comment._id.toString()) {
@@ -726,14 +785,14 @@ const deleteMyReplys = async (req) => {
         }
     })
     if (!myReply) return myReply
-    let reply = await reviewModel.findOneAndUpdate({ _id: Review }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
+    let reply = await reviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
 }
 
 
 const deleteReviews = async (req) => {
     let { reviewId } = req.query
-    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
+    let Review = await reviewModel.findOneAndUpdate({ _id: reviewId, isDeleted: { $ne: true } }, { deleteBy: { id: req.user.id, role: 'admin' }, isDeleted: true }, { new: true });
     if (!Review) return Review
     let FormatedRating = helper.formateReviewsRatingsSingle?.(Review)
     return FormatedRating
@@ -758,44 +817,74 @@ const updateImage = async (req, resizedAvatar, originalAvatar) => {
 // ----------------------------------------------- stats -----------------------------------------------------//
 
 const getAllTimeStats = async (req) => {
-    let { shopId } = req.query
-    let newDate = new Date();
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let { shopId, year } = req.query
+    let newDate = year ? new Date(year) : new Date();
+    let totalRevenue = 0;
+    let totalNumberOfOrders = 0;
+    let totalCompletedOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+    let totalPendingOrders = 0;
 
-    const year = newDate.getFullYear();
-    const daysInYear = helper.getDaysInYear(year);
+    const Year = newDate.getFullYear();
+    const daysInYear = helper.getDaysInYear(Year);
 
     let currentMonth;
     let { monthData, monthNames } = helper.generateMonthOfYear();
+    let startOfYear = new Date(newDate.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
 
-    let filter = shopId ? ({ shopId }) : {}
+    // End of the year (December 31st)
+    let endOfYear = new Date(newDate.getFullYear(), 11, 31);
+    endOfYear.setHours(23, 59, 59, 999);
 
-    let orders = await OrderModel.find(filter)
+    let isShop = shopId ? { shopId } : {}
+    let filter = {
+        ...isShop,
+        $or: [
+            {
+                'creacreatedAt': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+            {
+                'date': {
+                    $gte: startOfYear,
+                    $lt: endOfYear,
+                }
+            },
+        ]
+    }
+
+
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentMonth = monthNames[orderDate.getMonth()];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             monthData[currentMonth].totalOrders++
             monthData[currentMonth].totalRevenue += parseFloat(singleOrder.cost);
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
         monthData[currentMonth].averageDailySales = parseFloat((monthData[currentMonth].totalRevenue / daysInYear[orderDate.getMonth()]).toFixed(2))
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        averageMonthlySales: parseFloat((totalAmount / 12).toFixed(2)),
-        totalOrders,
-        acceptedOrders,
-        cancelledOrders,
+        totalRevenue,
+        averageMonthlySales: parseFloat((totalRevenue / 12).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        totalCompletedOrders,
         graphData: Object.values(monthData),
     }
     return response
@@ -804,18 +893,24 @@ const getAllTimeStats = async (req) => {
 const getstatsbyMonth = async (req) => {
     let { startDate, shopId } = req.query
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
+
 
     let startOfmonth = startDate ? new Date(startDate) : new Date();
     startOfmonth.setDate(1);
+    startOfmonth.setMonth(startOfmonth.getMonth() - 1); // Move to the next month
     startOfmonth.setHours(0, 0, 0, 0);
     let endOfMonth = new Date(startOfmonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1); // Move to the next month
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
+
+    console.log(startOfmonth, endOfMonth)
     let isShop = shopId ? { shopId } : {}
     let filter = {
         ...isShop,
@@ -851,28 +946,32 @@ const getstatsbyMonth = async (req) => {
     let currentDay;
     console.log(filter)
     console.log(nameOfdays)
-    let orders = await OrderModel.find(filter)
+    console.log(monthDays)
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentDay = nameOfdays[orderDate.getDate() - 1];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             monthDays[currentDay].totalRevenue += parseFloat(singleOrder.cost);
             monthDays[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / nameOfdays.length).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalCompletedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        averageDailySales: parseFloat((totalRevenue / nameOfdays.length).toFixed(2)),
         graphData: Object.values(monthDays)
     }
     return response
@@ -881,10 +980,12 @@ const getstatsbyMonth = async (req) => {
 const getStatsByWeek = async (req) => {
     let { startDate } = req.query
 
-    let totalOrders = 0;
-    let totalAmount = 0;
-    let cancelledOrders = 0;
-    let acceptedOrders = 0;
+    let totalNumberOfOrders = 0;
+    let totalRevenue = 0;
+    let totalCompletedOrders = 0;
+    let totalPendingOrders = 0;
+    let totalCancelledOrders = 0;
+    let totalAcceptedOrders = 0;
 
     let startOfWeek = startDate ? new Date(startDate) : new Date();
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -914,28 +1015,31 @@ const getStatsByWeek = async (req) => {
     let currentDay;
     console.log(filter)
     console.log(weekData, daysOfWeek)
-    let orders = await OrderModel.find(filter)
+    let orders = await OrderModel.find(filter).sort({ createdAt: -1 }).exec()
 
     for (const singleOrder of orders) {
         // if (singleOrder.billingStatus != "paid") return
         let orderDate = singleOrder.createdAt ? new Date(singleOrder.createdAt) : new Date(singleOrder.date)
         currentDay = daysOfWeek[orderDate.getDay()];
+        totalNumberOfOrders++
         if (singleOrder.status == "completed") {
             weekData[currentDay].totalRevenue += parseFloat(singleOrder.cost);
             weekData[currentDay].totalOrders++
-            totalAmount += parseFloat(singleOrder.cost);
-            totalOrders++
+            totalRevenue += parseFloat(singleOrder.cost);
+            totalCompletedOrders++
         }
-        if (singleOrder.status == "cancelled") cancelledOrders++
-        if (singleOrder.status == "inprocess") acceptedOrders++
+        if (singleOrder.status == "cancelled") totalCancelledOrders++
+        if (singleOrder.status == "inprocess") totalAcceptedOrders++
+        if (singleOrder.status == "ongoing") totalPendingOrders++
     }
 
     let response = {
-        totalRevenue: totalAmount,
-        totalOrders,
-        cancelledOrders,
-        acceptedOrders,
-        averageDailySales: parseFloat((totalAmount / 7).toFixed(2)),
+        totalNumberOfOrders,
+        totalAcceptedOrders,
+        totalPendingOrders,
+        totalCancelledOrders,
+        totalCompletedOrders,
+        averageDailySales: parseFloat((totalRevenue / 7).toFixed(2)),
         graphData: Object.values(weekData)
     }
     return response
@@ -945,21 +1049,34 @@ const getStatsByWeek = async (req) => {
 // ----------------------------------------------- sales -----------------------------------------------------//
 
 const getShopForSales = async (req) => {
-    let Shops = await shopModel.find().sort({ createdAt: 1, updatedAt: 1 })
-    return Shops
+    let { limit } = req.query
+
+    let order = await OrderModel.find({}, { _id: 0 }).limit(limit ?? null).sort({ createdAt: -1 }).populate({
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            sliderImage: 1,
+            isOpen: 1,
+            location: 1,
+            cost: 1,
+        }
+    })
+    let Order = order.map(e => e.shopId ?? null)
+    return Order
 };
 
 const getSalesSingleShop = async (req) => {
     let { shopId, graph } = req.query
 
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         { path: "vehicleId" },
     ]
 
-
-    let shop = await shopModel.findOne({ _id : shopId }, { location: 0 , __v : 0 })
-    let orders = await OrderModel.find({ shopId }, { location: 0 }).populate(populate)
+    let shop = await shopModel.findOne({ _id: shopId, isTerminated: { $ne: true } }, { location: 0, __v: 0 })
+    if (!shop) return
+    let orders = await OrderModel.find({ shopId }).populate(populate)
     let { graphData } = graph == "week" ? (await getStatsByWeek(req)) : graph == "month" ? (await getstatsbyMonth(req)) : (await getAllTimeStats(req))
 
     let response = {
@@ -969,6 +1086,107 @@ const getSalesSingleShop = async (req) => {
     }
     return response
 };
+
+
+// ----------------------------------------------- Notification  -----------------------------------------------------//
+
+
+
+
+
+
+
+const getOrdersByUserId = async (req) => {
+    let { limit, customerId, shopId } = req.query
+
+    let populate = [{
+        path: "customerId", select: {
+            username: 1, avatar: 1,
+            resizedAvatar: 1, fullname: 1, email: 1, phone: 1
+        }
+    },
+    {
+        path: "shopId", select: {
+            Owner: 1,
+            shopName: 1,
+            coverImage: 1,
+            isActive: 1,
+            service: 1,
+            shopDetails: 1,
+            estimatedServiceTime: 1,
+            cost: 1,
+        },
+        path: "vehicleId", select: {
+            vehicleManufacturer: 1,
+            vehiclePlateNumber: 1,
+            vehicleName: 1,
+            vehicleType: 1,
+            vehicleModel: 1,
+            isSelected: 1,
+            isActive: 1,
+        },
+        
+    },]
+
+    let filter = customerId ? { customerId } : shopId ? { shopId } : {}
+    let order = await OrderModel.find(filter).limit(limit ?? null).sort({ createdAt: -1 }).populate(populate)
+    return order
+};
+
+// ----------------------------------------------- Agent  -----------------------------------------------------//
+
+
+const getAllAgents = async (req) => {
+    let { id } = req.params
+
+    let filter = id ? { _id: id, role: "agent" } : { role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
+    }
+    if (id) {
+        let agent = await AdminModel.findOne(filter, fields)
+        return agent
+    }
+    let agent = await AdminModel.find(filter, fields)
+    return agent
+};
+
+const deleteAgents = async (req) => {
+    let { id } = req.params
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
+    }
+    let agent = await AdminModel.findOneAndDelete(filter, fields)
+    return agent
+};
+
+const updateAgents = async (req) => {
+    let { id } = req.params
+    let { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } = req.body
+    let filter = { _id: id, role: "agent" }
+    let fields = {
+        username: 1,
+        role: 1,
+        isActive: 1,
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
+    }
+    let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } }, { new: true, fields })
+    return agent
+};
+
 
 module.exports = {
     getBusinessbyStatus,
@@ -989,7 +1207,6 @@ module.exports = {
     createServiceFee,
     getserviceFeeById,
     updateServiceFee,
-    createServiceFee,
     getserviceFee,
     getserviceFeeById,
     updateServiceFee,
@@ -997,6 +1214,8 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    deletePromoCode,
+    deletePromoCodepermanent,
     getVehicles,
     getvehiclesById,
     updateVehicles,
@@ -1021,4 +1240,8 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    getOrdersByUserId,
+    getAllAgents,
+    deleteAgents,
+    updateAgents,
 }

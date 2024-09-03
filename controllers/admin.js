@@ -1,6 +1,7 @@
 
 const AdminFunctions = require('../functions/admin');
 const response = require('../helpers/response');
+const notification = require('../helpers/notification');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -490,6 +491,30 @@ const updatePromoCode = async (req, res) => {
     }
 }
 
+const deletePromoCode = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deletePromoCode(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deletePromoCodepermanent = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.deletePromoCodepermanent(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Promo Code")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 // ----------------------------------------------- Review -----------------------------------------------------//
 
 const getShopReviews = async (req, res) => {
@@ -651,6 +676,69 @@ const getSalesSingleShop = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- Notification  -----------------------------------------------------//
+
+const sendNotificationToAllUsers = async (req, res) => {
+    try {
+        let Stats = await notification.sendNotificationToAllUsers(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+const getOrdersByUserId = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getOrdersByUserId(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+// ----------------------------------------------- agent -----------------------------------------------------//
+
+const getAllAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.getAllAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.deleteAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const updateAgents = async (req, res) => {
+    try {
+        let Stats = await AdminFunctions.updateAgents(req)
+        if (!Stats) return response.resBadRequest(res, "couldn't find any Data")
+        return response.resSuccessData(res, Stats);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 module.exports = {
     updateStatus,
@@ -675,6 +763,8 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    deletePromoCode,
+    deletePromoCodepermanent,
     getVehicles,
     getvehiclesById,
     updateVehicles,
@@ -701,4 +791,9 @@ module.exports = {
     getStatsByWeek,
     getSalesSingleShop,
     getShopForSales,
+    sendNotificationToAllUsers,
+    getOrdersByUserId,
+    getAllAgents,
+    deleteAgents,
+    updateAgents,
 }

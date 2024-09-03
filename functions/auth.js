@@ -15,7 +15,30 @@ const updateRefreshToken = async (req, token, role) => {
         return seller
     }
     if (role == "admin") {
-        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { sessionKey: token } })
+        return admin
+    }
+    if (role == "agent") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { sessionKey: token } })
+        return admin
+    }
+}
+
+const setDeviceId = async (req, role) => {
+    if (role == "customer") {
+        let Customer = await CustomerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        return Customer
+    }
+    if (role == "seller") {
+        let seller = await SellerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        return seller
+    }
+    if (role == "admin") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
+        return admin
+    }
+    if (role == "agent") {
+        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
         return admin
     }
 }
@@ -53,7 +76,11 @@ const MakeUserVerifed = async (req, role) => {
         return Customer;
     }
     if (role == "admin") {
-        let Customer = await AdminModel.findOneAndUpdate({ email: req.body.email }, { isVerifed: true }, { new: true });
+        let Customer = await AdminModel.findOneAndUpdate({ email: req.body.email, role: "admin" }, { isVerifed: true }, { new: true });
+        return Customer;
+    }
+    if (role == "agent") {
+        let Customer = await AdminModel.findOneAndUpdate({ email: req.body.email, role: 'agent' }, { isVerifed: true }, { new: true });
         return Customer;
     }
 }
@@ -75,7 +102,7 @@ const isOTPAlreadySended = async (req) => {
     if (OTP.length < 1) return false;
     let createdAt = new Date(OTP[OTP.length - 1]._doc.createdAt)
     let currentDate = new Date
-    let isExpire = (currentDate - createdAt) > 120000
+    let isExpire = (currentDate - createdAt) > 1000 * 60 * 2
     console.log(isExpire)
     return !isExpire;
 
@@ -86,13 +113,13 @@ const isOTPAlreadySended = async (req) => {
 
 const getAdminByEmail = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.username, role: req.body.role }, { email: req.body.email, role: req.body.role }] });
     return admin;
 }
 
 const getAdmin = async (req) => {
 
-    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] });
+    let admin = await AdminModel.findOne({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] });
     return admin;
 }
 
@@ -104,5 +131,6 @@ module.exports = {
     resetPassword,
     isOTPAlreadySended,
     getAdminByEmail,
-    getAdmin
+    getAdmin,
+    setDeviceId,
 }

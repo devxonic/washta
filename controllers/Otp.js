@@ -30,7 +30,7 @@ const sendOTP = async (req, res) => {
         });
         let OTP = generate4DigitCode()
         let mailPath = path.resolve(__dirname, `../Mails/resetPassword/index.ejs`)
-        let Mail = await ejs.renderFile(mailPath, { data: { Code: OTP } });
+        let Mail = await ejs.renderFile(mailPath, { data: { name: User.fullName ?? User.username, msg: OTP } });
         let transporterRes = await transporter.sendMail({
             from: process.env.EmailFrom,
             to: email,
@@ -101,7 +101,7 @@ const userVerifiaction = async (req, res) => {
         let User = await SignupFunctions.MakeUserVerifed(req, role)
         if (!User) return response.resUnauthorized(res, "This User doesn't Exist");
 
-        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : role == "admin" ? process.env.adminToken : undefined
+        let selectEnv = role == 'customer' ? process.env.customerToken : role == "seller" ? process.env.sellerToken : role == "admin" ? process.env.adminToken : role == "agent" ? process.env.agentToken : undefined
         if (!selectEnv) return response.resBadRequest(res, "Invalid role or some thing Wrong on ENV");
         if (role == "seller") {
             console.log("i am in Seller")
