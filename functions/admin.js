@@ -1050,20 +1050,49 @@ const getStatsByWeek = async (req) => {
 
 const getShopForSales = async (req) => {
     let { limit } = req.query
+    let query = [
+        {
+            '$sort': {
+                'createdAt': -1
+            }
+        }, {
+            '$lookup': {
+                'from': 'shops',
+                'localField': 'shopId',
+                'foreignField': '_id',
+                'as': 'shop'
+            }
+        }, {
+            '$unwind': '$shop'
+        }, {
+            '$group': {
+                '_id': '$shop._id',
+                'shop': {
+                    '$first': '$shop'
+                },
+                'orders': {
+                    '$push': '$$ROOT'
+                }
+            }
+        }, {
+            '$replaceRoot': {
+                'newRoot': {
+                    '$mergeObjects': [
+                        '$$ROOT', {
+                            '$first': '$orders'
+                        }
+                    ]
+                }
+            }
+        }, {
+            '$unset': 'shop'
+        },
+    ]
 
-    let order = await OrderModel.find({}, { _id: 0 }).limit(limit ?? null).sort({ createdAt: -1 }).populate({
-        path: "shopId", select: {
-            Owner: 1,
-            shopName: 1,
-            coverImage: 1,
-            sliderImage: 1,
-            isOpen: 1,
-            location: 1,
-            cost: 1,
-        }
-    })
-    let Order = order.map(e => e.shopId ?? null)
-    return Order
+
+    let order = await OrderModel.aggregate(query)
+    
+    return order
 };
 
 const getSalesSingleShop = async (req) => {
