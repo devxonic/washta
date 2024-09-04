@@ -306,21 +306,26 @@ const getShopsServicefee = async (req) => {
 
 const getShopsPromoCode = async (req) => {
     let id = req.user.id
-    let { promoCode } = req.query
+    let { promoCode, discountType } = req.query
     let currentTime = new Date();
+
+    let dis = discountType ? [discountType] : ['fixed', 'percentage']
+    let findFilter = {
+        isDeleted: { $ne: true },
+        isActive: { $ne: false },
+        $or: [
+            { giveTo: id },
+            { giveToAll: { $ne: false } }
+        ],
+        'duration.startTime': { $lte: currentTime },
+        'duration.endTime': { $gte: currentTime }
+    }
 
     if (promoCode) {
         console.log(currentTime)
         let res = await PromoCodeModel.findOne({
-            isDeleted: { $ne: true },
-            isActive: { $ne: false },
             promoCode,
-            $or: [
-                { giveTo: id, },
-                { giveToAll: { $ne: false } }
-            ],
-            // 'duration.startTime': { $lte: currentTime },
-            // 'duration.endTime': { $gte: currentTime }
+            ...findFilter
         }, { usedBy: 0 })
 
         if (!res) return res
@@ -330,15 +335,9 @@ const getShopsPromoCode = async (req) => {
         } : res
     }
     let res = await PromoCodeModel.find({
-        isDeleted: { $ne: true },
-        isActive: { $ne: false },
-        $or: [
-            { giveTo: id, },
-            { giveToAll: { $ne: false } }
-        ],
+        ...findFilter,
         usedBy: { $ne: id },
-        'duration.startTime': { $lte: currentTime },
-        'duration.endTime': { $gte: currentTime }
+        Discounttype: { $in: dis },
     }, { usedBy: 0 })
     return res
 }
