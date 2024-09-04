@@ -13,8 +13,9 @@ const chatMessageSchema = new mongoose.Schema({
         ref: 'Chatroom'
     },
     sender: {
-        name: { type: String },
+        username: { type: String },
         id: { type: mongoose.Schema.Types.ObjectId },
+        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
     }
 }, {
     timestamps: true

@@ -30,22 +30,55 @@ module.exports = function (server) {
                     joinedUser[data.chatRoomId] = [data.user.id]
                 }
             }
+            socket.join(data.chatRoomId);
             console.log(`room joined by ${socket.id} roomid => ${data.chatRoomId}`);
             console.log(joinedUser)
             console.log(chatRoomData)
         })
-        socket.on('send-message', async (data) => {
+        socket.on('send-message-user', async (data) => {
             console.log(data)
-            // let body = {
+            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.customerId)) {
+                console.log("send Notif")
+                // notification.sendMessageNotif(data.message, data.user, receiver, "player")
+            }
+            io.in(data.chatRoomId).emit("message-receive-from-admin", data.message);
 
-            // }
-            // let newRequest  = chatRoomModel()
-            // let agents = await chatRoomModel.findOne({ users: userArr })
-            // let findRoom = await chatRoomModel.findOne({ users: userArr })
+            let body = data?.media ? {
+                message: data.message,
+                media: data.media,
+                chatRoomId: data.chatRoomId,
+                senderId: { id: data.user.id, role: data.user.role }
+            } : {
+                message: data.message,
+                chatRoomId: data.chatRoomId,
+                senderId: { id: data.user.id, role: data.user.role }
+            }
 
+            const messageSave = await new chatMessageModel(body).save()
+            console.log("message saved", messageSave)
+        })
 
+        socket.on('send-message-to-admin', async (data) => {
+            console.log(data)
+            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.customerId)) {
+                console.log("send Notif")
+                // notification.sendMessageNotif(data.message, data.user, receiver, "player")
+            }
+            io.in(data.chatRoomId).emit("message-receive-from-user", data.message);
 
-            console.log('foundroom', findRoom)
+            let body = data?.media ? {
+                message: data.message,
+                media: data.media,
+                chatRoomId: data.chatRoomId,
+                senderId: { id: data.user.id, role: data.user.role }
+            } : {
+                message: data.message,
+                chatRoomId: data.chatRoomId,
+                senderId: { id: data.user.id, role: data.user.role }
+            }
+
+            const messageSave = await new chatMessageModel(body).save()
+            console.log("message saved", messageSave)
         })
     })
 
