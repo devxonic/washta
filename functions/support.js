@@ -11,7 +11,7 @@ const craeteNewSupportRoom = async (req) => {
         let body = {
             name,
             title,
-            users: [user],
+            user,
         }
         console.log(body)
         let newChatRoom = await new chatRoomModel(body).save();
