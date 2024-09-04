@@ -212,7 +212,8 @@ const AdminSignUp = async (req, res) => {
     try {
         let { username, email, fullName, phone, password, role } = req.body
         console.log('siggning user up');
-        let resObj = {};
+        role = 'admin'
+        req.body.role = 'admin'
         let AdminExists = await SignupFunctions.getAdminByEmail(req)
         if (AdminExists) return response.resBadRequest(res, "username or email already exists");
         let hash = await bcrypt.hash(password, 10);
@@ -264,7 +265,8 @@ const AdminSignUp = async (req, res) => {
 const AdminlogIn = async (req, res) => {
     try {
         let { password } = req.body
-
+        role = 'admin'
+        req.body.role = 'admin'
         let admin = await SignupFunctions.getAdmin(req);
         if (!admin) return response.resBadRequest(res, "couldn't find user");
         if (admin && admin?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated");
@@ -333,9 +335,9 @@ const AgentSignUp = async (req, res) => {
         let { username, fullName, password, role } = req.body
         role = 'agent'
         req.body.role = 'agent'
-        let resObj = {};
-        let AgnetExists = await SignupFunctions.getAdminByEmail(req)
-        if (AgnetExists) return response.resBadRequest(res, "username or email already exists");
+        let AgnetExists = await SignupFunctions.getAgentByEmail(req)
+        console.log(AgnetExists)
+        if (AgnetExists) return response.resBadRequest(res, "username already exists");
         let hash = await bcrypt.hash(password, 10);
         let AgentBody = { username, fullName, password: hash, role, isVerifed: true }
         let savedAgent = await new AdminModel(AgentBody).save();
@@ -359,7 +361,8 @@ const AgentlogIn = async (req, res) => {
         req.body.role = 'agent'
         let role = 'agent'
         console.log(req.body)
-        let agent = await SignupFunctions.getAdmin(req);
+        let agent = await SignupFunctions.getAgent(req);
+        console.log(agent)
         if (!agent) return response.resBadRequest(res, "couldn't find user");
         if (agent && agent?._doc?.isTerminated) return response.resBadRequest(res, "This user has been terminated");
 
