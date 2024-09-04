@@ -2,27 +2,31 @@ const mongoose = require('mongoose');
 
 const chatMessageSchema = new mongoose.Schema({
 
-    name: { type: String },
     title: { type: String },
-    users: {
-        type: mongoose.Types.ObjectId,
-        username: { type, String },
-        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
-    },
-    requestStatus: { type: String, enum: ['pending', 'ongoing', 'resolved', 'unresolved'] },
+    users: [
+        {
+            id: { type: mongoose.Types.ObjectId },
+            username: { type: String },
+            role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
+        }],
+    requestStatus: { type: String, enum: ['pending', 'ongoing', 'resolved', 'rejected'], default: "pending" },
     isSomeOneConnected: { type: Boolean },
     isConnected: {
-        type: mongoose.Types.ObjectId,
-        username: { type, String },
+        id: { type: mongoose.Types.ObjectId },
+        username: { type: String },
         role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
     },
     isEnded: { type: Boolean },
     endedAt: { type: Date },
-    endedBy: { _id }
+    endedBy: {
+        id: { type: mongoose.Types.ObjectId },
+        username: { type: String },
+        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
+    }
 }, {
     timestamps: true
 });
 
-const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+const ChatMessage = mongoose.model('chatRoom', chatMessageSchema);
 
 module.exports = ChatMessage;

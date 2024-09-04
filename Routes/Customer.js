@@ -4,7 +4,7 @@ const CustomerControllers = require('../controllers/Customer');
 const middlewares = require('../middlewares');
 
 
-router.post('/uplaodAvatar', middlewares.verifyCustomer , middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
+router.post('/uplaodAvatar', middlewares.verifyCustomer, middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
 router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
@@ -69,6 +69,13 @@ router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.d
 // ----------------------------------------------- Notification -----------------------------------------------------//
 
 router.get('/Notifications', middlewares.verifyCustomer, CustomerControllers.getAllMyNotifications)
+
+
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+router.post('/support', middlewares.verifyCustomer, CustomerControllers.craeteNewSupportRoom)
+router.get('/support', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
+// router.get('/support:id', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
 
 
 

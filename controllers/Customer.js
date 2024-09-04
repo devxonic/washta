@@ -4,6 +4,7 @@ const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const authFunctions = require('../functions/auth');
 
+const supportFunctions = require('../functions/support');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -522,6 +523,32 @@ const getAllMyNotifications = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+const craeteNewSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.craeteNewSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.getSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 module.exports = {
     getProfile,
@@ -561,4 +588,6 @@ module.exports = {
     updatePassword,
     uplaodAvatar,
     getAllMyNotifications,
+    craeteNewSupportRoom,
+    getSupportRoom,
 }
