@@ -9,7 +9,7 @@ const chatMessageSchema = new mongoose.Schema({
         role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
     },
     requestStatus: { type: String, enum: ['pending', 'ongoing', 'resolved', 'rejected'], default: "pending" },
-    isSomeOneConnected: { type: Boolean },
+    isSomeOneConnected: { type: Boolean, default: false },
     connectedWith: {
         id: { type: mongoose.Types.ObjectId },
         username: { type: String },
