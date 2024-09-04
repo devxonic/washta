@@ -8,6 +8,7 @@ const ObjectId = mongoose.Types.ObjectId
 module.exports = function (server) {
 
     let joinedUser = { "extra": [] }
+    let chatRoomData = { "extra": [] }
     let io = socketIo(server, {
         cors: {
             origin: "*"
@@ -17,8 +18,12 @@ module.exports = function (server) {
         transports: ['websocket', 'polling'],
     });
     io.on('connection', (socket) => {
-        socket.on("join", (data) => {
+        socket.on("join", async (data) => {
             if (data.chatRoomId) {
+                if (!chatRoomData[data.chatRoomId]) {
+                    let chatRoom = await chatRoomModel.findOne({ _id: data.chatRoomId }) // add filter to ended rooms
+                    chatRoomData[data.chatRoomId] = chatRoom
+                }
                 if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.user.id)) {
                     joinedUser[data.chatRoomId].push(data.user.id)
                 } else if (!joinedUser[data.chatRoomId]) {
@@ -27,8 +32,9 @@ module.exports = function (server) {
             }
             console.log(`room joined by ${socket.id} roomid => ${data.chatRoomId}`);
             console.log(joinedUser)
+            console.log(chatRoomData)
         })
-        socket.on('craete-new-request', async (data) => {
+        socket.on('send-message', async (data) => {
             console.log(data)
             // let body = {
 
