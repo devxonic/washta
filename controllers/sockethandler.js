@@ -19,27 +19,27 @@ module.exports = function (server) {
     io.on('connection', (socket) => {
         socket.on("join", async (data) => {
             if (data.chatRoomId) {
-                if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.user.id)) {
-                    joinedUser[data.chatRoomId].push(data.user.id)
+                if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.sender.id)) {
+                    joinedUser[data.chatRoomId].push(data.sender.id)
                 } else if (!joinedUser[data.chatRoomId]) {
-                    joinedUser[data.chatRoomId] = [data.user.id]
+                    joinedUser[data.chatRoomId] = [data.sender.id]
                 }
             }
             socket.join(data.chatRoomId);
-            console.log(`room joined by ${data.user.id} roomid => ${data.chatRoomId}`);
+            console.log(`room joined by ${data.sender.id} roomid => ${data.chatRoomId}`);
         })
         socket.on("leave", (data) => {
             if (joinedUser[data.chatRoomId]) {
-                joinedUser[data.chatRoomId] = joinedUser[data.chatRoomId].filter((x) => (data.user.id !== x))
+                joinedUser[data.chatRoomId] = joinedUser[data.chatRoomId].filter((x) => (data.sender.id !== x))
             }
-            console.log(`room leaved by ${data.user.id} roomid => ${data.chatRoomId}`);
+            console.log(`room leaved by ${data.sender.id} roomid => ${data.chatRoomId}`);
             socket.leave(data.chatRoomId);
         })
         socket.on('send-message-to-user', async (data) => {
             // console.log(data)
-            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver)) {
+            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver.id)) {
                 console.log("send Notif ----------------------------------------------------- ")
-                // notification.sendMessageNotif(data.message, data.user, receiver, "player")
+                // notification.sendMessageNotif(data.message, data.sender, receiver, "player")
             }
             let date = new Date()
             let media = data.media ? { media: data.media } : {}
@@ -55,7 +55,7 @@ module.exports = function (server) {
                 ...media,
                 message: data.message,
                 chatRoomId: data.chatRoomId,
-                sender: { id: data.user.id, role: data.user.role }
+                sender: { id: data.sender.id, role: data.sender.role }
             }
 
             const messageSave = await new chatMessageModel(body).save()
@@ -64,9 +64,9 @@ module.exports = function (server) {
 
         socket.on('send-message-to-admin', async (data) => {
             // console.log(data)
-            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver)) {
+            if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver.id)) {
                 console.log("send Notif ======================================================== ")
-                // notification.sendMessageNotif(data.message, data.user, receiver, "player")
+                // notification.sendMessageNotif(data.message, data.sender, receiver, "player")
             }
 
             let date = new Date()
@@ -83,7 +83,7 @@ module.exports = function (server) {
                 ...media,
                 message: data.message,
                 chatRoomId: data.chatRoomId,
-                sender: { id: data.user.id, role: data.user.role }
+                sender: { id: data.sender.id, role: data.sender.role }
             }
 
             const messageSave = await new chatMessageModel(body).save()
