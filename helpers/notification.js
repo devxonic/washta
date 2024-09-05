@@ -193,10 +193,43 @@ const sendNotificationToAllAgents = async (req) => {
     }
 };
 
+const sendMessageNotif = async (msg, sender, receiver, title) => {
+    try {
+        let saveMessage = {
+            notification: {
+                title: title ? title : "Received a Message",
+                body: msg,
+            },
+            sender: {
+                id: sender.id,
+                role: sender.role
+            },
+            receiver: {
+                id: receiver.id,
+                role: receiver.role
+            }
+        };
+
+        let message = {
+            notification: saveMessage.notification,
+            token: receiver?.deviceId,
+        };
+
+        let Notif = await NotificationModel(saveMessage).save();
+        // let Notif = await firebasemessage.messaging().send(message);
+        console.log(Notif)
+        console.log("send message notif success");
+        return Notif
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 
 module.exports = {
     NotificationOnBooking,
     sendNotificationToAllUsers,
     getAllMyNotifications,
     sendNotificationToAllAgents,
+    sendMessageNotif,
 };

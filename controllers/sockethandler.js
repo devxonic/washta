@@ -2,6 +2,7 @@ const socketIo = require('socket.io')
 const mongoose = require('mongoose')
 const chatRoomModel = require('../models/chatRoom')
 const chatMessageModel = require('../models/chatMessage')
+const notification = require('../helpers/notification')
 const ObjectId = mongoose.Types.ObjectId
 
 
@@ -39,7 +40,7 @@ module.exports = function (server) {
             // console.log(data)
             if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver.id)) {
                 console.log("send Notif ----------------------------------------------------- ")
-                // notification.sendMessageNotif(data.message, data.sender, receiver, "player")
+                notification.sendMessageNotif(data.message, data.sender, data.receiver)
             }
             let date = new Date()
             let media = data.media ? { media: data.media } : {}
@@ -66,7 +67,7 @@ module.exports = function (server) {
             // console.log(data)
             if (joinedUser[data.chatRoomId] && !joinedUser[data.chatRoomId].includes(data.receiver.id)) {
                 console.log("send Notif ======================================================== ")
-                // notification.sendMessageNotif(data.message, data.sender, receiver, "player")
+                notification.sendMessageNotif(data.message, data.sender, data.receiver)
             }
 
             let date = new Date()
