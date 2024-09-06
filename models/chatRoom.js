@@ -1,27 +1,23 @@
 const mongoose = require('mongoose');
-
+const userSchema = new mongoose.Schema({
+    id: { type: mongoose.Types.ObjectId },
+    username: { type: String },
+    role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
+})
 const chatMessageSchema = new mongoose.Schema({
-
+    
     title: { type: String },
-    user: {
-        id: { type: mongoose.Types.ObjectId },
-        username: { type: String },
-        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
-    },
+    user: userSchema,
     requestStatus: { type: String, enum: ['pending', 'ongoing', 'resolved', 'rejected'], default: "pending" },
+    rejectedBy: userSchema,
+    resolvedBy: userSchema,
+    rejectedAt: { type: Date },
+    resolved: { type: Date },
     isSomeOneConnected: { type: Boolean, default: false },
-    connectedWith: {
-        id: { type: mongoose.Types.ObjectId },
-        username: { type: String },
-        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
-    },
+    connectedWith: userSchema,
     isEnded: { type: Boolean },
     endedAt: { type: Date },
-    endedBy: {
-        id: { type: mongoose.Types.ObjectId },
-        username: { type: String },
-        role: { type: String, enum: ['customer', 'seller', 'admin', 'agent'] }
-    }
+    endedBy: userSchema
 }, {
     timestamps: true
 });
