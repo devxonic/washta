@@ -550,6 +550,48 @@ const getSupportRoom = async (req, res) => {
 }
 
 
+
+
+const createAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const updatesAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 module.exports = {
     getProfile,
     editProfile,
@@ -590,4 +632,7 @@ module.exports = {
     getAllMyNotifications,
     craeteNewSupportRoom,
     getSupportRoom,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
 }

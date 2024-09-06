@@ -64,6 +64,13 @@ router.patch('/sellerReview', middlewares.verifyCustomer, CustomerControllers.up
 router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
 router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
 
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+router.post('/agentReview', middlewares.verifyCustomer, CustomerControllers.createAgentReview)
+router.patch('/agentReview', middlewares.verifyCustomer, CustomerControllers.updatesAgentReview)
+router.get('/agentReview', middlewares.verifyCustomer, CustomerControllers.getAgentReview)
+router.delete('/agentReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
 
 
 // ----------------------------------------------- Notification -----------------------------------------------------//
