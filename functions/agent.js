@@ -28,17 +28,45 @@ const getSupportRoom = async (req, res) => {
 
 const acceptSupportRequest = async (req, res) => {
     let { id } = req.params
+    let { status } = req.query
 
-    let body = {
-        isSomeOneConnected: true,
-        requestStatus: "ongoing",
-        connectedWith: {
-            id: req.user.id,
-            username: req.user.username,
-            role: "agent",
+
+
+    let user = {
+        id: req.user.id,
+        username: req.user.username,
+        role: "agent",
+    }
+    let body = {}
+    let date = new Date()
+
+    if (status == 'ongoing') {
+        body = {
+            isSomeOneConnected: true,
+            requestStatus: "ongoing",
+            connectedWith: user
         }
     }
-    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, isSomeOneConnected: { $ne: true } }, { $set: body })
+    if (status == 'rejected') {
+        body = {
+            isSomeOneConnected: true,
+            requestStatus: "rejected",
+            connectedWith: user,
+            resolvedBy: user,
+            rejectedAt: date
+        }
+    }
+    if (status == 'resolved') {
+        body = {
+            isSomeOneConnected: true,
+            requestStatus: "resolved",
+            connectedWith: user,
+            resolvedBy: user,
+            rejectedAt: date
+        }
+    }
+
+    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body })
     return chatRoom
 }
 
