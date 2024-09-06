@@ -25,7 +25,8 @@ module.exports = function (server) {
                     console.log(ticket)
                     if (!ticket) return io.to(socket.id).emit("errorM", { error: { messaage: "ticket Not found" } })
                     if (ticket?.requestStatus === "resolved" || ticket?.requestStatus === "rejected") return io.to(socket.id).emit("error", { error: { messaage: `This ticket is ${ticket?.requestStatus}` } })
-                    console.log("tk =>>>", ticket)
+                    if (ticket?.user?.id === data?.sender?.id && ticket?.connectedWith.id === data?.sender?.id && data.sender.role !== "admin") return io.to(socket.id).emit("error", { error: { messaage: `you can not join this room "unAuthorized"` } })
+
                     ticketData[data.ticketId] = ticket
                 }
                 if (joinedUser[data.ticketId] && !joinedUser[data.ticketId].includes(data.sender.id)) {
@@ -36,7 +37,7 @@ module.exports = function (server) {
             }
             socket.join(data.ticketId);
             console.log(`room joined by ${data.sender.id} roomid => ${data.ticketId}`);
-            console.log(`ticket => `, ticketData);
+            // console.log(`ticket => `, ticketData);
         })
         socket.on("end", async (data) => {
             if (ticketData?.[data.ticketId]) {
@@ -67,10 +68,10 @@ module.exports = function (server) {
                 sender: { id: data.sender.id, role: data.sender.role }
             }
             // console.log('message body - - - - - - ', messageBody)
-            io.in(data.ticketId).emit("message-receive-from-admin", body);
+            io.in(data.ticketId).emit("message-receive-from-agent", body);
         })
 
-        socket.on('send-message-to-admin', async (data) => {
+        socket.on('send-message-to-agent', async (data) => {
             // console.log(data)
             if (joinedUser[data.ticketId] && !joinedUser[data.ticketId].includes(data.receiver.id)) {
                 console.log("send Notif ======================================================== ")
