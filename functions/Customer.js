@@ -685,7 +685,7 @@ const createAgentReview = async (req) => {
     let { agentId, ticketId, rating, comment } = req.body
     let { id } = req.user
 
-    let Rating = await ReviewModel({ agentId, ticketId, dcustomerId: id, rating, 'comment.text': comment.text }).save()
+    let Rating = await ReviewModel({ agentId, ticketId, customerId: id, rating, 'comment.text': comment.text }).save()
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating

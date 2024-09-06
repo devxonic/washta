@@ -20,20 +20,14 @@ module.exports = function (server) {
     });
     io.on('connection', (socket) => {
         socket.on("join", async (data) => {
-            // console.log(data.ticketId)
+            console.log(socket.id)
+            console.log(socket.id)
             if (data.ticketId) {
                 if (!ticketData[data.ticketId]) {
-                    let updateConnection = {
-                        isSomeOneConnected: true,
-                        connectedWith: {
-                            id: data.sender.id,
-                            username: data.sender.username,
-                            role: data.sender.role,
-                        }
-                    }
-                    let ticket = await chatRoomModel.findOneAndUpdate({ _id: data.ticketId }, { $set: { ...updateConnection } }, { new: true })
-                    if (!ticket) return io.to(socket.id).emit("error", { error: { messaage: "ticket Not found" } })
-                    // if (ticket?.isSomeOneConnected) return io.to(socket.id).emit("error", { error: { messaage: "some one is Already Connected" } })
+                    let ticket = await chatRoomModel.findOne({ _id: data.ticketId })
+                    console.log(ticket)
+                    if (!ticket) return io.to(socket.id).emit("errorM", { error: { messaage: "ticket Not found" } })
+                    if (ticket?.requestStatus === "resolved" || ticket?.requestStatus === "rejected") return io.to(socket.id).emit("error", { error: { messaage: `This ticket is ${ticket?.requestStatus}` } })
                     console.log("tk =>>>", ticket)
                     ticketData[data.ticketId] = ticket
                 }
@@ -50,11 +44,10 @@ module.exports = function (server) {
         socket.on("end", async (data) => {
             if (ticketData?.[data.ticketId]) {
                 let updateConnection = {
-                    $set: { isSomeOneConnected: false , requestStatus : data.requestStatus},
-                    $unset: { connectedWith: 1 }
+                    $set: { requestStatus: data.requestStatus },
                 }
                 let ticket = await chatRoomModel.findOneAndUpdate({ _id: data.ticketId }, updateConnection, { new: true })
-                
+
                 delete ticketData[data.ticketId]
             }
             console.log(ticketData)
@@ -65,9 +58,7 @@ module.exports = function (server) {
             socket.leave(data.ticketId);
         })
         socket.on('send-message-to-user', async (data) => {
-            // console.log(data)
             if (joinedUser[data.ticketId] && !joinedUser[data.ticketId].includes(data.receiver.id)) {
-                console.log("send Notif ----------------------------------------------------- ")
                 notification.sendMessageNotif(data.message, data.sender, data.receiver)
             }
             let date = new Date()
@@ -75,6 +66,7 @@ module.exports = function (server) {
             let body = {
                 ...media,
                 message: data.message,
+                createdAt: date,
                 ticketId: data.ticketId,
                 sender: { id: data.sender.id, role: data.sender.role }
             }
@@ -99,6 +91,7 @@ module.exports = function (server) {
             let body = {
                 ...media,
                 message: data.message,
+                createdAt: date,
                 ticketId: data.ticketId,
                 sender: { id: data.sender.id, role: data.sender.role }
             }
