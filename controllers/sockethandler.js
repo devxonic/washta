@@ -1,9 +1,7 @@
 const socketIo = require('socket.io')
 const mongoose = require('mongoose')
 const chatRoomModel = require('../models/chatRoom')
-const chatMessageModel = require('../models/chatMessage')
 const notification = require('../helpers/notification')
-const ObjectId = mongoose.Types.ObjectId
 
 
 module.exports = function (server) {
@@ -20,7 +18,6 @@ module.exports = function (server) {
     });
     io.on('connection', (socket) => {
         socket.on("join", async (data) => {
-            console.log(socket.id)
             console.log(socket.id)
             if (data.ticketId) {
                 if (!ticketData[data.ticketId]) {
@@ -47,7 +44,6 @@ module.exports = function (server) {
                     $set: { requestStatus: data.requestStatus },
                 }
                 let ticket = await chatRoomModel.findOneAndUpdate({ _id: data.ticketId }, updateConnection, { new: true })
-
                 delete ticketData[data.ticketId]
             }
             console.log(ticketData)
@@ -72,11 +68,6 @@ module.exports = function (server) {
             }
             // console.log('message body - - - - - - ', messageBody)
             io.in(data.ticketId).emit("message-receive-from-admin", body);
-
-
-
-            // const messageSave = await new chatMessageModel(body).save()
-            // console.log("message saved", messageSave)
         })
 
         socket.on('send-message-to-admin', async (data) => {
@@ -97,10 +88,6 @@ module.exports = function (server) {
             }
 
             io.in(data.ticketId).emit("message-receive-from-user", body);
-
-
-            // const messageSave = await new chatMessageModel(body).save()
-            // console.log("message saved", messageSave)
         })
     })
 
