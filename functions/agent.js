@@ -28,7 +28,7 @@ const getSupportRoom = async (req, res) => {
 
 const acceptSupportRequest = async (req, res) => {
     let { id } = req.params
-    let { status } = req.query
+    let { status } = req.body
 
 
 
