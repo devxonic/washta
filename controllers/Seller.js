@@ -466,6 +466,20 @@ const replyToReview = async (req, res) => {
     }
 }
 
+
+
+const getMyReviews = async (req, res) => {
+    try {
+        let Order = await SellerFunctions.getMyReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 const getSellerReviews = async (req, res) => {
     try {
         let Order = await SellerFunctions.getSellerReviews(req)
@@ -653,5 +667,6 @@ module.exports = {
     createAgentReview,
     updatesAgentReview,
     getAgentReview,
-    deleteAgentReviews
+    deleteAgentReviews,
+    getMyReviews
 }
