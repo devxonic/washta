@@ -49,17 +49,27 @@ const sendNotificationToAllUsers = async (req) => {
         let Receivers = [];
 
         if (sendTo == "customer" || sendTo == "both") {
-            let customer = await CustomerModel.find({}, { deviceId: 1 })
+            let customer = await CustomerModel.find({}, { deviceId: 1, username: 1, resizedAvatar: 1 })
             customer.map(e => {
-                Receivers.push({ id: e._id, role: "customer" })
+                Receivers.push({
+                    id: e._id,
+                    role: 'customer',
+                    username: e.username,
+                    avatar: e.resizedAvatar
+                })
                 if (!e?.deviceId) return
                 return tokenArray.push(e?.deviceId)
             })
         }
         if (sendTo == "seller" || sendTo == "both") {
-            let seller = await SellerModel.find({}, { deviceId: 1 })
+            let seller = await SellerModel.find({}, { deviceId: 1, username: 1, resizedAvatar: 1 })
             seller.map(e => {
-                Receivers.push({ id: e._id, role: "seller" })
+                Receivers.push({
+                    id: e._id,
+                    role: 'seller',
+                    username: e.username,
+                    avatar: e.resizedAvatar
+                })
                 if (!e?.deviceId) return
                 return tokenArray.push(e?.deviceId)
             })
@@ -139,8 +149,87 @@ const getAllMyNotifications = async (req) => {
 };
 
 
+const sendNotificationToAllAgents = async (req) => {
+    try {
+        let { user } = req.body
+        let tokenArray = [];
+        let Receivers = [];
+
+        let admins = await AdminModel.find({}, { deviceId: 1, role: 1, username: 1, resizedAvatar: 1 })
+        admins.map(e => {
+            Receivers.push({
+                id: e._id,
+                role: e.role,
+                username: e.username,
+                avatar: e.resizedAvatar
+            })
+            if (!e?.deviceId) return
+            return tokenArray.push(e?.deviceId)
+        })
+
+        let saveMessage = {
+            notification: {
+                title: 'New request',
+                body: 'New Support Request is Avilable ',
+            },
+            sender: {
+                id: user.id,
+                role: user.role
+            },
+            multiReceivers: Receivers,
+        }
+        let message = {
+            notification: saveMessage.notification,
+            token: tokenArray,
+        };
+        console.log(saveMessage)
+        let notif = await NotificationModel(saveMessage).save();
+        // await firebase.messaging().sendMulticast(message)
+        console.log("send message notif success ");
+        return notif
+    } catch (error) {
+        console.error("error in sending notif");
+        console.error(error);
+    }
+};
+
+const sendMessageNotif = async (msg, sender, receiver, title) => {
+    try {
+        let saveMessage = {
+            notification: {
+                title: title ? title : "Received a Message",
+                body: msg,
+            },
+            sender: {
+                id: sender.id,
+                role: sender.role
+            },
+            receiver: {
+                id: receiver.id,
+                role: receiver.role
+            }
+        };
+
+        let message = {
+            notification: saveMessage.notification,
+            token: receiver?.deviceId,
+        };
+
+        let Notif = await NotificationModel(saveMessage).save();
+        // let Notif = await firebasemessage.messaging().send(message);
+        console.log(Notif)
+        console.log("send message notif success");
+        return Notif
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+
 module.exports = {
     NotificationOnBooking,
     sendNotificationToAllUsers,
-    getAllMyNotifications
+    getAllMyNotifications,
+    sendNotificationToAllAgents,
+    sendMessageNotif,
 };

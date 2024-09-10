@@ -72,4 +72,21 @@ router.get('/stats', middlewares.verifySeller, SellerControllers.getAllTimeStats
 router.get('/monthStats', middlewares.verifySeller, SellerControllers.getstatsbyMonth)
 router.get('/weekStats', middlewares.verifySeller, SellerControllers.getStatsByWeek)
 
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+router.post('/support', middlewares.verifySeller, SellerControllers.craeteNewSupportRoom)
+router.get('/support', middlewares.verifySeller, SellerControllers.getSupportRoom)
+router.get('/support/:id', middlewares.verifySeller, SellerControllers.getSupportRoom)
+
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+router.post('/agentReview', middlewares.verifySeller, SellerControllers.createAgentReview)
+router.patch('/agentReview', middlewares.verifySeller, SellerControllers.updatesAgentReview)
+router.get('/agentReview', middlewares.verifySeller, SellerControllers.getAgentReview)
+router.delete('/agentReview', middlewares.verifySeller, SellerControllers.deleteAgentReviews)
+
+
+
+
+
 module.exports = router 

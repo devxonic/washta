@@ -20,6 +20,14 @@ const ReviewSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
     },
+    agentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'admin',
+    },
+    ticketId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'chatRoom',
+    },
     orderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'order',

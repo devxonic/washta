@@ -628,7 +628,7 @@ const getSellerReview = async (req) => {
     let { sellerId, shopId, limit } = req.query
 
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -678,6 +678,48 @@ const updatesSellerReview = async (req) => {
 }
 
 
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+
+const createAgentReview = async (req) => {
+    let { agentId, ticketId, rating, comment } = req.body
+    let { id } = req.user
+
+    let Rating = await ReviewModel({ agentId, ticketId, customerId: id, rating, 'comment.text': comment.text }).save()
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+
+const updatesAgentReview = async (req) => {
+    let { rating, comment } = req.body
+    let { reviewId } = req.query
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+const getAgentReview = async (req) => {
+    let { agentId, limit } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "agentId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } }, ,
+        { path: "ticketId" }
+    ]
+
+    if (!agentId) return { error: "agent Id Must be required" }
+    let Reviews = await ReviewModel.find({ agentId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
+};
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -719,5 +761,9 @@ module.exports = {
     getSellerReview,
     deleteShopReviews,
     updatesSellerReview,
-    updateImage
+    updateImage,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
+
 }

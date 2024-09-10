@@ -1,6 +1,8 @@
 
 const SellerFunctions = require('../functions/Seller');
+const CustomerFunctions = require('../functions/Customer');
 const notification = require('../helpers/notification');
+const supportFunctions = require('../functions/support');
 const response = require('../helpers/response');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
@@ -525,6 +527,85 @@ const getStatsByWeek = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+const craeteNewSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.craeteNewSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.getSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
+const createAgentReview = async (req, res) => {
+    try {
+        let Booking = await SellerFunctions.createAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const updatesAgentReview = async (req, res) => {
+    try {
+        let Booking = await SellerFunctions.updatesAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAgentReview = async (req, res) => {
+    try {
+        let Booking = await SellerFunctions.getAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const deleteAgentReviews = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.deleteShopReviews(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 
 module.exports = {
@@ -567,4 +648,10 @@ module.exports = {
     getAllTimeStats,
     getstatsbyMonth,
     getStatsByWeek,
+    craeteNewSupportRoom,
+    getSupportRoom,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
+    deleteAgentReviews
 }
