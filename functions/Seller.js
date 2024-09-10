@@ -523,6 +523,20 @@ const deleteMyReplys = async (req) => {
     return reply
 }
 
+
+const getMyReviews = async (req) => {
+    let { id } = req.user
+    let populate = [
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "adminId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "ticketId" }
+    ]
+    let Rating = await ReviewModel.find({ agentId: req.user.id, isDeleted: { $ne: true } }).populate(populate)
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
+}
+
 // ----------------------------------------------- Invoice -----------------------------------------------------//
 
 const getAllInvoice = async (req) => {
@@ -934,10 +948,12 @@ module.exports = {
     getAllInvoiceById,
     getSellerReviews,
     getOrderReviews,
+    getMyReviews,
     openAllShops,
     openShopByid,
     updateImage,
     getAllTimeStats,
     getstatsbyMonth,
     getStatsByWeek,
+
 };
