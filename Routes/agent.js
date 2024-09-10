@@ -18,4 +18,13 @@ router.get('/support/:id', middlewares.verifyAgent, agentController.getSupportRo
 router.patch('/support/:id', middlewares.verifyAgent, agentController.acceptSupportRequest)
 
 
+// ----------------------------------------------- Review -----------------------------------------------------//
+
+router.get('/agentReview', middlewares.verifyAgent, agentController.getAgentReviews)
+router.post('/replyReview', middlewares.verifyAgent, agentController.replyToReview) // ...
+// router.delete('/deleteReply', middlewares.verifyAgent, agentController.deleteMyReplys) // ...
+router.patch('/editReply', middlewares.verifyAgent, agentController.editMyReplys) // ...
+
+
+
 module.exports = router 

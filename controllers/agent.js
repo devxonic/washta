@@ -29,9 +29,47 @@ const acceptSupportRequest = async (req, res) => {
 }
 
 
+// ----------------------------------------------- review -----------------------------------------------------//
+
+const getAgentReviews = async (req, res) => {
+    try {
+        let Order = await agentFunctoins.getAgentReviews(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find review")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const replyToReview = async (req, res) => {
+    try {
+        let Order = await agentFunctoins.replyToReview(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find review")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const editMyReplys = async (req, res) => {
+    try {
+        let Order = await agentFunctoins.editMyReplys(req)
+        if (!Order) return response.resBadRequest(res, "couldn't find review")
+        return response.resSuccessData(res, Order);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 module.exports = {
     getSupportRoom,
     acceptSupportRequest,
+    getAgentReviews,
+    replyToReview,
+    editMyReplys
 }
