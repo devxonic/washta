@@ -7,9 +7,8 @@ const chatRoomModel = require("../models/chatRoom");
 
 const craeteNewSupportRoom = async (req) => {
     try {
-        let { name, title, user } = req.body
+        let { title, user } = req.body
         let body = {
-            name,
             title,
             user,
         }
@@ -27,10 +26,11 @@ const getSupportRoom = async (req) => {
     try {
         let { status } = req.query
         let { id } = req.params
-        let filter = status ? { requestStatus: status, 'users.id': req.user.id } : { 'users.id': req.user.id }
+        console.log(id)
+        let filter = status ? { requestStatus: status, 'user.id': req.user.id } : { 'user.id': req.user.id }
 
         if (id) {
-            let chatRoom = chatRoomModel.findOne({ _id: id, 'users.id': req.user.id }) // add end Filter 
+            let chatRoom = chatRoomModel.findOne({ _id: id, 'user.id': req.user.id }) // add end Filter 
             return chatRoom
         }
         let chatRooms = chatRoomModel.find(filter)
