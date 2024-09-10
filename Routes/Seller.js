@@ -48,7 +48,7 @@ router.get('/latestOrders', middlewares.verifySeller, SellerControllers.getLates
 
 // ----------------------------------------------- Review -----------------------------------------------------//
 
-router.get('/myReview', middlewares.verifyCustomer, SellerControllers.getMyReviews)
+router.get('/myReview', middlewares.verifySeller, SellerControllers.getMyReviews)
 router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
 router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
 router.get('/OrderReview', middlewares.verifySeller, SellerControllers.getOrderReviews)
