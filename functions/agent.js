@@ -66,7 +66,7 @@ const acceptSupportRequest = async (req, res) => {
         }
     }
 
-    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body })
+    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body }, { new: true })
     return chatRoom
 }
 
