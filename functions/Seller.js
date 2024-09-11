@@ -192,7 +192,7 @@ const updateShop = async (req) => {
     let clone = JSON.stringify(req.body)
     let body = JSON.parse(clone)
     shopData && shopData.isTimingLocked ? delete body['timing'] : null
-    
+
     if (body?.location && body?.location?.coordinates) {
         body.location = {
             ...body.location,
@@ -202,7 +202,7 @@ const updateShop = async (req) => {
     }
     let Shop = await ShopModel.findOneAndUpdate(
         { _id: id, Owner: req.user.id, isTerminated: { $ne: true } },
-        { ...body },
+        { $set: body },
         { new: true },
     );
     return Shop;
@@ -521,6 +521,19 @@ const deleteMyReplys = async (req) => {
     if (!myReply) return myReply
     let reply = await ReviewModel.findOneAndUpdate({ _id: Review, isDeleted: { $ne: true } }, { $pull: { reply: { _id: myReply._id } } }, { new: true, fields: { comment: 1, shopId: 1, reply: 1 } })
     return reply
+}
+
+
+const getMyReviews = async (req) => {
+    let { id } = req.user
+    let populate = [
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "ticketId" }
+    ]
+    let Rating = await ReviewModel.find({ sellerId: id, isDeleted: { $ne: true } }).populate(populate)
+    let FormatedRating = formateReviewsRatings?.(Rating)
+    return FormatedRating
 }
 
 // ----------------------------------------------- Invoice -----------------------------------------------------//
@@ -896,6 +909,47 @@ const getStatsByWeek = async (req) => {
     return response;
 };
 
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+
+const createAgentReview = async (req) => {
+    let { agentId, ticketId, rating, comment } = req.body
+    let { id } = req.user
+
+    let Rating = await ReviewModel({ agentId, ticketId, sellerId: id, rating, 'comment.text': comment.text }).save()
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+
+const updatesAgentReview = async (req) => {
+    let { rating, comment } = req.body
+    let { reviewId } = req.query
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, sellerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+const getAgentReview = async (req) => {
+    let { agentId, limit } = req.query
+
+    let populate = [
+        { path: "sellerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "agentId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } }, ,
+        { path: "ticketId" }
+    ]
+
+    if (!agentId) return { error: "agent Id Must be required" }
+    let Reviews = await ReviewModel.find({ agentId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
+};
+
 
 module.exports = {
     signUp,
@@ -940,4 +994,8 @@ module.exports = {
     getAllTimeStats,
     getstatsbyMonth,
     getStatsByWeek,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
+    getMyReviews,
 };

@@ -497,8 +497,8 @@ const getserviceFeeById = async (req) => {
 
 const updateServiceFee = async (req) => {
     let id = req.params.id
-    let { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll } = req.body
-    let Data = { isAmountTaxable, ApplicableStatus, feeType, fees, applyAs, applyAt, applyAtAll }
+    let { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll } = req.body
+    let Data = { isAmountTaxable, ApplicableStatus, feeType, WashtaFees, applyAs, applyAt, applyAtAll }
     if (applyAtAll) {
         let shops = await shopModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
         let Formated = shops.map((x) => x._id.toString())
@@ -513,37 +513,54 @@ const updateServiceFee = async (req) => {
 const createPromoCode = async (req) => {
     let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
     let Data = { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }
-    if (giveToAll) {
-        let Customer = await CustomerModel.find({}, { _id: 1 })
-        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
-        Data.giveTo = Formated
-    }
-    console.log(giveTo)
+    if (giveToAll) delete Data.giveTo
+    console.log(Data)
     let upatedPromoCode = await PromoCodeModel(Data).save()
     return upatedPromoCode
 }
 
 const getPromoCode = async (req) => {
-    let PromoCode = await PromoCodeModel.find({})
+    let PromoCode = await PromoCodeModel.find({ isDeleted: { $ne: true } })
     return PromoCode
 }
 
 const getPromoCodeById = async (req) => {
     let id = req.params.id
-    let PromoCode = await PromoCodeModel.findById(id)
+    let PromoCode = await PromoCodeModel.findOne({ _id: id, isDeleted: { $ne: true } })
     return PromoCode
 }
 
 const updatePromoCode = async (req) => {
     let id = req.params.id
-    let { isActive, promoCode, duration, giveTo, giveToAll } = req.body
-    let Data = { isActive, promoCode, duration, giveTo, giveToAll }
+    let { isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype } = req.body
+    let Data = JSON.parse(JSON.stringify({ isActive, promoCode, duration, giveTo, giveToAll, discount, Discounttype }))
     if (giveToAll) {
         let Customer = await CustomerModel.find({ isTerminated: { $ne: true } }, { _id: 1 })
-        let Formated = Customer.map((x) => x._id.toString())
+        let Formated = Customer.map((x) => ({ customerId: x._id.toString(), isUsed: false }))
         Data.giveTo = Formated
     }
-    let Promocode = await PromoCodeModel.findByIdAndUpdate(id, Data, { new: true })
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: Data }, { new: true })
+    return Promocode
+}
+
+const deletePromoCode = async (req) => {
+    let id = req.params.id
+    let date = new Date();
+    let body = {
+        isDeleted: true,
+        deletedAt: date,
+        deleteBy: {
+            id: req.user.id,
+            role: 'admin'
+        },
+    }
+    let Promocode = await PromoCodeModel.findOneAndUpdate({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
+    return Promocode
+}
+
+const deletePromoCodepermanent = async (req) => {
+    let id = req.params.id
+    let Promocode = await PromoCodeModel.findOneAndDelete({ _id: id, isDeleted: { $ne: true } }, { $set: body }, { new: true })
     return Promocode
 }
 
@@ -1029,20 +1046,49 @@ const getStatsByWeek = async (req) => {
 
 const getShopForSales = async (req) => {
     let { limit } = req.query
+    let query = [
+        {
+            '$sort': {
+                'createdAt': -1
+            }
+        }, {
+            '$lookup': {
+                'from': 'shops',
+                'localField': 'shopId',
+                'foreignField': '_id',
+                'as': 'shop'
+            }
+        }, {
+            '$unwind': '$shop'
+        }, {
+            '$group': {
+                '_id': '$shop._id',
+                'shop': {
+                    '$first': '$shop'
+                },
+                'orders': {
+                    '$push': '$$ROOT'
+                }
+            }
+        }, {
+            '$replaceRoot': {
+                'newRoot': {
+                    '$mergeObjects': [
+                        '$$ROOT', {
+                            '$first': '$orders'
+                        }
+                    ]
+                }
+            }
+        }, {
+            '$unset': 'shop'
+        },
+    ]
 
-    let order = await OrderModel.find({}, { _id: 0 }).limit(limit ?? null).sort({ createdAt: -1 }).populate({
-        path: "shopId", select: {
-            Owner: 1,
-            shopName: 1,
-            coverImage: 1,
-            sliderImage: 1,
-            isOpen: 1,
-            location: 1,
-            cost: 1,
-        }
-    })
-    let Order = order.map(e => e.shopId ?? null)
-    return Order
+
+    let order = await OrderModel.aggregate(query)
+    
+    return order
 };
 
 const getSalesSingleShop = async (req) => {
@@ -1094,7 +1140,17 @@ const getOrdersByUserId = async (req) => {
             shopDetails: 1,
             estimatedServiceTime: 1,
             cost: 1,
-        }
+        },
+        path: "vehicleId", select: {
+            vehicleManufacturer: 1,
+            vehiclePlateNumber: 1,
+            vehicleName: 1,
+            vehicleType: 1,
+            vehicleModel: 1,
+            isSelected: 1,
+            isActive: 1,
+        },
+        
     },]
 
     let filter = customerId ? { customerId } : shopId ? { shopId } : {}
@@ -1113,7 +1169,9 @@ const getAllAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     if (id) {
         let agent = await AdminModel.findOne(filter, fields)
@@ -1130,7 +1188,9 @@ const deleteAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     let agent = await AdminModel.findOneAndDelete(filter, fields)
     return agent
@@ -1144,7 +1204,9 @@ const updateAgents = async (req) => {
         username: 1,
         role: 1,
         isActive: 1,
-        isVerifed: 1
+        isVerifed: 1,
+        createdAt: 1,
+        updatedAt: 1,
     }
     let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar, isActive, isVerifed } }, { new: true, fields })
     return agent
@@ -1177,6 +1239,8 @@ module.exports = {
     getPromoCode,
     getPromoCodeById,
     updatePromoCode,
+    deletePromoCode,
+    deletePromoCodepermanent,
     getVehicles,
     getvehiclesById,
     updateVehicles,

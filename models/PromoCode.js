@@ -4,18 +4,27 @@ const PromoCodeSchema = new mongoose.Schema({
 
     isActive: { type: Boolean },
     Discounttype: { type: String, enum: ["fixed", "percentage"] },
-    promoCode: { type: String, unique: true },
+    promoCode: { type: String },
     discount: { type: String },
     duration: {
         startTime: { type: Date },
         endTime: { type: Date },
     },
     giveTo: [{
-        customerId: { type: mongoose.Types.ObjectId, ref: "Customer", },
-        isUsed: { type: Boolean, default: false },
-    }
-    ],
-    giveToAll: { type: Boolean }
+        type: mongoose.Types.ObjectId,
+        ref: "Customer"
+    }],
+    usedBy: [{
+        type: mongoose.Types.ObjectId,
+        ref: "Customer"
+    }],
+    giveToAll: { type: Boolean },
+    isDeleted: { type: Boolean },
+    deletedAt: { type: Date },
+    deleteBy: {
+        id: { type: mongoose.Types.ObjectId },
+        role: { type: String, enum: ["customer", 'seller', 'admin'] }
+    },
 
 }, { timestamps: true });
 

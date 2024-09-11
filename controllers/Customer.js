@@ -4,6 +4,7 @@ const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const authFunctions = require('../functions/auth');
 
+const supportFunctions = require('../functions/support');
 const validationFunctions = require('../functions/validations');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -335,6 +336,7 @@ const getShopsServicefee = async (req, res) => {
 const getShopsPromoCode = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.getShopsPromoCode(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
         if (!Booking) return response.resBadRequest(res, "couldn't find Promo Code")
         return response.resSuccessData(res, Booking);
 
@@ -359,6 +361,7 @@ const cancelBooking = async (req, res) => {
 const createNewBooking = async (req, res) => {
     try {
         let Booking = await CustomerFunctions.createNewBooking(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
         if (!Booking) return response.resBadRequest(res, "couldn't find Booking")
         return response.resSuccessData(res, Booking);
 
@@ -520,6 +523,74 @@ const getAllMyNotifications = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+const craeteNewSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.craeteNewSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.getSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+
+
+const createAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.createAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
+const updatesAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.updatesAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAgentReview = async (req, res) => {
+    try {
+        let Booking = await CustomerFunctions.getAgentReview(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking?.error)
+        if (!Booking) return response.resBadRequest(res, "couldn't find Review")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 module.exports = {
     getProfile,
@@ -559,4 +630,9 @@ module.exports = {
     updatePassword,
     uplaodAvatar,
     getAllMyNotifications,
+    craeteNewSupportRoom,
+    getSupportRoom,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
 }
