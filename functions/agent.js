@@ -95,7 +95,7 @@ const endChat = async (req, res) => {
 }
 
 const getAllchats = async (req, res) => {
-    let { ticketId, limit, skip } = req.params
+    let { ticketId, limit, skip } = req.query
     let messages = await messageModel.find({ chatRoomId: ticketId }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? 0)
     return messages
 }
