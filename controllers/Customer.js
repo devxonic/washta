@@ -1,5 +1,6 @@
 
 const CustomerFunctions = require('../functions/Customer');
+const agentFunctions = require('../functions/agent');
 const notification = require('../helpers/notification');
 const response = require('../helpers/response');
 const authFunctions = require('../functions/auth');
@@ -549,6 +550,18 @@ const getSupportRoom = async (req, res) => {
     }
 }
 
+const getAllchats = async (req, res) => {
+    try {
+        let Booking = await agentFunctions.getAllchats(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find chat")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 
@@ -635,4 +648,5 @@ module.exports = {
     createAgentReview,
     updatesAgentReview,
     getAgentReview,
+    getAllchats,
 }

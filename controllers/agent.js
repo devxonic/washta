@@ -29,6 +29,35 @@ const acceptSupportRequest = async (req, res) => {
 }
 
 
+const endChat = async (req, res) => {
+    try {
+        let Booking = await agentFunctoins.endChat(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking.error)
+        if (Booking?.success) return response.resBadRequest(res, Booking.success)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAllchats = async (req, res) => {
+    try {
+        let Booking = await agentFunctoins.getAllchats(req)
+        if (Booking?.error) return response.resBadRequest(res, Booking.error)
+        if (Booking?.success) return response.resBadRequest(res, Booking.success)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+
 // ----------------------------------------------- review -----------------------------------------------------//
 
 const getAgentReviews = async (req, res) => {
@@ -71,5 +100,8 @@ module.exports = {
     acceptSupportRequest,
     getAgentReviews,
     replyToReview,
-    editMyReplys
+    editMyReplys,
+    endChat,
+    getAllchats,
+
 }
