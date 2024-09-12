@@ -17,6 +17,7 @@ router.get('/support', middlewares.verifyAgent, agentController.getSupportRoom)
 router.get('/support/:id', middlewares.verifyAgent, agentController.getSupportRoom)
 router.patch('/support/:id', middlewares.verifyAgent, agentController.acceptSupportRequest)
 router.patch('/endChat/:id', middlewares.verifyAgent, agentController.endChat) // ...
+router.get('/chat/:id', middlewares.verifyAgent, agentController.getAllchats) // ...
 
 
 // ----------------------------------------------- Review -----------------------------------------------------//

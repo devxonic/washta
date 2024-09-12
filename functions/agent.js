@@ -1,5 +1,6 @@
 
 const chatRoomModel = require('../models/chatRoom');
+const messageModel = require('../models/chatMessage');
 const ReviewModel = require('../models/Review');
 const response = require('../helpers/response');
 const agentFunctoins = require('../functions/agent');
@@ -119,7 +120,14 @@ const endChat = async (req, res) => {
     }
 
     let ticket = await chatRoomModel.findOneAndUpdate({ _id: id }, body, { new: true })
+    if (status == "resolved" || status == "rejected") await messageModel.findOneAndDelete({ chatRoomId: id })
     return ticket
+}
+
+const getAllchats = async (req, res) => {
+    let { ticketId, limit, skip } = req.params
+    let messages = await messageModel.find({ chatRoomId: ticketId }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? 0)
+    return messages
 }
 
 // ----------------------------------------------- review -----------------------------------------------------//
@@ -210,4 +218,5 @@ module.exports = {
     replyToReview,
     editMyReplys,
     endChat,
+    getAllchats,
 }
