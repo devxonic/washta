@@ -13,6 +13,7 @@ const chatMessageSchema = new mongoose.Schema({
     resolvedBy: userSchema,
     rejectedAt: { type: Date },
     resolvedAt: { type: Date },
+    acceptedAt: { type: Date },
     isSomeOneConnected: { type: Boolean, default: false },
     connectedWith: userSchema,
     isEnded: { type: Boolean },

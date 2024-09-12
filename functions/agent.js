@@ -31,42 +31,19 @@ const getSupportRoom = async (req, res) => {
 
 const acceptSupportRequest = async (req, res) => {
     let { id } = req.params
-    let { status } = req.body
 
-
-
+    let date = new Date();
     let user = {
         id: req.user.id,
         username: req.user.username,
         role: "agent",
     }
-    let body = {}
-    let date = new Date()
 
-    if (status == 'ongoing') {
-        body = {
-            isSomeOneConnected: true,
-            requestStatus: "ongoing",
-            connectedWith: user
-        }
-    }
-    if (status == 'rejected') {
-        body = {
-            isSomeOneConnected: true,
-            requestStatus: "rejected",
-            connectedWith: user,
-            resolvedBy: user,
-            rejectedAt: date
-        }
-    }
-    if (status == 'resolved') {
-        body = {
-            isSomeOneConnected: true,
-            requestStatus: "resolved",
-            connectedWith: user,
-            resolvedBy: user,
-            rejectedAt: date
-        }
+    let body = {
+        isSomeOneConnected: true,
+        acceptedAt: date,
+        requestStatus: "ongoing",
+        connectedWith: user
     }
 
     let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body }, { new: true })
@@ -87,13 +64,6 @@ const endChat = async (req, res) => {
     }
     let body = {}
     let date = new Date();
-    if (status == "ongoing") {
-        body = {
-            $set: {
-                requestStatus: status,
-            }
-        }
-    }
     if (status == "rejected") {
         body = {
             $set: {
