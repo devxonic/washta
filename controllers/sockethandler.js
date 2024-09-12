@@ -58,6 +58,7 @@ module.exports = function (server) {
                 message: data.message,
                 createdAt: date,
                 ticketId: data.ticketId,
+                chatRoomId: data.ticketId,
                 sender: { id: data.sender.id, role: data.sender.role }
             }
             // console.log('message body - - - - - - ', messageBody)
@@ -79,6 +80,7 @@ module.exports = function (server) {
                 message: data.message,
                 createdAt: date,
                 ticketId: data.ticketId,
+                chatRoomId: data.ticketId,
                 sender: { id: data.sender.id, role: data.sender.role }
             }
 
