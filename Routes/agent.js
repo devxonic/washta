@@ -16,6 +16,7 @@ router.post('/login', AuthController.AgentlogIn)
 router.get('/support', middlewares.verifyAgent, agentController.getSupportRoom)
 router.get('/support/:id', middlewares.verifyAgent, agentController.getSupportRoom)
 router.patch('/support/:id', middlewares.verifyAgent, agentController.acceptSupportRequest)
+router.patch('/endChat/:id', middlewares.verifyAgent, agentController.endChat) // ...
 
 
 // ----------------------------------------------- Review -----------------------------------------------------//

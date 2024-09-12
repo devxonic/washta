@@ -1,6 +1,7 @@
 const socketIo = require('socket.io')
 const mongoose = require('mongoose')
 const chatRoomModel = require('../models/chatRoom')
+const messageModel = require('../models/chatMessage')
 const notification = require('../helpers/notification')
 
 
@@ -39,19 +40,11 @@ module.exports = function (server) {
             console.log(`room joined by ${data.sender.id} roomid => ${data.ticketId}`);
             // console.log(`ticket => `, ticketData);
         })
-        socket.on("end", async (data) => {
-            if (ticketData?.[data.ticketId]) {
-                let updateConnection = {
-                    $set: { requestStatus: data.requestStatus },
-                }
-                let ticket = await chatRoomModel.findOneAndUpdate({ _id: data.ticketId }, updateConnection, { new: true })
-                delete ticketData[data.ticketId]
-            }
-            console.log(ticketData)
+        socket.on("leave", async (data) => {
             if (joinedUser[data.ticketId]) {
                 joinedUser[data.ticketId] = joinedUser[data.ticketId].filter((x) => (data.sender.id !== x))
             }
-            console.log(`room leaved by ${data.sender.id} roomid => ${data.ticketId}`);
+            if (joinedUser[data.ticketId].lenght) delete ticketData[data.ticketId]
             socket.leave(data.ticketId);
         })
         socket.on('send-message-to-user', async (data) => {
@@ -69,6 +62,7 @@ module.exports = function (server) {
             }
             // console.log('message body - - - - - - ', messageBody)
             io.in(data.ticketId).emit("message-receive-from-agent", body);
+            let savedMessage = await messageModel(body).save();
         })
 
         socket.on('send-message-to-agent', async (data) => {
@@ -89,6 +83,7 @@ module.exports = function (server) {
             }
 
             io.in(data.ticketId).emit("message-receive-from-user", body);
+            let savedMessage = await messageModel(body).save();
         })
     })
 

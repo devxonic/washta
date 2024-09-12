@@ -72,6 +72,55 @@ const acceptSupportRequest = async (req, res) => {
     return chatRoom
 }
 
+const endChat = async (req, res) => {
+    let { id } = req.params
+    let { status } = req.body
+
+    let checkTicket = await chatRoomModel.findOne({ _id: id }, { isEnded: 1 })
+    if (checkTicket?.isEnded) return { error: { message: "this ticket is Already Ended" } }
+
+    let user = {
+        id: req.user.id,
+        username: req.user.username,
+        role: "agent",
+    }
+    let body = {}
+    let date = new Date();
+    if (status == "ongoing") {
+        body = {
+            $set: {
+                requestStatus: status,
+            }
+        }
+    }
+    if (status == "rejected") {
+        body = {
+            $set: {
+                requestStatus: status,
+                isEnded: true,
+                endedBy: user,
+                endedAt: date,
+                rejectedAt: date,
+                rejectedBy: user,
+            },
+        }
+    }
+    if (status == "resolved") {
+        body = {
+            $set: {
+                requestStatus: status,
+                isEnded: true,
+                endedBy: user,
+                endedAt: date,
+                resolvedBy: user,
+                resolvedAt: date,
+            },
+        }
+    }
+
+    let ticket = await chatRoomModel.findOneAndUpdate({ _id: id }, body, { new: true })
+    return ticket
+}
 
 // ----------------------------------------------- review -----------------------------------------------------//
 
@@ -160,4 +209,5 @@ module.exports = {
     getAgentReviews,
     replyToReview,
     editMyReplys,
+    endChat,
 }
