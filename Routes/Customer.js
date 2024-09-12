@@ -83,7 +83,7 @@ router.get('/Notifications', middlewares.verifyCustomer, CustomerControllers.get
 router.post('/support', middlewares.verifyCustomer, CustomerControllers.craeteNewSupportRoom)
 router.get('/support', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
 router.get('/support/:id', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
-router.get('/chat/:id', middlewares.verifyCustomer, CustomerControllers.getAllchats) // ...
+router.get('/chat', middlewares.verifyCustomer, CustomerControllers.getAllchats) // ...
 
 
 
