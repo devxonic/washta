@@ -103,8 +103,8 @@ const sendNotificationToAllUsers = async (req) => {
 
 
 const getAllMyNotifications = async (req) => {
-    let { id } = req.user
-    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] },)
+    let { id, limit, skip } = req.user
+    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] },).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? null)
     let UpdatedNotification = []
     for (let i = 0; i < Notifications.length; i++) {
         UpdatedNotification[i] = Notifications[i]
