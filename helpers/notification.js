@@ -128,7 +128,7 @@ const getAllMyNotifications = async (req) => {
             continue;
         }
         if (Notifications[i].sender.role == "admin") {
-            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, resizedAvatar: 1 })
+            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id, role: "admin" }, { username: 1, resizedAvatar: 1 })
             UpdatedNotification[i].sender = {
                 ...Notifications[i].sender,
                 profile: seller?.resizedAvatar,
@@ -136,14 +136,14 @@ const getAllMyNotifications = async (req) => {
             }
             continue;
         }
-        // if (Notifications[i].sender.role == "agent") {
-        //     let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-        //     UpdatedNotification[i].sender = {
-        //         ...Notifications[i].sender,
-        //         profile: seller?.profile,
-        //         username: seller?.username
-        //     }
-        // }
+        if (Notifications[i].sender.role == "agent") {
+            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id, role: "agent" }, { username: 1, profile: 1 })
+            UpdatedNotification[i].sender = {
+                ...Notifications[i].sender,
+                profile: seller?.profile,
+                username: seller?.username
+            }
+        }
 
     }
     return UpdatedNotification;
