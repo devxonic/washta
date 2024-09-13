@@ -104,7 +104,8 @@ const sendNotificationToAllUsers = async (req) => {
 
 const getAllMyNotifications = async (req) => {
     let { id } = req.user
-    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] },)
+    let { limit, skip } = req.query
+    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] }, { multiReceivers: 0 }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? null)
     let UpdatedNotification = []
     for (let i = 0; i < Notifications.length; i++) {
         UpdatedNotification[i] = Notifications[i]
@@ -127,7 +128,7 @@ const getAllMyNotifications = async (req) => {
             continue;
         }
         if (Notifications[i].sender.role == "admin") {
-            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, resizedAvatar: 1 })
+            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id, role: "admin" }, { username: 1, resizedAvatar: 1 })
             UpdatedNotification[i].sender = {
                 ...Notifications[i].sender,
                 profile: seller?.resizedAvatar,
@@ -135,14 +136,14 @@ const getAllMyNotifications = async (req) => {
             }
             continue;
         }
-        // if (Notifications[i].sender.role == "agent") {
-        //     let seller = await adminModel.findOne({ _id: Notifications[i].sender.id }, { username: 1, profile: 1 })
-        //     UpdatedNotification[i].sender = {
-        //         ...Notifications[i].sender,
-        //         profile: seller?.profile,
-        //         username: seller?.username
-        //     }
-        // }
+        if (Notifications[i].sender.role == "agent") {
+            let seller = await AdminModel.findOne({ _id: Notifications[i].sender.id, role: "agent" }, { username: 1, profile: 1 })
+            UpdatedNotification[i].sender = {
+                ...Notifications[i].sender,
+                profile: seller?.profile,
+                username: seller?.username
+            }
+        }
 
     }
     return UpdatedNotification;
