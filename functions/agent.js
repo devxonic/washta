@@ -1,5 +1,6 @@
 
 const chatRoomModel = require('../models/chatRoom');
+const messageModel = require('../models/chatMessage');
 const ReviewModel = require('../models/Review');
 const response = require('../helpers/response');
 const agentFunctoins = require('../functions/agent');
@@ -30,9 +31,31 @@ const getSupportRoom = async (req, res) => {
 
 const acceptSupportRequest = async (req, res) => {
     let { id } = req.params
+
+    let date = new Date();
+    let user = {
+        id: req.user.id,
+        username: req.user.username,
+        role: "agent",
+    }
+
+    let body = {
+        isSomeOneConnected: true,
+        acceptedAt: date,
+        requestStatus: "ongoing",
+        connectedWith: user
+    }
+
+    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body }, { new: true })
+    return chatRoom
+}
+
+const endChat = async (req, res) => {
+    let { id } = req.params
     let { status } = req.body
 
-
+    let checkTicket = await chatRoomModel.findOne({ _id: id }, { isEnded: 1 })
+    if (checkTicket?.isEnded) return { error: { message: "this ticket is Already Ended" } }
 
     let user = {
         id: req.user.id,
@@ -40,38 +63,42 @@ const acceptSupportRequest = async (req, res) => {
         role: "agent",
     }
     let body = {}
-    let date = new Date()
-
-    if (status == 'ongoing') {
+    let date = new Date();
+    if (status == "rejected") {
         body = {
-            isSomeOneConnected: true,
-            requestStatus: "ongoing",
-            connectedWith: user
+            $set: {
+                requestStatus: status,
+                isEnded: true,
+                endedBy: user,
+                endedAt: date,
+                rejectedAt: date,
+                rejectedBy: user,
+            },
         }
     }
-    if (status == 'rejected') {
+    if (status == "resolved") {
         body = {
-            isSomeOneConnected: true,
-            requestStatus: "rejected",
-            connectedWith: user,
-            resolvedBy: user,
-            rejectedAt: date
-        }
-    }
-    if (status == 'resolved') {
-        body = {
-            isSomeOneConnected: true,
-            requestStatus: "resolved",
-            connectedWith: user,
-            resolvedBy: user,
-            rejectedAt: date
+            $set: {
+                requestStatus: status,
+                isEnded: true,
+                endedBy: user,
+                endedAt: date,
+                resolvedBy: user,
+                resolvedAt: date,
+            },
         }
     }
 
-    let chatRoom = await chatRoomModel.findOneAndUpdate({ _id: id, requestStatus: { $in: ['pending', 'ongoing'] }, isSomeOneConnected: { $ne: true } }, { $set: body }, { new: true })
-    return chatRoom
+    let ticket = await chatRoomModel.findOneAndUpdate({ _id: id }, body, { new: true })
+    if (status == "resolved" || status == "rejected") await messageModel.findOneAndDelete({ chatRoomId: id })
+    return ticket
 }
 
+const getAllchats = async (req, res) => {
+    let { ticketId, limit, skip } = req.query
+    let messages = await messageModel.find({ chatRoomId: ticketId }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? 0)
+    return messages
+}
 
 // ----------------------------------------------- review -----------------------------------------------------//
 
@@ -160,4 +187,6 @@ module.exports = {
     getAgentReviews,
     replyToReview,
     editMyReplys,
+    endChat,
+    getAllchats,
 }
