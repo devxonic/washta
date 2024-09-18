@@ -4,7 +4,7 @@ const CustomerControllers = require('../controllers/Customer');
 const middlewares = require('../middlewares');
 
 
-router.post('/uplaodAvatar', middlewares.verifyCustomer , middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
+router.post('/uplaodAvatar', middlewares.verifyCustomer, middlewares.uploadbuffer.single('Avatar'), CustomerControllers.uplaodAvatar)
 router.get('/Profile', middlewares.verifyCustomer, CustomerControllers.getProfile)
 router.patch('/Profile', middlewares.verifyCustomer, CustomerControllers.editProfile)
 router.patch('/updatePassword', middlewares.verifyCustomer, CustomerControllers.updatePassword)
@@ -64,11 +64,27 @@ router.patch('/sellerReview', middlewares.verifyCustomer, CustomerControllers.up
 router.get('/sellerReview', middlewares.verifyCustomer, CustomerControllers.getSellerReview)
 router.delete('/sellerReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
 
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+router.post('/agentReview', middlewares.verifyCustomer, CustomerControllers.createAgentReview)
+router.patch('/agentReview', middlewares.verifyCustomer, CustomerControllers.updatesAgentReview)
+router.get('/agentReview', middlewares.verifyCustomer, CustomerControllers.getAgentReview)
+router.delete('/agentReview', middlewares.verifyCustomer, CustomerControllers.deleteShopReviews)
+
 
 
 // ----------------------------------------------- Notification -----------------------------------------------------//
 
 router.get('/Notifications', middlewares.verifyCustomer, CustomerControllers.getAllMyNotifications)
+
+
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+router.post('/support', middlewares.verifyCustomer, CustomerControllers.craeteNewSupportRoom)
+router.get('/support', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
+router.get('/support/:id', middlewares.verifyCustomer, CustomerControllers.getSupportRoom)
+router.get('/chat', middlewares.verifyCustomer, CustomerControllers.getAllchats) // ...
+
 
 
 

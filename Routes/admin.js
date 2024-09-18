@@ -68,6 +68,7 @@ router.post('/promoCode', middlewares.verifyAdmin, AdminController.createPromoCo
 router.get('/promoCode', middlewares.verifyAdmin, AdminController.getPromoCode)
 router.get('/promoCode/:id', middlewares.verifyAdmin, AdminController.getPromoCodeById)
 router.patch('/promoCode/:id', middlewares.verifyAdmin, AdminController.updatePromoCode)
+router.delete('/promoCode/:id', middlewares.verifyAdmin, AdminController.deletePromoCode)
 
 
 // ----------------------------------------------- Review -----------------------------------------------------//

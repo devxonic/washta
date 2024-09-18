@@ -306,24 +306,39 @@ const getShopsServicefee = async (req) => {
 
 const getShopsPromoCode = async (req) => {
     let id = req.user.id
-    let { promoCode } = req.query
+    let { promoCode, discountType } = req.query
     let currentTime = new Date();
+
+    let dis = discountType ? [discountType] : ['fixed', 'percentage']
+    let findFilter = {
+        isDeleted: { $ne: true },
+        isActive: { $ne: false },
+        $or: [
+            { giveTo: id },
+            { giveToAll: { $ne: false } }
+        ],
+        'duration.startTime': { $lte: currentTime },
+        'duration.endTime': { $gte: currentTime }
+    }
 
     if (promoCode) {
         console.log(currentTime)
         let res = await PromoCodeModel.findOne({
-            isActive: { $ne: false },
-            promoCode, 'giveTo.customerId': id,
-            'duration.startTime': { $lte: currentTime },
-            'duration.endTime': { $gte: currentTime }
-        })
-        return res
+            promoCode,
+            ...findFilter
+        }, { usedBy: 0 })
+
+        if (!res) return res
+        let isUsed = res?.usedBy?.find(x => x == id)
+        return isUsed ? {
+            error: "you have Already Used this Code"
+        } : res
     }
     let res = await PromoCodeModel.find({
-        'giveTo.customerId': id, isActive: { $ne: false },
-        'duration.startTime': { $lte: currentTime },
-        'duration.endTime': { $gte: currentTime }
-    })
+        ...findFilter,
+        usedBy: { $ne: id },
+        Discounttype: { $in: dis },
+    }, { usedBy: 0 })
     return res
 }
 
@@ -369,8 +384,27 @@ const createNewBooking = async (req) => {
         type: "Point",
         coordinates: [req.body?.location?.long ?? 0, req.body?.location?.lat ?? 0],
     };
+
+    let promoCodeFilter = {
+        _id: req.body?.promoCode?.id,
+        $or: [
+            {
+                // 'giveTo': req?.user?.id,
+                usedBy: { $ne: req?.user?.id }
+            },
+            {
+                giveToAll: true,
+                usedBy: { $ne: req?.user?.id }
+            }
+        ]
+    }
+
     let Bookings = await OrderModel({ ...req.body }).save();
-    if (req.body?.promoCode) await PromoCodeModel.findOneAndUpdate({ _id: req.body?.promoCode?.id, 'giveTo.customerId': req?.user?.id }, { $set: { 'giveTo.$.isUsed': true } })
+    if (req.body?.promoCode) {
+        let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, { $push: { 'usedBy': req.user.id } })
+        console.log(promo)
+        if (!promo) return { error: "promo code not Applyed" }
+    }
     if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
@@ -594,7 +628,7 @@ const getSellerReview = async (req) => {
     let { sellerId, shopId, limit } = req.query
 
     let populate = [
-        { path: "customerId", select: { username: 1, profile: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
         {
             path: "shopId", select: {
                 Owner: 1,
@@ -644,6 +678,48 @@ const updatesSellerReview = async (req) => {
 }
 
 
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+
+const createAgentReview = async (req) => {
+    let { agentId, ticketId, rating, comment } = req.body
+    let { id } = req.user
+
+    let Rating = await ReviewModel({ agentId, ticketId, customerId: id, rating, 'comment.text': comment.text }).save()
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+
+const updatesAgentReview = async (req) => {
+    let { rating, comment } = req.body
+    let { reviewId } = req.query
+
+    let Rating = await ReviewModel.findOneAndUpdate({ _id: reviewId, customerId: req.user.id, isDeleted: { $ne: true } }, { rating, 'comment.text': comment.text }, { new: true, fields: { rating: 1, comment: 1 } })
+    if (!Rating) return Rating
+    let FormatedRating = formateReviewsRatingsSingle?.(Rating)
+    return FormatedRating
+}
+
+
+const getAgentReview = async (req) => {
+    let { agentId, limit } = req.query
+
+    let populate = [
+        { path: "customerId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } },
+        { path: "agentId", select: { username: 1, avatar: 1, resizedAvatar: 1, fullname: 1, email: 1, phone: 1 } }, ,
+        { path: "ticketId" }
+    ]
+
+    if (!agentId) return { error: "agent Id Must be required" }
+    let Reviews = await ReviewModel.find({ agentId, isDeleted: { $ne: true } }).sort({ createdAt: 1 }).limit(limit ?? null).populate(populate)
+    let FormatedRating = formateReviewsRatings?.(Reviews)
+    return FormatedRating
+};
+
+
 module.exports = {
     signUp,
     updateRefreshToken,
@@ -685,5 +761,9 @@ module.exports = {
     getSellerReview,
     deleteShopReviews,
     updatesSellerReview,
-    updateImage
+    updateImage,
+    createAgentReview,
+    updatesAgentReview,
+    getAgentReview,
+
 }

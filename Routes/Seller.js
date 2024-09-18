@@ -48,6 +48,7 @@ router.get('/latestOrders', middlewares.verifySeller, SellerControllers.getLates
 
 // ----------------------------------------------- Review -----------------------------------------------------//
 
+router.get('/myReview', middlewares.verifySeller, SellerControllers.getMyReviews)
 router.get('/shopReview', middlewares.verifySeller, SellerControllers.getMyShopReviews)
 router.get('/sellerReview', middlewares.verifySeller, SellerControllers.getSellerReviews)
 router.get('/OrderReview', middlewares.verifySeller, SellerControllers.getOrderReviews)
@@ -71,5 +72,22 @@ router.get('/Notifications', middlewares.verifySeller, SellerControllers.getAllM
 router.get('/stats', middlewares.verifySeller, SellerControllers.getAllTimeStats)
 router.get('/monthStats', middlewares.verifySeller, SellerControllers.getstatsbyMonth)
 router.get('/weekStats', middlewares.verifySeller, SellerControllers.getStatsByWeek)
+
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+router.post('/support', middlewares.verifySeller, SellerControllers.craeteNewSupportRoom)
+router.get('/support', middlewares.verifySeller, SellerControllers.getSupportRoom)
+router.get('/support/:id', middlewares.verifySeller, SellerControllers.getSupportRoom)
+
+// ----------------------------------------------- agent Reviews -----------------------------------------------------//
+
+router.post('/agentReview', middlewares.verifySeller, SellerControllers.createAgentReview)
+router.patch('/agentReview', middlewares.verifySeller, SellerControllers.updatesAgentReview)
+router.get('/agentReview', middlewares.verifySeller, SellerControllers.getAgentReview)
+router.delete('/agentReview', middlewares.verifySeller, SellerControllers.deleteAgentReviews)
+
+
+
+
 
 module.exports = router 

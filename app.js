@@ -2,8 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const http = require('http');
+const socket = require('./controllers/sockethandler');
 const app = express();
 const path = require('path');
+
+// socket server 
+const server = http.createServer(app)
+socket(server);
+
+
 
 //api Middleweres 
 app.use("/mailsAssets", express.static(path.resolve(__dirname, "./Mails")));
@@ -27,7 +35,7 @@ mongoose
     .then((result) => {
         // from result fetch the db name and username db connected to
         console.log('connected to db', result.connections[0].host);
-        app.listen(process.env.PORT || 8080, () => {
+        server.listen(process.env.PORT || 8080, () => {
             console.log('~~~~ server is up & running ~~~~~')
         });
     })
