@@ -23,7 +23,7 @@ app.use(cors());
 
 
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
     let date = new Date();
     console.log(date)
     console.log("cron Job")
