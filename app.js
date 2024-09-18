@@ -6,6 +6,9 @@ const http = require('http');
 const socket = require('./controllers/sockethandler');
 const app = express();
 const path = require('path');
+const cron = require('node-cron');
+const shopModel = require('./models/shop');
+const querys = require('./querys');
 
 // socket server 
 const server = http.createServer(app)
@@ -19,6 +22,13 @@ app.use(express.json());
 app.use(cors());
 
 
+
+cron.schedule('* * * * *', async () => {
+    let date = new Date();
+    console.log(date)
+    console.log("cron Job")
+    let shop = await shopModel.aggregate(querys.shopScheduleCronJob)
+});
 
 // api routing
 app.use('/api', require('./Routes/File'));
