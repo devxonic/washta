@@ -15,7 +15,7 @@ shopScheduleCronJob = () => {
                             'in': {
                                 '$arrayElemAt': [
                                     '$$daysOfWeek', {
-                                        '$dayOfWeek': new Date()
+                                        '$dayOfWeek': date
                                     }
                                 ]
                             }
@@ -88,10 +88,10 @@ shopScheduleCronJob = () => {
                         '$minute': '$to'
                     },
                     'currentHour': {
-                        '$hour': new Date()
+                        '$hour': date
                     },
                     'currentMinute': {
-                        '$minute': new Date()
+                        '$minute': date
                     }
                 }
             }, {
@@ -120,13 +120,7 @@ shopScheduleCronJob = () => {
                                                         ]
                                                     }, {
                                                         '$gte': [
-                                                            '$currentMinute', {
-                                                                '$dateSubtract': {
-                                                                    'startDate': '$openMinute',
-                                                                    'unit': 'minute',
-                                                                    'amount': 1
-                                                                }
-                                                            }
+                                                            '$currentMinute', '$openMinute'
                                                         ]
                                                     }
                                                 ]
