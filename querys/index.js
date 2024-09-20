@@ -15,7 +15,7 @@ shopScheduleCronJob = () => {
                             'in': {
                                 '$arrayElemAt': [
                                     '$$daysOfWeek', {
-                                        '$dayOfWeek': date
+                                        '$dayOfWeek': new Date()
                                     }
                                 ]
                             }
@@ -55,6 +55,25 @@ shopScheduleCronJob = () => {
                     }
                 }
             }, {
+                '$project': {
+                    '_id': 1,
+                    'open': 1,
+                    'from': {
+                        '$dateSubtract': {
+                            'startDate': '$from',
+                            'unit': 'minute',
+                            'amount': 1
+                        }
+                    },
+                    'to': {
+                        '$dateSubtract': {
+                            'startDate': '$to',
+                            'unit': 'minute',
+                            'amount': 1
+                        }
+                    }
+                }
+            }, {
                 '$addFields': {
                     'openHour': {
                         '$hour': '$from'
@@ -69,10 +88,10 @@ shopScheduleCronJob = () => {
                         '$minute': '$to'
                     },
                     'currentHour': {
-                        '$hour': date
+                        '$hour': new Date()
                     },
                     'currentMinute': {
-                        '$minute': date
+                        '$minute': new Date()
                     }
                 }
             }, {
@@ -101,7 +120,13 @@ shopScheduleCronJob = () => {
                                                         ]
                                                     }, {
                                                         '$gte': [
-                                                            '$currentMinute', '$openMinute'
+                                                            '$currentMinute', {
+                                                                '$dateSubtract': {
+                                                                    'startDate': '$openMinute',
+                                                                    'unit': 'minute',
+                                                                    'amount': 1
+                                                                }
+                                                            }
                                                         ]
                                                     }
                                                 ]
