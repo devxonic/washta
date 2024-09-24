@@ -28,38 +28,38 @@ const shopSchema = new Schema({
     timing: {
         monday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         tuesday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         wednesday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         thursday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         friday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         saturday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
         sunday: {
             open: { type: Boolean },
-            from: { type: String },
-            to: { type: String },
+            from: { type: Date },
+            to: { type: Date },
         },
 
     },
