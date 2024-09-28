@@ -1,0 +1,29 @@
+name: Pull Request Notifications to Discord
+
+on:
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send notification when a PR is opened
+      if: ${{ github.event.action == 'opened' }}
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H 'Content-Type: application/json' \
+        --data '{
+          "content": "**New Pull Request Opened!**\n\n**Opened by:** [${{ github.event.pull_request.user.login }}](https://github.com/${{ github.event.pull_request.user.login }})\n**Title:** ${{ github.event.pull_request.title }}\n**Source Branch:** `${{ github.event.pull_request.head.ref }}`\n**Target Branch:** `${{ github.event.pull_request.base.ref }}`\n\n**URL:** [View Pull Request](${{ github.event.pull_request.html_url }})"
+        }' $DISCORD_WEBHOOK_URL
+
+    - name: Send notification when a PR is merged
+      if: github.event.pull_request.merged == true
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -X POST -H 'Content-Type: application/json' \
+        --data '{
+          "content": "**Pull Request Merged!**\n\n**Merged by:** [${{ github.event.pull_request.merged_by.login }}](https://github.com/${{ github.event.pull_request.merged_by.login }})\n**Title:** ${{ github.event.pull_request.title }}\n**Source Branch:** `${{ github.event.pull_request.head.ref }}`\n**Target Branch:** `${{ github.event.pull_request.base.ref }}`\n\n**URL:** [View Pull Request](${{ github.event.pull_request.html_url }})"
+        }' $DISCORD_WEBHOOK_URL
