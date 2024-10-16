@@ -401,6 +401,26 @@ const AgentlogIn = async (req, res) => {
 }
 
 
+const getProfile = async (req, res) => {
+    try {
+        let { id } = req.user
+        let fields = {
+            username: 1,
+            role: 1,
+            isActive: 1,
+            isVerifed: 1,
+            createdAt: 1,
+            updatedAt: 1,
+        }
+        let agent = await AdminModel.findOne({ _id: id }, fields)
+        return agent
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
 module.exports = {
     signUp,
     logOut,
