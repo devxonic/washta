@@ -703,6 +703,7 @@ const getAllTimeStats = async (req) => {
         totalAcceptedOrders,
         totalPendingOrders,
         totalCancelledOrders,
+        totalCompletedOrders,
         graphData: Object.values(monthData),
     };
     return response;
