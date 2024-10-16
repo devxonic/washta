@@ -104,8 +104,15 @@ const sendNotificationToAllUsers = async (req) => {
 
 const getAllMyNotifications = async (req) => {
     let { id } = req.user
-    let { limit, skip } = req.query
-    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }] }, { multiReceivers: 0 }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? null)
+    let { limit, skip, date } = req.query
+
+    let startDate = date ? new Date(date) : new Date()
+    startDate.setHours(0, 0, 0, 0);
+    let endDate = startDate ? new Date(startDate) : new Date()
+    endDate.setHours(23, 59, 59, 999);
+
+    let DateFilter = date ? { createdAt: { $gte: new Date(startDate), $lt: new Date(endDate), } } : {}
+    let Notifications = await NotificationModel.find({ $or: [{ 'receiver.id': id }, { 'multiReceivers.id': id }], ...DateFilter }, { multiReceivers: 0 }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? null)
     let UpdatedNotification = []
     for (let i = 0; i < Notifications.length; i++) {
         UpdatedNotification[i] = Notifications[i]
