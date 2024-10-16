@@ -413,7 +413,7 @@ const getProfile = async (req, res) => {
             updatedAt: 1,
         }
         let agent = await AdminModel.findOne({ _id: id }, fields)
-        return agent
+        return response.resSuccessData(res, agent);
     }
     catch (error) {
         console.log(error);
@@ -435,7 +435,7 @@ const updateProfile = async (req, res) => {
             updatedAt: 1,
         }
         let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar } }, { new: true, fields })
-        return agent
+        return response.resSuccessData(res, agent);
     }
     catch (error) {
         console.log(error);
