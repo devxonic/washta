@@ -401,6 +401,48 @@ const AgentlogIn = async (req, res) => {
 }
 
 
+const getProfile = async (req, res) => {
+    try {
+        let { id } = req.user
+        let fields = {
+            username: 1,
+            role: 1,
+            isActive: 1,
+            isVerifed: 1,
+            createdAt: 1,
+            updatedAt: 1,
+        }
+        let agent = await AdminModel.findOne({ _id: id }, fields)
+        return response.resSuccessData(res, agent);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try {
+        let { id } = req.user
+        let { username, fullName, email, avatar, resizedAvatar } = req.body
+        let filter = { _id: id, role: "agent" }
+        let fields = {
+            username: 1,
+            role: 1,
+            isActive: 1,
+            isVerifed: 1,
+            createdAt: 1,
+            updatedAt: 1,
+        }
+        let agent = await AdminModel.findOneAndUpdate(filter, { $set: { username, fullName, email, avatar, resizedAvatar } }, { new: true, fields })
+        return response.resSuccessData(res, agent);
+    }
+    catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
 module.exports = {
     signUp,
     logOut,
@@ -409,5 +451,6 @@ module.exports = {
     AdminlogIn,
     AgentSignUp,
     AgentlogIn,
-
+    getProfile,
+    updateProfile,
 }

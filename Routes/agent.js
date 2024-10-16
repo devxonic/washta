@@ -9,6 +9,9 @@ const middlewares = require('../middlewares');
 
 router.post('/Signup', middlewares.verifyAdmin, AuthController.AgentSignUp)
 router.post('/login', AuthController.AgentlogIn)
+// ----------------------------------------------- profile -----------------------------------------------------//
+router.get('/profile', middlewares.verifyAgent, AuthController.getProfile)
+router.patch('/profile', middlewares.verifyAgent, AuthController.updateProfile)
 
 // ----------------------------------------------- help/support -----------------------------------------------------//
 
