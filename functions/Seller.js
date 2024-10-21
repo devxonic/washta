@@ -9,7 +9,7 @@ const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
-const { NotificationOnOrderUpdate } = require("../helpers/notification");
+const { NotificationOnOrderUpdate, NotificationOnReview } = require("../helpers/notification");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -931,6 +931,7 @@ const createAgentReview = async (req) => {
     let { id } = req.user
 
     let Rating = await ReviewModel({ agentId, ticketId, sellerId: id, rating, 'comment.text': comment.text }).save()
+    await NotificationOnReview(Rating)
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating

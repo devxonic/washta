@@ -266,6 +266,46 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
     }
 };
 
+const NotificationOnReview = async (review) => {
+    try {
+        console.log( "Review" ,review )
+        let agent;
+        let seller;
+        let shop;
+        let customer;
+        if (review?.shopId) shop = await shopModel.findOne({ _id: review.shopId }, { shopName: 1, Owner: 1 }).populate({ path: 'Owner', select: { username: 1, deviceId: 1 } })
+        if (review?.customerId) customer = await CustomerModel.findOne({ _id: review.customerId }, { fullName: 1, username: 1, resizedAvatar: 1, deviceId: 1 })
+        if (review?.sellerId) seller = await SellerModel.findOne({ _id: review.sellerId }, { fullName: 1, username: 1, resizedAvatar: 1, deviceId: 1 })
+        if (review?.agentId) agent = await AdminModel.findOne({ _id: review.agentId }, { fullName: 1, username: 1, resizedAvatar: 1, deviceId: 1 })
+
+        let saveMessage = {
+            notification: {
+                title: "New Review",
+                body: review.comment.text,
+            },
+            sender: {
+                id: review?.orderId ? customer?._id : review?.ticketId ? seller?._id ?? customer?._id : customer?._id,
+                role: review?.orderId ? "customer" : review?.ticketId ? seller ? "seller" : "customer" : "customer"
+            },
+            receiver: {
+                id: review?.orderId ? shop?.Owner?._id ?? seller?._id : review?.ticketId ? agent?._id : seller?._id,
+                role: review?.orderId ? "seller" : review?.ticketId ? "agent" : "seller",
+            }
+        };
+        let message = {
+            notification: saveMessage.notification,
+            token: review?.orderId ? shop?.Owner?.deviceId : review?.ticketId ? agent?.deviceId : seller?._id,
+        };
+        let notif = await NotificationModel(saveMessage).save();
+        let firebaseNotif = await firebase.messaging().send(message)
+        console.log("send message notif success ", notif);
+        console.log("firebase Res ", firebaseNotif);
+        return notif
+    } catch (error) {
+        console.error("error in sending notif");
+        console.error(error);
+    }
+};
 
 module.exports = {
     NotificationOnBooking,
@@ -274,4 +314,5 @@ module.exports = {
     getAllMyNotifications,
     sendNotificationToAllAgents,
     sendMessageNotif,
+    NotificationOnReview,
 };

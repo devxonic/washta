@@ -8,7 +8,7 @@ const OrderModel = require('../models/Order');
 const serviceModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getRatingStatistics } = require('../helpers/helper');
-const { NotificationOnBooking } = require('../helpers/notification');
+const { NotificationOnBooking, NotificationOnReview } = require('../helpers/notification');
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -511,6 +511,7 @@ const createShopRating = async (req) => {
     let { id } = req.user
 
     let Rating = await ReviewModel({ orderId, shopId, customerId: id, rating, 'comment.text': comment.text }).save()
+    await NotificationOnReview(Rating)
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
@@ -522,6 +523,7 @@ const createSellerReview = async (req) => {
 
     console.log(sellerId)
     let Rating = await ReviewModel({ orderId, sellerId: sellerId, customerId: id, rating, 'comment.text': comment.text }).save()
+    await NotificationOnReview(Rating)
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
@@ -686,6 +688,7 @@ const createAgentReview = async (req) => {
     let { id } = req.user
 
     let Rating = await ReviewModel({ agentId, ticketId, customerId: id, rating, 'comment.text': comment.text }).save()
+    await NotificationOnReview(Rating)
     if (!Rating) return Rating
     let FormatedRating = formateReviewsRatingsSingle?.(Rating)
     return FormatedRating
