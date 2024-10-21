@@ -6,39 +6,41 @@ const AdminModel = require("../models/admin")
 
 
 const updateRefreshToken = async (req, token, role) => {
+    console.log("update session key ")
     if (role == "customer") {
-        let Customer = await CustomerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
+        let Customer = await CustomerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return Customer
     }
     if (role == "seller") {
-        let seller = await SellerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { sessionKey: token } })
+        console.log("update Session seller")
+        let seller = await SellerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return seller
     }
     if (role == "admin") {
-        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { sessionKey: token } })
+        let admin = await AdminModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return admin
     }
     if (role == "agent") {
-        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { sessionKey: token } })
+        let admin = await AdminModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return admin
     }
 }
 
 const setDeviceId = async (req, role) => {
     if (role == "customer") {
-        let Customer = await CustomerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        let Customer = await CustomerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { deviceId: req.body.deviceId } })
         return Customer
     }
     if (role == "seller") {
-        let seller = await SellerModel.findOneAndUpdate({ username: req.body.identifier }, { $set: { deviceId: req.body.deviceId } })
+        let seller = await SellerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { deviceId: req.body.deviceId } })
         return seller
     }
     if (role == "admin") {
-        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
+        let admin = await AdminModel.findOneAndUpdate({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] }, { $set: { deviceId: req.body.deviceId } })
         return admin
     }
     if (role == "agent") {
-        let admin = await AdminModel.findOneAndUpdate({ username: req.body.identifier, role: req.body.role }, { $set: { deviceId: req.body.deviceId } })
+        let admin = await AdminModel.findOneAndUpdate({ $or: [{ username: req.body.identifier, role: req.body.role }, { email: req.body.identifier, role: req.body.role }] }, { $set: { deviceId: req.body.deviceId } })
         return admin
     }
 }

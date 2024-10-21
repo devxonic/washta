@@ -1,14 +1,14 @@
 const CustomerModel = require("../models/Customer");
 const NotificationModel = require("../models/notification");
 const shopModel = require("../models/shop");
-// const serviceAccount = require("../google-services_v4.json");
+const serviceAccount = require("../google-services_v4.json");
 const firebase = require("firebase-admin");
 const SellerModel = require("../models/seller");
 const AdminModel = require("../models/admin");
 
-// firebase.initializeApp({
-//     credential: firebase.credential.cert(serviceAccount)
-// })
+firebase.initializeApp({
+    credential: firebase.credential.cert(serviceAccount)
+})
 
 const NotificationOnBooking = async (req) => {
     try {
