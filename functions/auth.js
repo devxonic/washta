@@ -6,13 +6,11 @@ const AdminModel = require("../models/admin")
 
 
 const updateRefreshToken = async (req, token, role) => {
-    console.log("update session key ")
     if (role == "customer") {
         let Customer = await CustomerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return Customer
     }
     if (role == "seller") {
-        console.log("update Session seller")
         let seller = await SellerModel.findOneAndUpdate({ $or: [{ username: req.body.identifier }, { email: req.body.identifier }] }, { $set: { sessionKey: token } })
         return seller
     }
