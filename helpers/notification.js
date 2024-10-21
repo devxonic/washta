@@ -1,14 +1,14 @@
 const CustomerModel = require("../models/Customer");
 const NotificationModel = require("../models/notification");
 const shopModel = require("../models/shop");
-// const serviceAccount = require("../google-services_v4.json");
+const serviceAccount = require("../google-services_v4.json");
 const firebase = require("firebase-admin");
 const SellerModel = require("../models/seller");
 const AdminModel = require("../models/admin");
 
-// firebase.initializeApp({
-//     credential: firebase.credential.cert(serviceAccount)
-// })
+firebase.initializeApp({
+    credential: firebase.credential.cert(serviceAccount)
+})
 
 const NotificationOnBooking = async (req) => {
     try {
@@ -33,7 +33,7 @@ const NotificationOnBooking = async (req) => {
             token: shop?.Owner?.deviceId,
         };
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().send(message)
+        await firebase.messaging().send(message)
         console.log("send message notif success ", notif);
         return notif
     } catch (error) {
@@ -92,7 +92,7 @@ const sendNotificationToAllUsers = async (req) => {
         };
         console.log(saveMessage)
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().sendMulticast(message)
+        await firebase.messaging().sendEachForMulticast(message)
         console.log("send message notif success ");
         return notif
     } catch (error) {
@@ -192,7 +192,7 @@ const sendNotificationToAllAgents = async (req) => {
         };
         console.log(saveMessage)
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().sendMulticast(message)
+        await firebase.messaging().sendEachForMulticast(message)
         console.log("send message notif success ");
         return notif
     } catch (error) {
@@ -224,8 +224,9 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
         };
 
         let Notif = await NotificationModel(saveMessage).save();
-        // let Notif = await firebasemessage.messaging().send(message);
+        let FirebaseNotif = await firebasemessage.messaging().send(message);
         console.log(Notif)
+        console.log(FirebaseNotif)
         console.log("send message notif success");
         return Notif
     } catch (error) {
