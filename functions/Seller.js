@@ -9,7 +9,7 @@ const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
-const { NotificationOnReview } = require("../helpers/notification");
+const { NotificationOnOrderUpdate, NotificationOnReview } = require("../helpers/notification");
 
 const signUp = async (req) => {
     let newSeller = new SellerModel(req.body);
@@ -247,15 +247,27 @@ const orderStatus = async (req, res) => {
     let { status } = req.body;
     let date = new Date();
     let checkOrder = await OrderModel.findOne({ _id: id }, {
+        customerId: 1,
+        shopId: 1,
+        vehicleId: 1,
         isCompleted: 1,
         isAccepted: 1,
         isCancel: 1,
     })
     if (checkOrder?.isCompleted && checkOrder.isCompleted) return response.resBadRequest(res, "This order has already been completed. You can't change its status");
     let OBJ = { status }
-    if (status == "inprocess") OBJ = { ...OBJ, orderAcceptedAt: date, isAccepted: true }
-    if (status == "cancelled") OBJ = { ...OBJ, cancelBy: "seller", cancellationTime: date, isCancel: true, }
-    if (status == "completed") OBJ = { ...OBJ, orderCompleteAt: date, isCompleted: true }
+    if (status == "inprocess") {
+        OBJ = { ...OBJ, orderAcceptedAt: date, isAccepted: true }
+        await NotificationOnOrderUpdate(checkOrder, "Your order has been accepted by the service provider.")
+    }
+    if (status == "cancelled") {
+        OBJ = { ...OBJ, cancelBy: "seller", cancellationTime: date, isCancel: true, }
+        await NotificationOnOrderUpdate(checkOrder, "Your order has been cancelled by the service provider.")
+    }
+    if (status == "completed") {
+        OBJ = { ...OBJ, orderCompleteAt: date, isCompleted: true }
+        await NotificationOnOrderUpdate(checkOrder, "Your order has been completed")
+    }
     let Order = await OrderModel.findOneAndUpdate(
         { _id: id },
         { $set: OBJ },

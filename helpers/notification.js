@@ -42,6 +42,38 @@ const NotificationOnBooking = async (req) => {
     }
 };
 
+const NotificationOnOrderUpdate = async (order, message) => {
+    try {
+        let customer = await CustomerModel.findOne({ _id: order.customerId }, { fullName: 1, username: 1, resizedAvatar: 1 })
+        let shop = await shopModel.findOne({ _id: order.shopId }, { shopName: 1, Owner: 1 }).populate({ path: 'Owner', select: { username: 1, deviceId: 1 } })
+        let saveMessage = {
+            notification: {
+                title: customer?.username,
+                body: message,
+            },
+            sender: {
+                id: shop?.Owner,
+                role: "seller"
+            },
+            receiver: {
+                id: order.customerId,
+                role: "customer"
+            },
+        };
+        let message = {
+            notification: saveMessage.notification,
+            token: customer?.deviceId,
+        };
+        let notif = await NotificationModel(saveMessage).save();
+        await firebase.messaging().send(message)
+        console.log("send message notif success ", notif);
+        return notif
+    } catch (error) {
+        console.error("error in sending notif");
+        console.error(error);
+    }
+};
+
 const sendNotificationToAllUsers = async (req) => {
     try {
         let { sendTo } = req.query
@@ -277,6 +309,7 @@ const NotificationOnReview = async (review) => {
 
 module.exports = {
     NotificationOnBooking,
+    NotificationOnOrderUpdate,
     sendNotificationToAllUsers,
     getAllMyNotifications,
     sendNotificationToAllAgents,
