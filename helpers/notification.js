@@ -256,7 +256,7 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
         };
 
         let Notif = await NotificationModel(saveMessage).save();
-        let FirebaseNotif = await firebasemessage.messaging().send(message);
+        let FirebaseNotif = await firebase.messaging().send(message);
         console.log(Notif)
         console.log(FirebaseNotif)
         console.log("send message notif success");
