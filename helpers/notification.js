@@ -258,6 +258,7 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
         let Notif = await NotificationModel(saveMessage).save();
         let firebaseNotif = await firebase.messaging().send(message);
         console.log(Notif)
+        console.log(firebaseNotif)
         console.log("send message notif success");
         return Notif
     } catch (error) {
@@ -265,6 +266,35 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
     }
 };
 
+const TestNotification = async (req, res) => {
+    try {
+        console.log(req.body)
+        let { title, body, customerId, sellerId, adminId, agentId } = req.body
+        let receiver;
+        if (customerId) receiver = await CustomerModel.findOne({ _id: customerId }, { deviceId: 1, username: 1, resizedAvatar: 1 })
+        if (sellerId) receiver = await SellerModel.findOne({ _id: sellerId }, { deviceId: 1, username: 1, resizedAvatar: 1 })
+        if (adminId) receiver = await admin.findOne({ _id: adminId, role: 'admin' }, { deviceId: 1, username: 1, resizedAvatar: 1 })
+        if (agentId) receiver = await admin.findOne({ _id: agentId, role: "agent" }, { deviceId: 1, username: 1, resizedAvatar: 1 })
+        let notification = {
+            title: title,
+            body: body,
+        }
+        let message = {
+            notification: notification,
+            token: receiver?.deviceId,
+        };
+        console.log(message)
+        let fir = await firebase.messaging().send(message);
+        console.log(fir)
+        if (fir) {
+            res.status(200).send({ message: "success", fir })
+        }
+        res.status(200).send({ message: "success", fir })
+    }
+    catch (error) {
+        console.error(error);
+    }
+}
 
 module.exports = {
     NotificationOnBooking,
@@ -273,6 +303,7 @@ module.exports = {
     getAllMyNotifications,
     sendNotificationToAllAgents,
     sendMessageNotif,
+    TestNotification
 };
 
 
