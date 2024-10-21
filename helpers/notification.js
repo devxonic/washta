@@ -33,7 +33,7 @@ const NotificationOnBooking = async (req) => {
             token: shop?.Owner?.deviceId,
         };
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().send(message)
+        await firebase.messaging().send(message)
         console.log("send message notif success ", notif);
         return notif
     } catch (error) {
@@ -92,7 +92,7 @@ const sendNotificationToAllUsers = async (req) => {
         };
         console.log(saveMessage)
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().sendMulticast(message)
+        await firebase.messaging().sendEachForMulticast(message)
         console.log("send message notif success ");
         return notif
     } catch (error) {
@@ -192,7 +192,7 @@ const sendNotificationToAllAgents = async (req) => {
         };
         console.log(saveMessage)
         let notif = await NotificationModel(saveMessage).save();
-        // await firebase.messaging().sendMulticast(message)
+        await firebase.messaging().sendEachForMulticast(message)
         console.log("send message notif success ");
         return notif
     } catch (error) {
@@ -224,8 +224,9 @@ const sendMessageNotif = async (msg, sender, receiver, title) => {
         };
 
         let Notif = await NotificationModel(saveMessage).save();
-        // let Notif = await firebasemessage.messaging().send(message);
+        let FirebaseNotif = await firebasemessage.messaging().send(message);
         console.log(Notif)
+        console.log(FirebaseNotif)
         console.log("send message notif success");
         return Notif
     } catch (error) {
