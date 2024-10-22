@@ -756,7 +756,7 @@ const getSupportRoom = async (req, res) => {
 
 const getAllchats = async (req, res) => {
     try {
-        let Booking = await agentFunctions.getAllchats(req)
+        let Booking = await AdminFunctions.getAllchats(req)
         if (!Booking) return response.resBadRequest(res, "couldn't find chat")
         return response.resSuccessData(res, Booking);
 
