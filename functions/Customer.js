@@ -9,6 +9,7 @@ const serviceModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getRatingStatistics } = require('../helpers/helper');
 const { NotificationOnBooking, NotificationOnReview } = require('../helpers/notification');
+const stripe = require("stripe")(process.env.stripe_secret);
 
 const signUp = async (req) => {
     let newCustomer = new CustomerModel(req.body);
@@ -398,14 +399,69 @@ const createNewBooking = async (req) => {
             }
         ]
     }
+    let paymentId = crypto.randomUUID();
+    console.log(paymentId)
+    let Shop = await shopModel.findOne({ _id: req.body.shopId }, { shopName: 1 }).populate({
+        path: "Owner", select: {
+            bankAccount: 1,
+            username: 1
+        }
+    })
+    let finalCost = req.body.cost
+    if (req.body.promoCode) {
+        let promoCode = await PromoCodeModel.findOne(promoCodeFilter)
+        if (!promoCode) return { error: "Invalid promo Code" }
+        if (promoCode.Discounttype == "fixed") {
+            finalCost -= parseFloat(promoCode.discount)
+        }
+        if (req.body.promoCode.Discounttype == "percentage") {
+            finalCost -= parseFloat((promoCode.discount * 100) / req.body.cost)
+        }
+    }
+    let Amount = finalCost;
+    if (req.body?.serviceFee) {
+        req.body.serviceFee.map((fee => {
+            if (fee.feeType == "fixed") {
+                return Amount -= fee.WashtaFees
+            }
+            if (fee.feeType == "percentage") {
+                return Amount -= (fee.WashtaFees * 100) / finalCost
+            }
+        }))
+    }
 
-    let Bookings = await OrderModel({ ...req.body }).save();
+    console.log("Amount", Amount)
+    if (!Shop) return { error: "Shop Not Found" }
+    if (Shop) {
+        let paymentLink = await makeStripePayment(
+            req.body.cost,
+            Amount,
+            "AED",
+            1,
+            paymentId,
+            {
+                id: Shop?._id,
+                name: Shop?.shopName
+            },
+            Shop?.Owner?.bankAccount?.acct_id,
+        );
+        // if (paymentLink) {
+        req.body.paymentId = paymentId
+        req.body.paymentLink = paymentLink?.url
+        // }
+    }
+    req.body.fee = (finalCost - Amount)
+    req.body.discount = (req.body.cost - finalCost)
+    req.body.finalCost = finalCost
+    console.log("Final Body ", req.body)
+    let Bookings = await OrderModel({ ...req.body })
+    console.log(Bookings)
     if (req.body?.promoCode) {
         let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, { $push: { 'usedBy': req.user.id } })
         console.log(promo)
         if (!promo) return { error: "promo code not Applyed" }
     }
-    if (Bookings) await NotificationOnBooking(req)
+    // if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
 
@@ -722,6 +778,44 @@ const getAgentReview = async (req) => {
     return FormatedRating
 };
 
+
+
+const makeStripePayment = async (
+    amount,
+    splitAmount,
+    currency,
+    quantity,
+    paymentId,
+    shop,
+    acctId,
+) => {
+    console.log("amount", amount, currency, quantity);
+    let price = await stripe.prices.create({
+        unit_amount: parseInt(amount ? (amount < 0 ? 1 : amount) : 1) * 100,
+        currency: currency,
+        product_data: shop,
+    });
+    console.log(splitAmount)
+    const paymentLink = await stripe.paymentLinks.create({
+        line_items: [
+            {
+                price: price.id,
+                quantity: 1,
+            },
+        ],
+        metadata: {
+            paymentId: paymentId,
+            paymentLink: "testing",
+        },
+        transfer_data: {
+            amount: parseInt(splitAmount) * 100,
+            destination: acctId,
+            // "acct_1PPaTaC6Xjf4bQv7"
+        },
+    });
+    console.log("paymentlink object", paymentLink);
+    return paymentLink;
+};
 
 module.exports = {
     signUp,
