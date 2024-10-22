@@ -8,6 +8,8 @@ const bcrypt = require("bcrypt");
 const response = require("../helpers/response");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../models/Review");
+const stripe = require("stripe")(process.env.stripe_secret);
+
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getDaysInMonth, getDaysInYear, generateDaysOfMonth, generateDaysOfWeek, generateMonthOfYear } = require("../helpers/helper");
 const { NotificationOnOrderUpdate, NotificationOnReview } = require("../helpers/notification");
 
@@ -151,6 +153,54 @@ const logout = async (req) => {
     );
     return Seller;
 };
+
+// ----------------------------------------------- payment -----------------------------------------------------//
+
+const updatebankAccount = async (req) => {
+    let countryarr = ["US"];
+    let bankObj = {
+        account_number: req.body.account_number,
+        country: req.body.country,
+        currency: req.body.currency,
+        object: "bank_account",
+        account_holder_name: req.body.AccHolderName,
+    };
+
+    if (countryarr.includes(req.body.country))
+        bankObj.routing_number = req.body.routing_number;
+    const account = await stripe.accounts.create({
+        external_account: bankObj,
+        capabilities: {
+            card_payments: { requested: true },
+            transfers: { requested: true },
+        },
+        country: "AE",
+        type: "express",
+    });
+    console.log(account);
+    bankObj.acct_id = account.id;
+    let link = await stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: `https://backend.washta.com/api/regenerateAccountLink/${account.id}`,
+        return_url: "https://washta.com",
+        type: "account_onboarding",
+    });
+    console.log(link);
+    let Seller = await SellerModel.findOneAndUpdate(
+        { _id: req.user.id },
+        { $set: { bankAccount: bankObj } },
+        { new: true },
+    );
+    return link.url;
+};
+
+const getbankAccount = async (req) => {
+    let { id } = req.user
+    let details = SellerModel.findOne({ _id: id }, { bankAccount: 1 })
+    return details
+}
+
+
 
 // ----------------------------------------------- Business -----------------------------------------------------//
 
@@ -1013,4 +1063,6 @@ module.exports = {
     updatesAgentReview,
     getAgentReview,
     getMyReviews,
+    updatebankAccount,
+    getbankAccount,
 };
