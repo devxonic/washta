@@ -13,6 +13,7 @@ const PromoCodeModel = require('../models/PromoCode');
 const helper = require('../helpers/helper');
 const { default: mongoose } = require('mongoose');
 const AdminModel = require('../models/admin');
+const messageModel = require('../models/chatMessage');
 
 
 // ----------------------------------------------- Business -----------------------------------------------------//
@@ -1213,6 +1214,12 @@ const updateAgents = async (req) => {
 };
 
 
+const getAllchats = async (req) => {
+    let { ticketId, limit, skip } = req.query
+    let messages = await messageModel.find({ chatRoomId: ticketId }).sort({ createdAt: -1 }).limit(limit ?? null).skip(skip ?? 0)
+    return messages
+}
+
 module.exports = {
     getBusinessbyStatus,
     businessApprove,
@@ -1269,4 +1276,5 @@ module.exports = {
     getAllAgents,
     deleteAgents,
     updateAgents,
+    getAllchats,
 }

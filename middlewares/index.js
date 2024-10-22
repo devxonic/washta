@@ -64,6 +64,7 @@ const verifyCustomer = (req, res, next) => {
                 return response.resUnauthorized(res, "couldn't verify the token!");
             } else {
                 req.user = Authdata;
+                req.user.role = "customer";
                 next();
             }
         });
@@ -83,6 +84,7 @@ const verifySeller = (req, res, next) => {
                 return response.resUnauthorized(res, "couldn't verify the token!");
             } else {
                 req.user = Authdata;
+                req.user.role = "seller";
                 next();
             }
         });
@@ -103,6 +105,7 @@ const verifyAdmin = (req, res, next) => {
                 return response.resUnauthorized(res, "couldn't verify the token!");
             } else {
                 req.user = Authdata;
+                req.user.role = "admin";
                 next();
             }
         });
@@ -122,6 +125,7 @@ const verifyAgent = (req, res, next) => {
                 return response.resUnauthorized(res, "couldn't verify the token!");
             } else {
                 req.user = Authdata;
+                req.user.role = "agent";
                 next();
             }
         });

@@ -1,5 +1,6 @@
 
 const AdminFunctions = require('../functions/admin');
+const supportFunctions = require('../functions/support');
 const response = require('../helpers/response');
 const notification = require('../helpers/notification');
 const validationFunctions = require('../functions/validations');
@@ -739,6 +740,31 @@ const updateAgents = async (req, res) => {
     }
 }
 
+// ----------------------------------------------- help/support -----------------------------------------------------//
+
+const getSupportRoom = async (req, res) => {
+    try {
+        let Booking = await supportFunctions.getSupportRoom(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find support Room")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
+const getAllchats = async (req, res) => {
+    try {
+        let Booking = await AdminFunctions.getAllchats(req)
+        if (!Booking) return response.resBadRequest(res, "couldn't find chat")
+        return response.resSuccessData(res, Booking);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
 
 module.exports = {
     updateStatus,
@@ -796,4 +822,6 @@ module.exports = {
     getAllAgents,
     deleteAgents,
     updateAgents,
+    getSupportRoom,
+    getAllchats,
 }

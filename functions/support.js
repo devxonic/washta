@@ -26,16 +26,16 @@ const getSupportRoom = async (req) => {
     try {
         let { status } = req.query
         let { id } = req.params
-        console.log(id)
-        let filter = status ? { requestStatus: status, 'user.id': req.user.id } : { 'user.id': req.user.id }
 
+        let userFilter = req.user.role == "admin" ? {} : { 'user.id': req.user.id }
+        
         if (id) {
-            let chatRoom = chatRoomModel.findOne({ _id: id, 'user.id': req.user.id }) // add end Filter 
+            let chatRoom = chatRoomModel.findOne({ _id: id, ...userFilter }) // add end Filter 
             return chatRoom
         }
+
+        let filter = status ? { requestStatus: status, ...userFilter } : userFilter
         let chatRooms = chatRoomModel.find(filter)
-
-
         return chatRooms
     } catch (error) {
         console.error("error in Craete chat Room");
