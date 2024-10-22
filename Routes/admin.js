@@ -112,5 +112,10 @@ router.get('/agent/:id', middlewares.verifyAdmin, AdminController.getAllAgents)
 router.delete('/agent/:id', middlewares.verifyAdmin, AdminController.deleteAgents)
 router.patch('/agent/:id', middlewares.verifyAdmin, AdminController.updateAgents)
 
+// ----------------------------------------------- orders -----------------------------------------------------//
+
+router.get('/support', middlewares. verifyAdmin, AdminController.getSupportRoom)
+router.get('/support/:id', middlewares. verifyAdmin, AdminController.getSupportRoom)
+router.get('/chat', middlewares. verifyAdmin, AdminController.getAllchats) // ...
 
 module.exports = router 
