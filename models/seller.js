@@ -92,6 +92,15 @@ const SellerSchema = new Schema({
         touchId: {
             type: Boolean
         },
+    },
+    bankAccount: {
+        account_number: { type: String },
+        country: { type: String },
+        currency: { type: String },
+        routing_number: { type: String },
+        account_holder_name: { type: String },
+        acct_id: { type: String },
+        name: { type: String },
     }
 },
     { timestamps: true },
