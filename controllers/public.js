@@ -21,8 +21,8 @@ const regenerateAccountLink = async (req, res) => {
     console.log("req.query", req.query);
     let link = await stripe.accountLinks.create({
         account: req.params.acctId,
-        refresh_url: `https://backend.washta.com/api/regenerateAccountLink/${req.params.acctId}`,
-        return_url: "https://washta.com",
+        refresh_url: `${process.env.backendURL}/api/regenerateAccountLink/${req.params.acctId}`,
+        return_url: process.env.baseURL,
         type: "account_onboarding",
     });
     res.redirect(link.url);

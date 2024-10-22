@@ -1,7 +1,4 @@
 node_modules
 .env
 temp.txt
-/helpers/firebaseconfig.js
-/helpers/webhooks.js
-/helpers/notifications.js
 google-services_v4.json

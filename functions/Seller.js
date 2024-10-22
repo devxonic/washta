@@ -181,8 +181,8 @@ const updatebankAccount = async (req) => {
     bankObj.acct_id = account.id;
     let link = await stripe.accountLinks.create({
         account: account.id,
-        refresh_url: `https://backend.washta.com/api/regenerateAccountLink/${account.id}`,
-        return_url: "https://washta.com",
+        refresh_url: `${process.env.backendURL}/api/regenerateAccountLink/${account.id}`,
+        return_url: process.env.baseURL,
         type: "account_onboarding",
     });
     console.log(link);
