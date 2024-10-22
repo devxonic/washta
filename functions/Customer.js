@@ -9,6 +9,7 @@ const serviceModel = require('../models/servicefee');
 const PromoCodeModel = require('../models/PromoCode');
 const { getTimeDifferenceFormatted, formateReviewsRatings, formateReviewsRatingsSingle, getRatingStatistics } = require('../helpers/helper');
 const { NotificationOnBooking, NotificationOnReview } = require('../helpers/notification');
+const ServiceModel = require('../models/servicefee');
 const stripe = require("stripe")(process.env.stripe_secret);
 
 const signUp = async (req) => {
@@ -420,21 +421,22 @@ const createNewBooking = async (req) => {
     }
     let Amount = finalCost;
     if (req.body?.serviceFee) {
-        req.body.serviceFee.map((fee => {
-            if (fee.feeType == "fixed") {
-                return Amount -= fee.WashtaFees
+        req.body.serviceFee.map(async (fee) => {
+            let service = await ServiceModel.findOne({ _id: fee.id })
+            if (!service) return { error: "invalid service Id " }
+            if (service.feeType == "fixed") {
+                return Amount -= service.WashtaFees
             }
-            if (fee.feeType == "percentage") {
-                return Amount -= (fee.WashtaFees * 100) / finalCost
+            if (service.feeType == "percentage") {
+                return Amount -= (service.WashtaFees * 100) / finalCost
             }
-        }))
+        })
     }
 
-    console.log("Amount", Amount)
     if (!Shop) return { error: "Shop Not Found" }
     if (Shop) {
         let paymentLink = await makeStripePayment(
-            req.body.cost,
+            Shop?.cost,
             Amount,
             "AED",
             1,
@@ -445,10 +447,10 @@ const createNewBooking = async (req) => {
             },
             Shop?.Owner?.bankAccount?.acct_id,
         );
-        // if (paymentLink) {
-        req.body.paymentId = paymentId
-        req.body.paymentLink = paymentLink?.url
-        // }
+        if (paymentLink) {
+            req.body.paymentId = paymentId
+            req.body.paymentLink = paymentLink?.url
+        }
     }
     req.body.fee = (finalCost - Amount)
     req.body.discount = (req.body.cost - finalCost)
@@ -461,7 +463,7 @@ const createNewBooking = async (req) => {
         console.log(promo)
         if (!promo) return { error: "promo code not Applyed" }
     }
-    // if (Bookings) await NotificationOnBooking(req)
+    if (Bookings) await NotificationOnBooking(req)
     return Bookings
 }
 
