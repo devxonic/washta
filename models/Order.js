@@ -23,7 +23,7 @@ const OrderSchema = new mongoose.Schema({
     billingStatus: { type: String, enum: ["non-paid", "paid"], default: "non-paid" },
     date: { type: Date, default: Date.now },
     cost: { type: String },
-    isPaid: { type: String },
+    isPaid: { type: Boolean },
     finalCost: { type: String },
     fee: { type: String },
     discount: { type: String },
