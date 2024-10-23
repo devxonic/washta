@@ -422,6 +422,15 @@ const terminateCustomer = async (req) => {
     return Customer
 }
 
+const getTerminatedCustomer = async (req) => {
+    let { id } = req.params
+    if (id) {
+        let customer = await CustomerModel.findOne({ _id: id, isTerminated: true })
+        return customer
+    }
+    let customer = await CustomerModel.find({ isTerminated: true })
+    return customer
+}
 
 const terminateShop = async (req) => {
     let id = req.params.id
@@ -435,6 +444,16 @@ const terminateShop = async (req) => {
         terminateAt: date,
     }
     let shop = await shopModel.findOneAndUpdate({ _id: id, isTerminated: { $ne: true } }, { ...body }, { new: true })
+    return shop
+}
+
+const getTerminatedShop = async (req) => {
+    let { id } = req.params
+    if (id) {
+        let shop = await shopModel.findOne({ _id: id, isTerminated: true })
+        return shop
+    }
+    let shop = await shopModel.find({ isTerminated: true })
     return shop
 }
 
@@ -1088,7 +1107,7 @@ const getShopForSales = async (req) => {
 
 
     let order = await OrderModel.aggregate(query)
-    
+
     return order
 };
 
@@ -1151,7 +1170,7 @@ const getOrdersByUserId = async (req) => {
             isSelected: 1,
             isActive: 1,
         },
-        
+
     },]
 
     let filter = customerId ? { customerId } : shopId ? { shopId } : {}
@@ -1277,4 +1296,6 @@ module.exports = {
     deleteAgents,
     updateAgents,
     getAllchats,
+    getTerminatedShop,
+    getTerminatedCustomer,
 }
