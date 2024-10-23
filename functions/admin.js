@@ -422,6 +422,15 @@ const terminateCustomer = async (req) => {
     return Customer
 }
 
+const getTerminatedCustomer = async (req) => {
+    let { id } = req.params
+    if (id) {
+        let customer = await CustomerModel.findOne({ _id: id, isTerminated: true })
+        return customer
+    }
+    let customer = await CustomerModel.find({ isTerminated: true })
+    return customer
+}
 
 const terminateShop = async (req) => {
     let id = req.params.id
@@ -1288,4 +1297,5 @@ module.exports = {
     updateAgents,
     getAllchats,
     getTerminatedShop,
+    getTerminatedCustomer,
 }

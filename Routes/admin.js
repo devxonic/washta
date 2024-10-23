@@ -43,7 +43,8 @@ router.patch('/shop', middlewares.verifyAdmin, AdminController.updateShopTiming)
 router.delete('/shop/:id', middlewares.verifyAdmin, AdminController.terminateShop)
 
 // ----------------------------------------------- Customer  -----------------------------------------------------//
-
+router.get('/customer/terminated/', middlewares.verifyAdmin, AdminController.getTerminatedCustomer)
+router.get('/customer/terminated/:id', middlewares.verifyAdmin, AdminController.getTerminatedCustomer)
 router.get('/customer', middlewares.verifyAdmin, AdminController.getCustomer)
 router.get('/customer/:id', middlewares.verifyAdmin, AdminController.getCustomerByid)
 router.patch('/customer/:id', middlewares.verifyAdmin, AdminController.updateCustomer)

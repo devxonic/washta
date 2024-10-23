@@ -344,6 +344,18 @@ const terminateCustomer = async (req, res) => {
     }
 }
 
+const getTerminatedCustomer = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getTerminatedCustomer(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 const deleteOrderByCustomerId = async (req, res) => {
     try {
         let shop = await AdminFunctions.deleteOrderByCustomerId(req)
@@ -837,4 +849,5 @@ module.exports = {
     getSupportRoom,
     getAllchats,
     getTerminatedShop,
+    getTerminatedCustomer,
 }
