@@ -438,6 +438,16 @@ const terminateShop = async (req) => {
     return shop
 }
 
+const getTerminatedShop = async (req) => {
+    let { id } = req.params
+    if (id) {
+        let shop = await shopModel.findOne({ _id: id, isTerminated: true })
+        return shop
+    }
+    let shop = await shopModel.find({ isTerminated: true })
+    return shop
+}
+
 // ----------------------------------------------- Vehical -----------------------------------------------------//
 
 const getVehicles = async (req) => {
@@ -1088,7 +1098,7 @@ const getShopForSales = async (req) => {
 
 
     let order = await OrderModel.aggregate(query)
-    
+
     return order
 };
 
@@ -1151,7 +1161,7 @@ const getOrdersByUserId = async (req) => {
             isSelected: 1,
             isActive: 1,
         },
-        
+
     },]
 
     let filter = customerId ? { customerId } : shopId ? { shopId } : {}
@@ -1277,4 +1287,5 @@ module.exports = {
     deleteAgents,
     updateAgents,
     getAllchats,
+    getTerminatedShop,
 }

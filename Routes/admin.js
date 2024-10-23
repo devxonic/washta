@@ -34,6 +34,8 @@ router.get('/TopSellers', AdminController.getTopSellers)
 
 // ----------------------------------------------- Shop  -----------------------------------------------------//
 
+router.get('/shop/terminated/', middlewares.verifyAdmin, AdminController.getTerminatedShop)
+router.get('/shop/terminated/:id', middlewares.verifyAdmin, AdminController.getTerminatedShop)
 router.get('/shop', middlewares.verifyAdmin, AdminController.getShop)
 router.get('/shop/:id', middlewares.verifyAdmin, AdminController.getShopbyid)
 router.patch('/shop/:id', middlewares.verifyAdmin, AdminController.UpdateShopbyAmdin)

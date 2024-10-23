@@ -279,6 +279,18 @@ const terminateShop = async (req, res) => {
     }
 }
 
+const getTerminatedShop = async (req, res) => {
+    try {
+        let shop = await AdminFunctions.getTerminatedShop(req)
+        if (!shop) return response.resBadRequest(res, "couldn't find Shop")
+        return response.resSuccessData(res, shop);
+
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error)
+    }
+}
+
 
 
 // ----------------------------------------------- customer -----------------------------------------------------//
@@ -824,4 +836,5 @@ module.exports = {
     updateAgents,
     getSupportRoom,
     getAllchats,
+    getTerminatedShop,
 }
