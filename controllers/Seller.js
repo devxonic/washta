@@ -99,7 +99,7 @@ const updatebankAccount = async (req, res) => {
     try {
         let AccountDetails = await SellerFunctions.updatebankAccount(req)
         if (!AccountDetails) return response.resBadRequest(res, { message: "some thing went wrong", error: AccountDetails });
-        return response.resSuccessData(res, "updated");
+        return response.resSuccessData(res, AccountDetails);
     } catch (error) {
         console.log(error);
         return response.resInternalError(res, error);

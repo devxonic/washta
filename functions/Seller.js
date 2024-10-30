@@ -175,7 +175,7 @@ const updatebankAccount = async (req) => {
             transfers: { requested: true },
         },
         country: "AE",
-        type: "express",
+        type: "standard",
     });
     console.log(account);
     bankObj.acct_id = account.id;
