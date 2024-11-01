@@ -458,7 +458,7 @@ const createNewBooking = async (req) => {
     req.body.discount = (req.body.cost - finalCost)
     req.body.finalCost = finalCost
     console.log("Final Body ", req.body)
-    let Bookings = await OrderModel({ ...req.body })
+    let Bookings = await OrderModel({ ...req.body }).save();
     console.log(Bookings)
     if (req.body?.promoCode) {
         let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, { $push: { 'usedBy': req.user.id } })
