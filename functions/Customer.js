@@ -402,7 +402,7 @@ const createNewBooking = async (req) => {
     }
     let paymentId = crypto.randomUUID();
     console.log(paymentId)
-    let Shop = await shopModel.findOne({ _id: req.body.shopId }, { shopName: 1 }).populate({
+    let Shop = await shopModel.findOne({ _id: req.body.shopId }, { shopName: 1 , cost: 1 }).populate({
         path: "Owner", select: {
             bankAccount: 1,
             username: 1
@@ -432,7 +432,9 @@ const createNewBooking = async (req) => {
             }
         })
     }
-
+    console.log("cost =>",Shop?.cost)
+    console.log("shop =>",Shop)
+    console.log("Amount =>",Amount)
     if (!Shop) return { error: "Shop Not Found" }
     if (Shop) {
         let paymentLink = await makeStripePayment(
@@ -442,7 +444,7 @@ const createNewBooking = async (req) => {
             1,
             paymentId,
             {
-                id: Shop?._id,
+                id: Shop?._id.toString(),
                 name: Shop?.shopName
             },
             Shop?.Owner?.bankAccount?.acct_id,
@@ -793,7 +795,7 @@ const makeStripePayment = async (
 ) => {
     console.log("amount", amount, currency, quantity);
     let price = await stripe.prices.create({
-        unit_amount: parseInt(amount ? (amount < 0 ? 1 : amount) : 1) * 100,
+        unit_amount: parseFloat(amount ? (amount < 0 ? 1 : amount) : 1) * 100,
         currency: currency,
         product_data: shop,
     });
@@ -810,7 +812,7 @@ const makeStripePayment = async (
             paymentLink: "testing",
         },
         transfer_data: {
-            amount: parseInt(splitAmount) * 100,
+            amount: parseFloat(splitAmount) * 100,
             destination: acctId,
             // "acct_1PPaTaC6Xjf4bQv7"
         },
