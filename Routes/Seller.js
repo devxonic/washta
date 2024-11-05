@@ -9,8 +9,8 @@ router.get('/Profile', middlewares.verifySeller, SellerControllers.getProfile)
 router.patch('/Profile', middlewares.verifySeller, SellerControllers.editProfile)
 router.post('/uplaodAvatar', middlewares.verifySeller, middlewares.uploadbuffer.single('Avatar'), SellerControllers.uplaodAvatar)
 router.patch('/updatePassword', middlewares.verifySeller, SellerControllers.updatePassword)
-router.get('/bankAccount', middlewares.verifySeller, SellerControllers.getbankAccount)
-router.post('/bankAccount', middlewares.verifySeller, SellerControllers.updatebankAccount)
+// router.get('/bankAccount', middlewares.verifySeller, SellerControllers.getbankAccount)
+// router.post('/bankAccount', middlewares.verifySeller, SellerControllers.updatebankAccount)
 
 // ----------------------------------------------- Settings -----------------------------------------------------//
 
