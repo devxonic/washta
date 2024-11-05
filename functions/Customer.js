@@ -1153,6 +1153,10 @@ const createCheckoutSession = async (
         quantity: 1,
       },
     ],
+    metadata: {
+      paymentId: paymentId,
+      paymentLink: "testing",
+    },
     mode: "payment",
     success_url: `${process.env.baseURL}/success`,
     cancel_url: `${process.env.backendURL}/cancel`,
