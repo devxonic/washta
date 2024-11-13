@@ -26,9 +26,9 @@ router.patch('/Selectcar', middlewares.verifyCustomer, CustomerControllers.updat
 
 // ----------------------------------------------- Shop -----------------------------------------------------//
 
-router.get('/Shop', middlewares.verifyCustomer, CustomerControllers.getAllShops)
-router.get('/NearShop', middlewares.verifyCustomer, CustomerControllers.getShopByLocation)
-router.get('/Shop/:id', middlewares.verifyCustomer, CustomerControllers.getShopById)
+router.get('/Shop', CustomerControllers.getAllShops)
+router.get('/NearShop', CustomerControllers.getShopByLocation)
+router.get('/Shop/:id', CustomerControllers.getShopById)
 
 
 // ----------------------------------------------- booking -----------------------------------------------------//
