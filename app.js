@@ -34,6 +34,7 @@ const cornJob = async (req, res) => {
 cron.schedule('0 * * * *', cornJob);
 
 // api routing
+app.use('/api/webhooks', require('./helpers/webhooks'));
 app.use('/api', require('./Routes/File'));
 app.use('/api/auth', require('./Routes/auth'));
 app.use('/api/customer', require('./Routes/Customer'));

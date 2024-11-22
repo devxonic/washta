@@ -23,7 +23,11 @@ const OrderSchema = new mongoose.Schema({
     billingStatus: { type: String, enum: ["non-paid", "paid"], default: "non-paid" },
     date: { type: Date, default: Date.now },
     cost: { type: String },
-    // discount: { price: { type: Number, default: 0 }, percent: { type: String, default: "0%" }, ref: { type: mongoose.Types.ObjectId } },
+    isPaid: { type: Boolean },
+    finalCost: { type: String },
+    fee: { type: String },
+    discount: { type: String },
+    vatFee: { type: String },
     serviceFee: [
         {
             id: { type: mongoose.Types.ObjectId },
@@ -49,6 +53,7 @@ const OrderSchema = new mongoose.Schema({
     cancellationResion: { type: String },
     cancellationTime: { type: Date },
     paymentId: { type: String },
+    paymentLink: { type: String },
     isDeleted: { type: Boolean },
     deletedAt: { type: Date },
     deleteBy: {

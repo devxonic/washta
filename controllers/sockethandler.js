@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const chatRoomModel = require('../models/chatRoom')
 const messageModel = require('../models/chatMessage')
 const notification = require('../helpers/notification')
+const OrderModel = require('../models/Order')
 
 
 module.exports = function (server) {
@@ -86,6 +87,12 @@ module.exports = function (server) {
 
             io.in(data.ticketId).emit("message-receive-from-user", body);
             let savedMessage = await messageModel(body).save();
+        })
+        socket.on('checkout.session.completed', async (data) => {
+            console.log('payment is completed', data)
+            let booking = await OrderModel.findOneAndUpdate({ "paymentId": data.paymentId }, { $set: { "isPaid": 1, "billingStatus": "paid" } }, { new: true })
+            console.log("bookings ------------------- : ", booking._id)
+            io.emit("payment.complete", booking)
         })
     })
 

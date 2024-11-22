@@ -95,6 +95,27 @@ const uplaodAvatar = async (req, res) => {
     }
 }
 
+const updatebankAccount = async (req, res) => {
+    try {
+        let AccountDetails = await SellerFunctions.updatebankAccount(req)
+        if (!AccountDetails) return response.resBadRequest(res, { message: "some thing went wrong", error: AccountDetails });
+        return response.resSuccessData(res, AccountDetails);
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
+
+const getbankAccount = async (req, res) => {
+    try {
+        let AccountDetails = await SellerFunctions.getbankAccount(req)
+        if (!AccountDetails) return response.resBadRequest(res, { message: "No Data Found", error: AccountDetails });
+        return response.resSuccessData(res, "updated");
+    } catch (error) {
+        console.log(error);
+        return response.resInternalError(res, error);
+    }
+}
 
 // ----------------------------------------------- Seller settings -----------------------------------------------------//
 
@@ -668,5 +689,7 @@ module.exports = {
     updatesAgentReview,
     getAgentReview,
     deleteAgentReviews,
-    getMyReviews
+    getMyReviews,
+    updatebankAccount,
+    getbankAccount,
 }
