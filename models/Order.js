@@ -25,6 +25,7 @@ const OrderSchema = new mongoose.Schema({
     cost: { type: String },
     isPaid: { type: Boolean },
     finalCost: { type: String },
+    sellerAmount: { type: String },
     fee: { type: String },
     discount: { type: String },
     vatFee: { type: String },

@@ -554,14 +554,17 @@ const createNewBooking = async (req) => {
     getShopsFee.map(async (service) => {
       if (service.feeType == "fixed") {
         parseFloat((washtaFee += +service.WashtaFees));
-        return parseFloat((amount += +service.WashtaFees));
+        return
+        // return parseFloat((amount += +service.WashtaFees));
       }
       if (service.feeType == "percentage") {
         parseFloat((washtaFee += (+service.WashtaFees / 100) * amount));
-        return parseFloat((amount += (+service.WashtaFees / 100) * amount));
+        return
+        // return parseFloat((amount += (+service.WashtaFees / 100) * amount));
       }
     });
   }
+
 
   console.log("amount after service fee", amount);
   console.log("washta after", washtaFee);
@@ -584,13 +587,18 @@ const createNewBooking = async (req) => {
 
   console.log("final before Vat Amount => ", finalCost);
   let vatTax = (5 / 100) * finalCost;
-  finalCost += vatTax;
+  // finalCost += vatTax;
+  let sellerAmount = Shop.cost
+  sellerAmount = (sellerAmount -= vatTax)  
+  sellerAmount = (sellerAmount -= washtaFee)  
+  sellerAmount = (sellerAmount -= promoCodeDiscount)  
 
   console.log("vat Amount => ", vatTax);
   console.log("discount Amount => ", promoCodeDiscount);
   console.log("washta fee Amount => ", washtaFee);
   console.log(" Amount => ", amount);
   console.log(" final Amount => ", finalCost);
+  console.log(" seller Amount => ", sellerAmount);
   if (!Shop) return { error: "Shop Not Found" };
   if (Shop) {
     // let paymentLink = await makeStripePayment(
@@ -605,21 +613,21 @@ const createNewBooking = async (req) => {
     //     },
     //     Shop?.Owner?.bankAccount?.acct_id,
     // );
-    let paymentLink = await createCheckoutSession(
-        finalCost, // pay Amount 
-        "AED", // currency
-        1, // quantity
-        paymentId, // paymentId
-        { // product data
-            id: `${Shop?._id.toString()}_-_${crypto.randomUUID()}`,
-            name: Shop?.shopName,
-            // vehicleId :req.body.vehicleId
-        },
-    );
-    if (paymentLink) {
-      req.body.paymentId = paymentId;
-      req.body.paymentLink = paymentLink?.url;
-    }
+    // let paymentLink = await createCheckoutSession(
+    //     finalCost, // pay Amount 
+    //     "AED", // currency
+    //     1, // quantity
+    //     paymentId, // paymentId
+    //     { // product data
+    //         id: `${Shop?._id.toString()}_-_${crypto.randomUUID()}`,
+    //         name: Shop?.shopName,
+    //         // vehicleId :req.body.vehicleId
+    //     },
+    // );
+    // if (paymentLink) {
+    //   req.body.paymentId = paymentId;
+    //   req.body.paymentLink = paymentLink?.url;
+    // }
   }
   req.body.cost = Shop.cost; //shop cost
   req.body.fee = washtaFee; // washta fee
@@ -628,8 +636,9 @@ const createNewBooking = async (req) => {
   req.body.serviceFee = getShopsFee;
   req.body.serviceFee = getShopsFee;
   req.body.vatFee = vatTax;
+  req.body.sellerAmount = sellerAmount;
   console.log("Final Body ", req.body);
-  let Bookings = await OrderModel({ ...req.body }).save();
+  let Bookings = await OrderModel({ ...req.body }) // .save();
   console.log(Bookings);
   if (req.body?.promoCode) {
     let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, {
