@@ -613,21 +613,21 @@ const createNewBooking = async (req) => {
     //     },
     //     Shop?.Owner?.bankAccount?.acct_id,
     // );
-    // let paymentLink = await createCheckoutSession(
-    //     finalCost, // pay Amount 
-    //     "AED", // currency
-    //     1, // quantity
-    //     paymentId, // paymentId
-    //     { // product data
-    //         id: `${Shop?._id.toString()}_-_${crypto.randomUUID()}`,
-    //         name: Shop?.shopName,
-    //         // vehicleId :req.body.vehicleId
-    //     },
-    // );
-    // if (paymentLink) {
-    //   req.body.paymentId = paymentId;
-    //   req.body.paymentLink = paymentLink?.url;
-    // }
+    let paymentLink = await createCheckoutSession(
+        finalCost, // pay Amount 
+        "AED", // currency
+        1, // quantity
+        paymentId, // paymentId
+        { // product data
+            id: `${Shop?._id.toString()}_-_${crypto.randomUUID()}`,
+            name: Shop?.shopName,
+            // vehicleId :req.body.vehicleId
+        },
+    );
+    if (paymentLink) {
+      req.body.paymentId = paymentId;
+      req.body.paymentLink = paymentLink?.url;
+    }
   }
   req.body.cost = Shop.cost; //shop cost
   req.body.fee = washtaFee; // washta fee
@@ -638,7 +638,7 @@ const createNewBooking = async (req) => {
   req.body.vatFee = vatTax;
   req.body.sellerAmount = sellerAmount;
   console.log("Final Body ", req.body);
-  let Bookings = await OrderModel({ ...req.body }) // .save();
+  let Bookings = await OrderModel({ ...req.body }).save();
   console.log(Bookings);
   if (req.body?.promoCode) {
     let promo = await PromoCodeModel.findOneAndUpdate(promoCodeFilter, {
